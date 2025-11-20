@@ -1,0 +1,38 @@
+name: 🐛 Bug Report
+description: Create a report to help us improve
+title: 'Bug: '
+labels: type/bug
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this bug report!
+
+  - type: textarea
+    attributes:
+      label: Bug summary
+      description: A clear and concise description of what the bug is.
+      placeholder: Brief summary of the issue
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        Include screenshots, gifs, videos if applicable.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Expected result
+      description: A clear and concise description of what you expected to happen.
+
+  - type: textarea
+    attributes:
+      label: Actual result
+      description: A clear and concise description of what actually happened.
