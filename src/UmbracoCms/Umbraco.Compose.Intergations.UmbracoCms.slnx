@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/sample/">
+    <Project Path="sample/Umbraco.Compose.Integrations.UmbracoCms.Sample.csproj" />
+  </Folder>
+  <Folder Name="/UmbracoCms.Core/" />
+  <Folder Name="/UmbracoCms.Core/src/">
+    <Project Path="UmbracoCms.Core/src/Umbraco.Compose.Integrations.UmbracoCms.Core.csproj" />
+  </Folder>
+  <Folder Name="/UmbracoCms.Ingestion/" />
+  <Folder Name="/UmbracoCms.Ingestion/src/">
+    <Project Path="UmbracoCms.Ingestion/src/Umbraco.Compose.Integrations.UmbracoCms.Ingestion.csproj" />
+  </Folder>
+</Solution>

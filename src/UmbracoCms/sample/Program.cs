@@ -1,0 +1,26 @@
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+builder.CreateUmbracoBuilder()
+    .AddBackOffice()
+    .AddWebsite()
+    .AddComposers()
+    .AddUmbracoComposeIngestion()
+    .Build();
+
+WebApplication app = builder.Build();
+
+await app.BootUmbracoAsync().ConfigureAwait(false);
+
+app.UseUmbraco()
+    .WithMiddleware(u =>
+    {
+        u.UseBackOffice();
+        u.UseWebsite();
+    })
+    .WithEndpoints(u =>
+    {
+        u.UseBackOfficeEndpoints();
+        u.UseWebsiteEndpoints();
+    });
+
+await app.RunAsync().ConfigureAwait(false);
