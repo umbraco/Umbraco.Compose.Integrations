@@ -1,0 +1,40 @@
+using Microsoft.Extensions.Logging;
+using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.Sync;
+using Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Cache.Content;
+
+namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
+
+internal sealed class PublishedContentCacheRefresherNotificationHandler(
+    IServerRoleAccessor serverRoleAccessor,
+    ILogger<PublishedContentCacheRefresherNotificationHandler> logger,
+    IIngestService ingestService) :
+        INotificationAsyncHandler<PublishedContentCacheRefresherNotification>
+{
+    public async Task HandleAsync(PublishedContentCacheRefresherNotification notification, CancellationToken cancellationToken)
+    {
+        if (serverRoleAccessor is not { CurrentServerRole: ServerRole.SchedulingPublisher or ServerRole.Single, })
+        {
+            logger.LogDebug(
+                "Skipping ingestion - Current server role is '{ServerRole}', expected 'SchedulingPublisher' or 'Single'.",
+                serverRoleAccessor.CurrentServerRole);
+            return;
+        }
+
+        if (notification.MessageObject is not PublishedContentCacheRefresher.JsonPayload[] payload)
+        {
+            logger.LogWarning(
+                "Expected payload to be of type '{ExpectedType}' but was '{ActualType}'",
+                typeof(PublishedContentCacheRefresher.JsonPayload[]),
+                notification.MessageObject.GetType());
+            return;
+        }
+
+        List<ContentChangePayload> entities =
+            [.. payload.Select(x => new ContentChangePayload(x.ContentKey, x.ChangeTypes, x.AffectedCultures)),];
+
+        await ingestService
+            .EnqueueAsync(new ContentIngestQueueItem(entities), cancellationToken)
+            .ConfigureAwait(false);
+    }
+}

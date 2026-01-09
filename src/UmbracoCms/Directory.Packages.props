@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.1" />
+    <PackageVersion Include="Microsoft.ICU.ICU4C.Runtime" Version="72.1.0.3" />
+    <PackageVersion Include="OpenIddict.Client.SystemNetHttp" Version="7.2.0" />
+    <PackageVersion Include="Umbraco.Cms" Version="17.1.0" />
+    <PackageVersion Include="Umbraco.Cms.Core" Version="17.1.0" />
+    <PackageVersion Include="Umbraco.Cms.Infrastructure" Version="17.1.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <GlobalPackageReference Include="Roslynator.Analyzers" Version="4.15.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </GlobalPackageReference>
+    <GlobalPackageReference Include="Roslynator.CodeAnalysis.Analyzers" Version="4.15.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </GlobalPackageReference>
+    <GlobalPackageReference Include="Roslynator.Formatting.Analyzers" Version="4.15.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </GlobalPackageReference>
+    <GlobalPackageReference Include="SonarAnalyzer.CSharp" Version="10.18.0.131500">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </GlobalPackageReference>
+  </ItemGroup>
+</Project>
