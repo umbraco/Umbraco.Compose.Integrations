@@ -16,6 +16,11 @@ public static partial class UmbracoBuilderExtensions
         {
             ArgumentNullException.ThrowIfNull(builder);
 
+            builder.Services.AddOptions<UmbracoComposeIngestionOptions>()
+                .BindConfiguration("Umbraco:Compose:Ingestion")
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
             builder
                 .AddUmbracoComposeAuthentication()
                 .AddComposeCustomCacheRefresherNotificationHandlers();

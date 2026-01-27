@@ -4,6 +4,7 @@ using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 
@@ -19,9 +20,12 @@ internal sealed class IngestBackgroundService : BackgroundService
     private readonly ILogger<IngestBackgroundService> _logger;
     private readonly IServiceProvider _serviceProvider;
 
+    private UmbracoComposeIngestionOptions _ingestionOptions;
+
     public IngestBackgroundService(
         Channel<IngestQueueItem> channel,
         IHttpClientFactory httpClientFactory,
+        IOptionsMonitor<UmbracoComposeIngestionOptions> ingestionOptions,
         ILogger<IngestBackgroundService> logger,
         IServiceProvider serviceProvider)
     {
@@ -29,8 +33,11 @@ internal sealed class IngestBackgroundService : BackgroundService
 
         _channel = channel;
         _httpClientFactory = httpClientFactory;
+        _ingestionOptions = ingestionOptions.CurrentValue;
         _logger = logger;
         _serviceProvider = serviceProvider;
+
+        ingestionOptions.OnChange(OnIngestionOptionsChange);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -72,7 +79,7 @@ internal sealed class IngestBackgroundService : BackgroundService
                 // just do a configuration option where you set it in configuration for the entity type (content, media)
                 using HttpResponseMessage response = await httpClient
                     .PutAsJsonAsync(
-                        "content",
+                        _ingestionOptions.CollectionAlias,
                         items,
                         s_jsonSerializerOptions,
                         cancellationToken: stoppingToken)
@@ -84,5 +91,10 @@ internal sealed class IngestBackgroundService : BackgroundService
                 _logger.LogError(ex, "Error ingesting content");
             }
         }
+    }
+
+    private void OnIngestionOptionsChange(UmbracoComposeIngestionOptions options, string? name)
+    {
+        this._ingestionOptions = options;
     }
 }
