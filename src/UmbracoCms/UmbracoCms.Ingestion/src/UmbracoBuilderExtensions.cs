@@ -1,4 +1,3 @@
-using System.Reflection;
 using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -33,11 +32,10 @@ public static partial class UmbracoBuilderExtensions
                 .ConfigureHttpClient(static (services, client) =>
                 {
                     IOptions<UmbracoComposeOptions> options = services.GetRequiredService<IOptions<UmbracoComposeOptions>>();
-                    AssemblyName name = typeof(IngestBackgroundService).Assembly.GetName()!;
-                    client.DefaultRequestHeaders.UserAgent.Add(new(name.Name!, name.Version!.ToString()));
                     client.BaseAddress = options.Value.GetIngestionUrl();
                 })
-                .AddUmbracoComposeAuthenticationMessageHandler();
+                .AddUmbracoComposeAuthenticationMessageHandler()
+                .SetProductInformation(typeof(IngestBackgroundService).Assembly);
 
             builder.Services.AddHostedService<IngestBackgroundService>();
 
