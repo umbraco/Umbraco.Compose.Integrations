@@ -10,4 +10,11 @@
   <Folder Name="/UmbracoCms.Ingestion/src/">
     <Project Path="UmbracoCms.Ingestion/src/Umbraco.Compose.Integrations.UmbracoCms.Ingestion.csproj" />
   </Folder>
+  <Folder Name="/UmbracoCms.Schema/" />
+  <Folder Name="/UmbracoCms.Schema/src/">
+    <Project Path="UmbracoCms.Schema/src/Umbraco.Compose.Integrations.UmbracoCms.Schema.csproj" />
+  </Folder>
+  <Folder Name="/UmbracoCms.Schema/test/">
+    <Project Path="UmbracoCms.Schema/test/Umbraco.Compose.Integrations.UmbracoCms.Schema.Tests.csproj" />
+  </Folder>
 </Solution>

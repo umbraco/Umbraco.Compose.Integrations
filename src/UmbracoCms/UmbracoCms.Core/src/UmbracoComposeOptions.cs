@@ -33,7 +33,7 @@ public sealed class UmbracoComposeOptions
     {
         return new UriBuilder(GetManagementBaseUrl())
         {
-            Path = $"v1/{ProjectAlias}/{EnvironmentAlias}/",
+            Path = $"v1/projects/{ProjectAlias}/environments/{EnvironmentAlias}/",
         }.Uri;
     }
 

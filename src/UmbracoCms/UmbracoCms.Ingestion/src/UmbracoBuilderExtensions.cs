@@ -21,7 +21,6 @@ public static partial class UmbracoBuilderExtensions
                 .ValidateOnStart();
 
             builder
-                .AddUmbracoComposeAuthentication()
                 .AddComposeCustomCacheRefresherNotificationHandlers();
 
             builder.Services.AddSingleton(static _ => Channel.CreateUnbounded<IngestQueueItem>());
