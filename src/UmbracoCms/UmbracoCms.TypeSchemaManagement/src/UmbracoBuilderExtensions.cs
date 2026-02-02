@@ -1,42 +1,45 @@
-using System.Reflection;
 using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Compose.Integrations.UmbracoCms.Core;
-using Umbraco.Compose.Integrations.UmbracoCms.Schema;
+using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
 namespace Umbraco.Cms.Core.DependencyInjection;
 
-public static partial class UmbracoBuilderExtensions
+/// <summary>
+/// Extension methods for Umbraco Compose Schema Management services.
+/// </summary>
+public static class UmbracoBuilderExtensions
 {
     extension(IUmbracoBuilder builder)
     {
-        public IUmbracoBuilder AddUmbracoComposeSchemaForwarding()
+        /// <summary>
+        /// Adds the Umbraco Compose schema management services.
+        /// </summary>
+        public IUmbracoBuilder AddUmbracoComposeTypeSchemaManagement()
         {
             ArgumentNullException.ThrowIfNull(builder);
 
-            builder.Services.AddSingleton(Channel.CreateUnbounded<SchemaQueueItem>());
-            builder.Services.AddSingleton(sp => sp.GetRequiredService<Channel<SchemaQueueItem>>().Writer);
+            _ = builder.Services.AddSingleton(Channel.CreateUnbounded<SchemaQueueItem>());
+            _ = builder.Services.AddSingleton(static sp => sp.GetRequiredService<Channel<SchemaQueueItem>>().Writer);
 
-            builder.Services.AddScoped<IContentTypeSchemaService, ContentTypeSchemaService>();
-            builder.Services.AddScoped<JsonSchemaExporterService>();
+            _ = builder.Services.AddScoped<IContentTypeSchemaService, ContentTypeSchemaService>();
+            _ = builder.Services.AddScoped<JsonSchemaExporterService>();
 
-            builder.Services.AddHttpClient<ManagementApiService>()
+            _ = builder.Services.AddHttpClient<ManagementApiService>()
                 .ConfigureHttpClient(static (services, client) =>
                 {
                     IOptions<UmbracoComposeOptions> options =
                         services.GetRequiredService<IOptions<UmbracoComposeOptions>>();
-                    AssemblyName name = typeof(ManagementApiService).Assembly.GetName()!;
-                    client.DefaultRequestHeaders.UserAgent.Add(new(name.Name!, name.Version!.ToString()));
                     client.BaseAddress = options.Value.GetManagementUrl();
                 })
                 .AddUmbracoComposeAuthenticationMessageHandler()
                 .SetProductInformation(typeof(SchemaBackgroundService).Assembly);
 
-            builder.Services.AddHostedService<SchemaBackgroundService>();
+            _ = builder.Services.AddHostedService<SchemaBackgroundService>();
 
-            builder
+            _ = builder
                 .AddNotificationAsyncHandler<
                     ContentTypeSavedNotification, ContentTypeNotificationHandler>();
 

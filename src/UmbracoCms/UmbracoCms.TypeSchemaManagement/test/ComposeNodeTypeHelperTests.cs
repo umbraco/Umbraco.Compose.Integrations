@@ -1,7 +1,7 @@
 using Umbraco.Cms.Core.Models.DeliveryApi;
 using Xunit;
 
-namespace Umbraco.Compose.Integrations.UmbracoCms.Schema.Tests;
+namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Tests;
 
 public class ComposeNodeTypeHelperTests
 {
@@ -15,7 +15,7 @@ public class ComposeNodeTypeHelperTests
     [InlineData(typeof(string), false)]
     public void IsComposeNodeType_ReturnsExpectedResult(Type type, bool expected)
     {
-        var result = ComposeNodeTypeHelper.IsComposeNodeType(type);
+        bool result = ComposeNodeTypeHelper.IsComposeNodeType(type);
 
         Assert.Equal(expected, result);
     }

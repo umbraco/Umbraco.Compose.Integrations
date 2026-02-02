@@ -1,9 +1,9 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Umbraco.Compose.Integrations.UmbracoCms.Schema;
+namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
-internal record CreateTypeSchemaRequest(
+internal record TypeSchemaDto(
     [property: JsonPropertyName("typeSchemaAlias")]
     string TypeSchemaAlias,
     [property: JsonPropertyName("description")]

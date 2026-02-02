@@ -10,11 +10,11 @@
   <Folder Name="/UmbracoCms.Ingestion/src/">
     <Project Path="UmbracoCms.Ingestion/src/Umbraco.Compose.Integrations.UmbracoCms.Ingestion.csproj" />
   </Folder>
-  <Folder Name="/UmbracoCms.Schema/" />
-  <Folder Name="/UmbracoCms.Schema/src/">
-    <Project Path="UmbracoCms.Schema/src/Umbraco.Compose.Integrations.UmbracoCms.Schema.csproj" />
+  <Folder Name="/UmbracoCms.TypeSchemaManagement/" />
+  <Folder Name="/UmbracoCms.TypeSchemaManagement/src/">
+    <Project Path="UmbracoCms.TypeSchemaManagement/src/Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.csproj" />
   </Folder>
-  <Folder Name="/UmbracoCms.Schema/test/">
-    <Project Path="UmbracoCms.Schema/test/Umbraco.Compose.Integrations.UmbracoCms.Schema.Tests.csproj" />
+  <Folder Name="/UmbracoCms.TypeSchemaManagement/test/">
+    <Project Path="UmbracoCms.TypeSchemaManagement/test/Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Tests.csproj" />
   </Folder>
 </Solution>

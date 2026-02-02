@@ -8,7 +8,7 @@ using Umbraco.Cms.Api.Common.OpenApi;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.DeliveryApi;
 
-namespace Umbraco.Compose.Integrations.UmbracoCms.Schema;
+namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
 internal class ComposeSchemaProcessor(
     ContentTypeSchemaInfo contentTypeInfo,
@@ -22,7 +22,9 @@ internal class ComposeSchemaProcessor(
     public void Process(SchemaProcessorContext context)
     {
         if (context.Resolver.RootObject != context.Schema)
+        {
             return;
+        }
 
         if (!contentTypeInfo.IsElement)
         {
@@ -34,22 +36,20 @@ internal class ComposeSchemaProcessor(
 
     private void AddInterfaceProperties(Type interfaceType, SchemaProcessorContext context)
     {
-        var jsonTypeInfo = GetJsonTypeInfo(interfaceType);
+        JsonTypeInfo jsonTypeInfo = GetJsonTypeInfo(interfaceType);
 
-        foreach (var jsonProperty in jsonTypeInfo.Properties)
+        foreach (JsonPropertyInfo jsonProperty in jsonTypeInfo.Properties)
         {
-            var propertySchema = context.Generator.GenerateWithReference<JsonSchemaProperty>(
+            context.Schema.Properties[jsonProperty.Name] = context.Generator.GenerateWithReference<JsonSchemaProperty>(
                 jsonProperty.PropertyType.ToContextualType(), context.Resolver);
-            context.Schema.Properties[jsonProperty.Name] = propertySchema;
         }
     }
 
     private void AddContentTypeProperties(SchemaProcessorContext context)
     {
-        foreach (var property in contentTypeInfo.Properties)
+        foreach (ContentTypePropertySchemaInfo property in contentTypeInfo.Properties)
         {
-            var propertySchema = GetOrCreateSchema(property.DeliveryApiClrType, context);
-            context.Schema.Properties[property.Alias] = propertySchema;
+            context.Schema.Properties[property.Alias] = GetOrCreateSchema(property.DeliveryApiClrType, context);
         }
     }
 
@@ -60,25 +60,23 @@ internal class ComposeSchemaProcessor(
             return CreatePropertyWithReference(composeNodeUrl);
         }
 
-        var jsonTypeInfo = GetJsonTypeInfo(type);
+        JsonTypeInfo jsonTypeInfo = GetJsonTypeInfo(type);
         switch (jsonTypeInfo.Kind)
         {
             case JsonTypeInfoKind.Enumerable:
-            {
-                var elementType = jsonTypeInfo.ElementType ?? typeof(object);
-                var itemSchema = GetOrCreateSchema(elementType, context);
+                Type elementType = jsonTypeInfo.ElementType ?? typeof(object);
+                JsonSchemaProperty itemSchema = GetOrCreateSchema(elementType, context);
 
-                return new JsonSchemaProperty
+                return new()
                 {
                     Type = JsonObjectType.Array,
-                    Item = itemSchema
+                    Item = itemSchema,
                 };
-            }
+
             case JsonTypeInfoKind.Object when !_handledTypes.Add(type):
-            {
-                var schemaId = schemaIdSelector.SchemaId(type);
+                string schemaId = schemaIdSelector.SchemaId(type);
                 return CreatePropertyWithReference($"#/definitions/{schemaId}");
-            }
+
             default:
                 return context.Generator.GenerateWithReference<JsonSchemaProperty>(
                     type.ToContextualType(), context.Resolver);
@@ -94,8 +92,8 @@ internal class ComposeSchemaProcessor(
 
     private JsonTypeInfo GetJsonTypeInfo(Type type)
     {
-        var jsonTypeInfo = jsonSerializerOptions.TypeInfoResolver?.GetTypeInfo(type, jsonSerializerOptions);
+        JsonTypeInfo? jsonTypeInfo = jsonSerializerOptions.TypeInfoResolver?.GetTypeInfo(type, jsonSerializerOptions);
         return jsonTypeInfo ??
-               throw new InvalidOperationException($"Could not get JsonTypeInfo for type {type.FullName}");
+            throw new InvalidOperationException($"Could not get JsonTypeInfo for type {type.FullName}");
     }
 }

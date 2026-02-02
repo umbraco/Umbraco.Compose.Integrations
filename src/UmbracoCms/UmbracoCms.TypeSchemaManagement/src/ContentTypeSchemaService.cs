@@ -5,7 +5,7 @@ using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Strings;
 using Umbraco.Extensions;
 
-namespace Umbraco.Compose.Integrations.UmbracoCms.Schema;
+namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
 internal class ContentTypeSchemaService(
     IContentTypeService contentTypeService,
@@ -13,21 +13,26 @@ internal class ContentTypeSchemaService(
     IShortStringHelper shortStringHelper)
     : IContentTypeSchemaService
 {
-    public ContentTypeSchemaInfo GetDocumentTypeByAlias(string alias)
-        => GetContentTypeSchemaInfo(PublishedItemType.Content, contentTypeService.Get(alias));
-
-    private ContentTypeSchemaInfo GetContentTypeSchemaInfo(PublishedItemType itemType, IContentType? contentType)
+    public ContentTypeSchemaInfo? GetDocumentTypeByAlias(string alias)
     {
-        ArgumentNullException.ThrowIfNull(contentType);
+        return GetContentTypeSchemaInfo(PublishedItemType.Content, contentTypeService.Get(alias));
+    }
 
-        var publishedContentType = publishedContentTypeCache.Get(itemType, contentType.Alias);
-        HashSet<string> ownPropertyAliases = [.. contentType.PropertyTypes.Select(p => p.Alias)];
+    private ContentTypeSchemaInfo? GetContentTypeSchemaInfo(PublishedItemType itemType, IContentType? contentType)
+    {
+        if (contentType is null)
+        {
+            return null;
+        }
 
-        return new ContentTypeSchemaInfo
+        IPublishedContentType publishedContentType = publishedContentTypeCache.Get(itemType, contentType.Alias);
+        HashSet<string> ownPropertyAliases = [.. contentType.PropertyTypes.Select(p => p.Alias),];
+
+        return new()
         {
             Alias = contentType.Alias,
             SchemaId = GetContentTypeSchemaId(contentType.Alias),
-            CompositionSchemaIds = [.. publishedContentType.CompositionAliases.Select(GetContentTypeSchemaId)],
+            CompositionSchemaIds = [.. publishedContentType.CompositionAliases.Select(GetContentTypeSchemaId),],
             Properties =
             [
                 ..publishedContentType.PropertyTypes.Select(p => new ContentTypePropertySchemaInfo
@@ -36,12 +41,14 @@ internal class ContentTypeSchemaService(
                     EditorAlias = p.EditorAlias,
                     DeliveryApiClrType = p.DeliveryApiModelClrType,
                     Inherited = !ownPropertyAliases.Contains(p.Alias),
-                })
+                }),
             ],
             IsElement = publishedContentType.IsElement,
         };
     }
 
-    private string GetContentTypeSchemaId(string contentTypeAlias) =>
-        contentTypeAlias.ToCleanString(shortStringHelper, CleanStringType.ConvertCase | CleanStringType.PascalCase);
+    private string GetContentTypeSchemaId(string contentTypeAlias)
+    {
+        return contentTypeAlias.ToCleanString(shortStringHelper, CleanStringType.ConvertCase | CleanStringType.PascalCase);
+    }
 }

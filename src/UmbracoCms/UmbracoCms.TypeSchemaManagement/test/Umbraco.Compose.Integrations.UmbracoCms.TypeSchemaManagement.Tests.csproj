@@ -3,6 +3,7 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Umbraco.Compose.Integrations.UmbracoCms.Schema.csproj" />
+    <ProjectReference Include="..\src\Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.csproj" />
   </ItemGroup>
 
 </Project>

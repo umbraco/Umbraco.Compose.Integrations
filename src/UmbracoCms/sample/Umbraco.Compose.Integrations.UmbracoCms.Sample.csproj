@@ -4,6 +4,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <CompressionEnabled>false</CompressionEnabled> <!-- Disable compression. E.g. for umbraco backoffice files. These files should be precompressed by node and not let dotnet handle it -->
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\UmbracoCms.Schema\src\Umbraco.Compose.Integrations.UmbracoCms.Schema.csproj" />
+    <ProjectReference Include="..\UmbracoCms.TypeSchemaManagement\src\Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

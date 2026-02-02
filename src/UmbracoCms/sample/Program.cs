@@ -6,7 +6,7 @@ builder.CreateUmbracoBuilder()
     .AddComposers()
     .AddUmbracoComposeAuthentication()
     .AddUmbracoComposeIngestion()
-    .AddUmbracoComposeSchemaForwarding()
+    .AddUmbracoComposeTypeSchemaManagement()
     .Build();
 
 WebApplication app = builder.Build();

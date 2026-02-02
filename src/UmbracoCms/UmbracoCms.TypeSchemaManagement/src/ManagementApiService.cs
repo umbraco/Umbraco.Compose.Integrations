@@ -1,8 +1,7 @@
 using System.Net.Http.Json;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
-namespace Umbraco.Compose.Integrations.UmbracoCms.Schema;
+namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
 internal class ManagementApiService(HttpClient httpClient)
 {
@@ -10,36 +9,38 @@ internal class ManagementApiService(HttpClient httpClient)
         string typeSchemaAlias,
         CancellationToken cancellationToken = default)
     {
-        var response = await httpClient.GetAsync(
+        HttpResponseMessage response = await httpClient.GetAsync(
             $"type-schemas/{typeSchemaAlias}",
-            cancellationToken);
+            cancellationToken)
+            .ConfigureAwait(false);
 
         if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
         {
             return null;
         }
 
-        response.EnsureSuccessStatusCode();
+        _ = response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadFromJsonAsync<TypeSchemaDto>(cancellationToken);
+        return await response.Content.ReadFromJsonAsync<TypeSchemaDto>(cancellationToken).ConfigureAwait(false);
     }
 
     internal async Task<TypeSchemaDto?> CreateTypeSchemaAsync(
         CreateTypeSchemaRequest request,
         CancellationToken cancellationToken = default)
     {
-        var response = await httpClient.PostAsJsonAsync(
+        HttpResponseMessage response = await httpClient.PostAsJsonAsync(
             "type-schemas",
             request,
-            cancellationToken);
+            cancellationToken)
+            .ConfigureAwait(false);
 
         if (!response.IsSuccessStatusCode)
         {
-            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
+            string errorContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             throw new HttpRequestException($"Request failed with status {response.StatusCode}: {errorContent}");
         }
 
-        return await response.Content.ReadFromJsonAsync<TypeSchemaDto>(cancellationToken);
+        return await response.Content.ReadFromJsonAsync<TypeSchemaDto>(cancellationToken).ConfigureAwait(false);
     }
 
     internal async Task<TypeSchemaDto?> UpdateTypeSchemaSchemaAsync(
@@ -47,21 +48,14 @@ internal class ManagementApiService(HttpClient httpClient)
         JsonElement schema,
         CancellationToken cancellationToken = default)
     {
-        var response = await httpClient.PutAsJsonAsync(
+        HttpResponseMessage response = await httpClient.PutAsJsonAsync(
             $"type-schemas/{typeSchemaAlias}/commands/update-schema",
             schema,
-            cancellationToken);
+            cancellationToken)
+            .ConfigureAwait(false);
 
-        response.EnsureSuccessStatusCode();
+        _ = response.EnsureSuccessStatusCode();
 
-        return await response.Content.ReadFromJsonAsync<TypeSchemaDto>(cancellationToken);
+        return await response.Content.ReadFromJsonAsync<TypeSchemaDto>(cancellationToken).ConfigureAwait(false);
     }
 }
-
-internal record TypeSchemaDto(
-    [property: JsonPropertyName("typeSchemaAlias")]
-    string TypeSchemaAlias,
-    [property: JsonPropertyName("description")]
-    string? Description,
-    [property: JsonPropertyName("schema")] JsonElement Schema
-);
