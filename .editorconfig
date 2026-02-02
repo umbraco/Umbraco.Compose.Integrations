@@ -71,6 +71,11 @@ dotnet_diagnostic.IDE0130.severity = warning
 ## IDE0161: Namespaces should be file scoped
 dotnet_diagnostic.IDE0161.severity = warning
 
+# Sonaranalyzer
+
+## S1135: Complete the task associated to this 'TODO' comment.
+dotnet_diagnostic.S1135.severity = suggestion
+
 # Roslynator
 ## RCS1090: Add/remove 'ConfigureAwait(false)' call
 dotnet_diagnostic.RCS1090.severity = warning

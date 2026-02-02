@@ -15,7 +15,7 @@ internal sealed class UmbracoContentIngestItemQueueProcessor(
     IUmbracoContextAccessor umbracoContextAccessor,
     IUmbracoContextFactory umbracoContextFactory,
     IVariationContextAccessor variationContextAccessor,
-    ILogger<UmbracoContentIngestItemQueueProcessor> logger) : IngestQueueItemProcessor<ContentIngestQueueItem>
+    ILogger<UmbracoContentIngestItemQueueProcessor> logger) : IIngestQueueItemProcessor<ContentIngestQueueItem>
 {
     private readonly IUmbracoContextFactory _umbracoContextFactory = umbracoContextFactory;
     private readonly IVariationContextAccessor _variationContextAccessor = variationContextAccessor;
@@ -80,7 +80,7 @@ internal sealed class UmbracoContentIngestItemQueueProcessor(
                     _variationContextAccessor.VariationContext = new(culture);
                     _umbracoContextAccessor.Set(context.UmbracoContext);
 
-                    foreach (AddContentEntry processedItem in ProcessItem(
+                    foreach (UpsertContentEntry processedItem in ProcessItem(
                         content,
                         culture,
                         entity.ChangeTypes is TreeChangeTypes.RefreshBranch))
@@ -92,7 +92,7 @@ internal sealed class UmbracoContentIngestItemQueueProcessor(
         }
     }
 
-    private IEnumerable<AddContentEntry> ProcessItem(IPublishedContent content, string culture, bool includeChildren)
+    private IEnumerable<UpsertContentEntry> ProcessItem(IPublishedContent content, string culture, bool includeChildren)
     {
         Cms.Core.Models.DeliveryApi.IApiContent? apiContent = _apiContentBuilder.Build(content);
 
@@ -128,7 +128,7 @@ internal sealed class UmbracoContentIngestItemQueueProcessor(
 
         foreach (IPublishedContent child in content.Children<IPublishedContent>(_navigationQueryService, _publishedStatusFilteringService))
         {
-            foreach (AddContentEntry processedChild in ProcessItem(child, culture, includeChildren))
+            foreach (UpsertContentEntry processedChild in ProcessItem(child, culture, includeChildren))
             {
                 yield return processedChild;
             }

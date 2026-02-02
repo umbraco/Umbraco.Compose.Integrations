@@ -4,9 +4,6 @@ builder.CreateUmbracoBuilder()
     .AddBackOffice()
     .AddWebsite()
     .AddComposers()
-    .AddUmbracoComposeAuthentication()
-    .AddUmbracoComposeIngestion()
-    .AddUmbracoComposeTypeSchemaManagement()
     .Build();
 
 WebApplication app = builder.Build();

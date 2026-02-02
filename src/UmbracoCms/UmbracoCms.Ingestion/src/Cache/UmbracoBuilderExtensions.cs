@@ -7,7 +7,7 @@ public static partial class UmbracoBuilderExtensions
 {
     extension(IUmbracoBuilder builder)
     {
-        public IUmbracoBuilder AddComposeCustomCacheRefresherNotificationHandlers() =>
+        internal IUmbracoBuilder AddComposeCustomCacheRefresherNotificationHandlers() =>
             builder
                 .AddNotificationHandler<ContentPublishedNotification, PublishedContentNotificationHandler>()
                 .AddNotificationHandler<ContentUnpublishedNotification, PublishedContentNotificationHandler>()

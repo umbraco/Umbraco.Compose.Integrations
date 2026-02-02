@@ -7,18 +7,23 @@ using Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Cache.Content;
 
 namespace Umbraco.Cms.Core.DependencyInjection;
 
+/// <summary>
+/// Extension methods for Umbraco Compose Ingestion services.
+/// </summary>
 public static partial class UmbracoBuilderExtensions
 {
     extension(IUmbracoBuilder builder)
     {
+        /// <summary>
+        /// Adds the Umbraco Compose ingestion services.
+        /// </summary>
+        /// <returns>The <see cref="IUmbracoBuilder"/>.</returns>
         public IUmbracoBuilder AddUmbracoComposeIngestion()
         {
             ArgumentNullException.ThrowIfNull(builder);
 
             builder.Services.AddOptions<UmbracoComposeIngestionOptions>()
-                .BindConfiguration("Umbraco:Compose:Ingestion")
-                .ValidateDataAnnotations()
-                .ValidateOnStart();
+                .BindConfiguration("Umbraco:Compose:Ingestion");
 
             builder
                 .AddComposeCustomCacheRefresherNotificationHandlers();

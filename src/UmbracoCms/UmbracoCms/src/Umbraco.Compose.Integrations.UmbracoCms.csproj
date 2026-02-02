@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>Umbraco Compose integrations for Umbraco CMS</Title>
+    <Description>Provides all Umbraco Compose integrations for Umbraco CMS.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\UmbracoCms.Ingestion\src\Umbraco.Compose.Integrations.UmbracoCms.Ingestion.csproj" />
+    <ProjectReference Include="..\..\UmbracoCms.TypeSchemaManagement\src\Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Umbraco.Cms.Core" />
+  </ItemGroup>
+
+</Project>

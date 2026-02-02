@@ -1,6 +1,8 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Sync;
+using Umbraco.Compose.Integrations.UmbracoCms.Core;
 using Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Cache.Content;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
@@ -8,11 +10,25 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 internal sealed class PublishedContentCacheRefresherNotificationHandler(
     IServerRoleAccessor serverRoleAccessor,
     ILogger<PublishedContentCacheRefresherNotificationHandler> logger,
-    IIngestService ingestService) :
-        INotificationAsyncHandler<PublishedContentCacheRefresherNotification>
+    IIngestService ingestService,
+    IOptions<UmbracoComposeOptions> composeOptions,
+    IOptions<UmbracoComposeIngestionOptions> ingestionOptions
+) : INotificationAsyncHandler<PublishedContentCacheRefresherNotification>
 {
     public async Task HandleAsync(PublishedContentCacheRefresherNotification notification, CancellationToken cancellationToken)
     {
+        if (!composeOptions.Value.IsValid)
+        {
+            logger.LogDebug("Skipping ingestion - Compose options are not valid.");
+            return;
+        }
+
+        if (!ingestionOptions.Value.IsValid)
+        {
+            logger.LogDebug("Skipping ingestion - Ingestion options are not valid.");
+            return;
+        }
+
         if (serverRoleAccessor is not { CurrentServerRole: ServerRole.SchedulingPublisher or ServerRole.Single, })
         {
             logger.LogDebug(

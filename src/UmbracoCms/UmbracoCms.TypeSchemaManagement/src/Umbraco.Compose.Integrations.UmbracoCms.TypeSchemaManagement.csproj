@@ -1,16 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <ItemGroup>
-        <InternalsVisibleTo Include="Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Tests"/>
-    </ItemGroup>
+  <PropertyGroup>
+    <Title>Umbraco Compose Type Schema integration for Umbraco CMS</Title>
+    <Description>Provides Umbraco Compose Type Schema integration for Umbraco CMS.</Description>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="NJsonSchema"/>
-        <PackageReference Include="Umbraco.Cms.Api.Delivery"/>
-    </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Tests"/>
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\..\UmbracoCms.Core\src\Umbraco.Compose.Integrations.UmbracoCms.Core.csproj"/>
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="NJsonSchema"/>
+    <PackageReference Include="Umbraco.Cms.Api.Delivery"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\UmbracoCms.Core\src\Umbraco.Compose.Integrations.UmbracoCms.Core.csproj"/>
+  </ItemGroup>
 
 </Project>

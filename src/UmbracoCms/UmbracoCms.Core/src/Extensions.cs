@@ -11,18 +11,22 @@ using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandle
 
 namespace Umbraco.Cms.Core.DependencyInjection;
 
+/// <summary>
+/// Extension methods for the core Umbraco Compose services.
+/// </summary>
 public static class Extensions
 {
     extension(IUmbracoBuilder builder)
     {
+        /// <summary>
+        /// Adds the Umbraco Compose authentication services.
+        /// </summary>
         public IUmbracoBuilder AddUmbracoComposeAuthentication()
         {
             ArgumentNullException.ThrowIfNull(builder);
 
             builder.Services.AddOptions<UmbracoComposeOptions>()
-                .BindConfiguration("Umbraco:Compose")
-                .ValidateDataAnnotations()
-                .ValidateOnStart();
+                .BindConfiguration("Umbraco:Compose");
 
             builder.Services.AddTransient<AuthenticationHttpMessageHandler>();
 
@@ -60,6 +64,11 @@ public static class Extensions
             builder.Services.AddOptions<OpenIddictClientOptions>()
                 .Configure<IOptions<UmbracoComposeOptions>>(static (options, composeOptions) =>
                 {
+                    if (!composeOptions.Value.IsValid)
+                    {
+                        return;
+                    }
+
                     options.Registrations.Add(new()
                     {
                         Issuer = composeOptions.Value.GetManagementBaseUrl(),
@@ -77,6 +86,10 @@ public static class Extensions
 
     extension(HttpClient client)
     {
+        /// <summary>
+        /// Sets the product information header.
+        /// </summary>
+        /// <param name="assembly">The assembly to get the name and version from</param>
         public HttpClient SetProductInformation(Assembly assembly)
         {
             ArgumentNullException.ThrowIfNull(client);
@@ -97,6 +110,9 @@ public static class Extensions
 
     extension(IHttpClientBuilder builder)
     {
+        /// <summary>
+        /// Adds the Umbraco Compose authentication message handler.
+        /// </summary>
         public IHttpClientBuilder AddUmbracoComposeAuthenticationMessageHandler()
         {
             ArgumentNullException.ThrowIfNull(builder);
@@ -105,6 +121,10 @@ public static class Extensions
                 .AddHttpMessageHandler(static services => services.GetRequiredService<AuthenticationHttpMessageHandler>());
         }
 
+        /// <summary>
+        /// Sets the product information header.
+        /// </summary>
+        /// <param name="assembly">The assembly to get the name and version from</param>
         public IHttpClientBuilder SetProductInformation(Assembly assembly)
         {
             ArgumentNullException.ThrowIfNull(builder);
