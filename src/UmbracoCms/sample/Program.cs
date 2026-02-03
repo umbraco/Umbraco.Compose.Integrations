@@ -4,7 +4,10 @@ builder.CreateUmbracoBuilder()
     .AddBackOffice()
     .AddWebsite()
     .AddComposers()
-    .Build();
+    .Build()
+    ;
+
+builder.Configuration.AddJsonFile("appsettings.local.json.example", optional: true, reloadOnChange: true);
 
 WebApplication app = builder.Build();
 

@@ -1,0 +1,14 @@
+{
+    "id": "Umbraco.Compose.Integrations.DataSource",
+    "name": "Umbraco.Compose.Integrations.DataSource",
+    "version": "0.1.0",
+    "allowPackageTelemetry": true,
+    "extensions": [
+      {
+        "alias": "Umbraco.Compose.Integrations.DataSource",
+        "name": "Umbraco Compose DataSource",
+        "type": "bundle",
+        "js": "/App_Plugins/UmbracoComposeIntegrationsCmsDataSource/umbraco-compose-integrations-cms-data-source.js"
+      }
+    ]
+}

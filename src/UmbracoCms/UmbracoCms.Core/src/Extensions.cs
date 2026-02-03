@@ -9,7 +9,9 @@ using Umbraco.Compose.Integrations.UmbracoCms.Core;
 using static OpenIddict.Client.OpenIddictClientEvents;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers;
 
+#pragma warning disable IDE0130 // Namespace does not match folder structure
 namespace Umbraco.Cms.Core.DependencyInjection;
+#pragma warning restore IDE0130 // Namespace does not match folder structure
 
 /// <summary>
 /// Extension methods for the core Umbraco Compose services.

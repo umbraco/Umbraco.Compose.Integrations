@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <StaticWebAssetBasePath>App_Plugins/UmbracoComposeIntegrationsCmsDataSource</StaticWebAssetBasePath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Umbraco.Cms.Api.Management" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\**">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    
+    <!-- Remove from Content to prevent Razor SDK from copying, then add as None for Solution visibility -->
+    <Content Remove="umbraco-compose-integrations-cms-data-source\**" />
+    <None Include="umbraco-compose-integrations-cms-data-source\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\UmbracoCms.Core\src\Umbraco.Compose.Integrations.UmbracoCms.Core.csproj" />
+  </ItemGroup>
+
+  <Target Name="NpmInstall" BeforeTargets="NpmBuild" Condition="'$(Configuration)' == 'Release'">
+    <Exec Command="npm ci" WorkingDirectory="umbraco-compose-integrations-cms-data-source" />
+  </Target>
+
+  <Target Name="NpmBuild" BeforeTargets="BeforeBuild" Condition="'$(Configuration)' == 'Release'">
+    <Exec Command="npm run build" WorkingDirectory="umbraco-compose-integrations-cms-data-source" />
+  </Target>
+</Project>

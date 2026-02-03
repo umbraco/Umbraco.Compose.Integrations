@@ -1,0 +1,14 @@
+{
+  "$schema": "appsettings-schema.json",
+  "Umbraco": {
+    "Compose": {
+      "ClientId": "",
+      "ClientSecret": "",
+      "EnvironmentAlias": "",
+      "ProjectAlias": "",
+      "Ingestion": {
+        "CollectionAlias": ""
+      }
+    }
+  }
+}

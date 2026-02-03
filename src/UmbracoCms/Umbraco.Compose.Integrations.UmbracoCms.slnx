@@ -2,18 +2,27 @@
   <Folder Name="/sample/">
     <Project Path="sample/Umbraco.Compose.Integrations.UmbracoCms.Sample.csproj" />
   </Folder>
+
   <Folder Name="/UmbracoCms/" />
   <Folder Name="/UmbracoCms/src/">
     <Project Path="UmbracoCms/src/Umbraco.Compose.Integrations.UmbracoCms.csproj" />
   </Folder>
+
   <Folder Name="/UmbracoCms.Core/" />
   <Folder Name="/UmbracoCms.Core/src/">
     <Project Path="UmbracoCms.Core/src/Umbraco.Compose.Integrations.UmbracoCms.Core.csproj" />
   </Folder>
+  
   <Folder Name="/UmbracoCms.Ingestion/" />
   <Folder Name="/UmbracoCms.Ingestion/src/">
     <Project Path="UmbracoCms.Ingestion/src/Umbraco.Compose.Integrations.UmbracoCms.Ingestion.csproj" />
   </Folder>
+
+  <Folder Name="/UmbracoCms.DataSource/" />
+  <Folder Name="/UmbracoCms.DataSource/src/">
+    <Project Path="UmbracoCms.DataSource/src/Umbraco.Compose.Integrations.UmbracoCms.DataSource.csproj" />
+  </Folder>
+
   <Folder Name="/UmbracoCms.TypeSchemaManagement/" />
   <Folder Name="/UmbracoCms.TypeSchemaManagement/src/">
     <Project Path="UmbracoCms.TypeSchemaManagement/src/Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.csproj" />
