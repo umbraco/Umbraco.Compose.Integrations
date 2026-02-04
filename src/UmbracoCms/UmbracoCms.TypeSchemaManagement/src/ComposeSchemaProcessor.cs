@@ -49,7 +49,7 @@ internal class ComposeSchemaProcessor(
     {
         JsonSchemaProperty propertiesSchema = new()
         {
-            Type = JsonObjectType.Object
+            Type = JsonObjectType.Object,
         };
 
         foreach (ContentTypePropertySchemaInfo property in contentTypeInfo.Properties)

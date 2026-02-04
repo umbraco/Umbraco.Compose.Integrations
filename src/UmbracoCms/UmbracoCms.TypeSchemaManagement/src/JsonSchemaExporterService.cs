@@ -53,7 +53,7 @@ internal class JsonSchemaExporterService(
     {
         JsonObject root = JsonNode.Parse(schema.ToJson())!.AsObject();
 
-        _ = root.Remove("title");
+        root.Remove("title");
 
         if (root["definitions"] is JsonObject definitions)
         {
@@ -111,9 +111,7 @@ internal class JsonSchemaExporterService(
 
     private sealed class ComposeSchemaNameGenerator(ISchemaIdSelector schemaIdSelector) : ISchemaNameGenerator
     {
-        public string Generate(Type type)
-        {
-            return schemaIdSelector.SchemaId(type);
-        }
+        public string Generate(Type type) =>
+            schemaIdSelector.SchemaId(type);
     }
 }
