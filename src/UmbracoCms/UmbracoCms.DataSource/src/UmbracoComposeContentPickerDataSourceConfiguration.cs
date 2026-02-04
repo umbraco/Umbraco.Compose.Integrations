@@ -11,12 +11,11 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.DataSource;
 /// </summary>
 public sealed record UmbracoComposeContentPickerDataSourceConfiguration
 {
-    internal string KeyField { get; } = string.Empty;
     internal string? SearchField { get; }
     internal string Collection { get; } = string.Empty;
     internal string TypeSchema { get; } = string.Empty;
     internal string? Variant { get; set; } = string.Empty;
-    internal IEnumerable<string> IncludeFields { get; } = [];
+    internal IReadOnlyCollection<string> IncludeFields { get; } = [];
 
     private UmbracoComposeContentPickerDataSourceConfiguration()
     {
@@ -30,15 +29,12 @@ public sealed record UmbracoComposeContentPickerDataSourceConfiguration
         }
 
         Variant = dataType.ConfigurationData.GetValue(ConfigurationKeys.Variant) as string;
-        var collection = (dataType.ConfigurationData.GetValue(ConfigurationKeys.Collection) as string);
-        var typeSchema = (dataType.ConfigurationData.GetValue(ConfigurationKeys.TypeSchema) as string);
+        var collection = dataType.ConfigurationData.GetValue(ConfigurationKeys.Collection) as string;
+        var typeSchema = dataType.ConfigurationData.GetValue(ConfigurationKeys.TypeSchema) as string;
         object? includeFields = dataType.ConfigurationData.GetValue(ConfigurationKeys.TypeSchemaIncludeFields);
         object? searchField = dataType.ConfigurationData.GetValue(ConfigurationKeys.SearchField);
-        object? keyField = dataType.ConfigurationData.GetValue(ConfigurationKeys.KeyField);
 
         SearchField = ExtractFieldNameFrom(searchField);
-        KeyField = ExtractFieldNameFrom(keyField)
-            ?? throw new InvalidOperationException($"The data type configuration for '{ConfigurationKeys.KeyField}' is not valid.");
 
         if (collection is null)
         {
@@ -59,7 +55,7 @@ public sealed record UmbracoComposeContentPickerDataSourceConfiguration
         _ = includeFieldsJsonObject.TryGetPropertyValue(ConfigurationKeys.TypeSchemaFieldsProperty, out JsonNode? node);
         IncludeFields = TypeSchemaFieldFromJsonObject(node as JsonArray);
 
-        if (!IncludeFields.Any())
+        if (IncludeFields.Count == 0)
         {
             throw new InvalidOperationException(
                 $"The data type configuration for '{ConfigurationKeys.TypeSchemaIncludeFields}' is not valid.");
@@ -78,12 +74,7 @@ public sealed record UmbracoComposeContentPickerDataSourceConfiguration
 
         bool hasFields = o.TryGetPropertyValue("fields", out JsonNode? fields);
 
-        if (!hasFields || fields is not JsonArray a || a.Count == 0)
-        {
-            return null;
-        }
-
-        return a[0]?.GetValue<string>();
+        return !hasFields || fields is not JsonArray a || a.Count == 0 ? null : (a[0]?.GetValue<string>());
     }
 
     private static string[] TypeSchemaFieldFromJsonObject(JsonArray? json)
@@ -112,7 +103,6 @@ public sealed record UmbracoComposeContentPickerDataSourceConfiguration
         public const string TypeSchemaIncludeFields = "composeTypeSchemaIncludeFields";
         public const string TypeSchemaFieldsProperty = "typeSchemaFields";
         public const string SearchField = "composeSearchFields";
-        public const string KeyField = "composeKeyField";
     }
 
     private sealed class TypeSchemaIncludedField

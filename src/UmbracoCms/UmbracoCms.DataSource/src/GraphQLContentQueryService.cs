@@ -1,3 +1,4 @@
+using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
@@ -14,8 +15,14 @@ internal sealed class GraphQLContentQueryService(
         UmbracoComposeContentPickerDataSourceConfiguration composeQueryArguments,
         string[] keys)
     {
-        string queryText = ContentGraphQLQueryProvider.ContentItemsQuery(composeQueryArguments, keys);
-        return ExecuteQueryAsync(composeQueryArguments.Collection, queryText);
+        string queryText = ContentGraphQLQueryProvider.ContentItemsQuery(composeQueryArguments);
+        return ExecuteQueryAsync(
+            composeQueryArguments.Collection,
+            queryText,
+            new() {
+                { "ids", keys },
+                { "variant", string.IsNullOrEmpty(composeQueryArguments.Variant) ? null :  composeQueryArguments.Variant},
+            });
     }
 
     public Task<ContentQueryResult> GetContentAsync(
@@ -23,27 +30,39 @@ internal sealed class GraphQLContentQueryService(
         UmbracoComposeContentPickerDataSourcePaging paging,
         string? searchTerm)
     {
-        string queryText = ContentGraphQLQueryProvider.SearchContentQuery(composeQueryArguments, paging, searchTerm);
-        return ExecuteQueryAsync(composeQueryArguments.Collection, queryText);
+        string queryText = ContentGraphQLQueryProvider.SearchContentQuery(composeQueryArguments);
+        return ExecuteQueryAsync(
+            composeQueryArguments.Collection,
+            queryText,
+            new() {
+                { "searchTerm", searchTerm ?? string.Empty },
+                { "variant", string.IsNullOrEmpty(composeQueryArguments.Variant) ? null :  composeQueryArguments.Variant},
+                { "after", paging.After },
+                { "first", paging.Take },
+            });
     }
 
-    private async Task<ContentQueryResult> ExecuteQueryAsync(string collectionName, string queryText)
+    private async Task<ContentQueryResult> ExecuteQueryAsync(string collectionName, string queryText, Dictionary<string, object?> variables)
     {
         try
         {
             HttpClient httpClient = _httpClientFactory.CreateClient(nameof(GraphQLContentQueryService));
-            StringContent content = new(queryText);
-            content.Headers.ContentType = new("application/graphql");
-            HttpResponseMessage response = await httpClient.PostAsync(string.Empty, content).ConfigureAwait(false);
-
-            string contentString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            JsonElement responseContent = JsonSerializer.Deserialize<JsonElement>(contentString);
+            HttpResponseMessage response = await httpClient.PostAsJsonAsync(
+                string.Empty,
+                new
+                {
+                    query = queryText,
+                    variables,
+                })
+                .ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {
-                return ContentQueryResult.Error($"An error occurred while searching for content: {contentString}");
+                string content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+                return ContentQueryResult.Error($"An error occurred while searching for content: {content}");
             }
 
+            JsonElement responseContent = await response.Content.ReadFromJsonAsync<JsonElement>().ConfigureAwait(false);
             bool hasResponseData = responseContent.TryGetProperty("data", out JsonElement responseData);
             if (!hasResponseData)
             {

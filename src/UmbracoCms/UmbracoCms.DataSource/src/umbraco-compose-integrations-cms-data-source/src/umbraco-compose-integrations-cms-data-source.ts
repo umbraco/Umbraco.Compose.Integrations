@@ -23,7 +23,6 @@ export class UmbracoComposeIntegrationsPickerPropertyEditorDataSource
 	#init?: Promise<unknown>;
 
 	#typeSchema: string | undefined;
-	#keyField: string | undefined;
 	#nameField: string | undefined;
 	#entityIcon?: string;
 
@@ -55,7 +54,7 @@ export class UmbracoComposeIntegrationsPickerPropertyEditorDataSource
 
 	async requestCollection(filter: UmbCollectionFilterModel) : Promise<UmbRepositoryResponse<UmbPagedModel<UmbCollectionItemModel>>> {
 		await this.#init;
-    
+
     if ((filter?.skip ?? 0) == 0) {
       this.#cursor = undefined;
     }
@@ -66,7 +65,7 @@ export class UmbracoComposeIntegrationsPickerPropertyEditorDataSource
 		let error = undefined;
 
     const context = await this.getContext(UMB_AUTH_CONTEXT);
-    
+
     if(!context) {
       return { data, error: new Error('Authentication context not found')};
     }
@@ -111,7 +110,7 @@ export class UmbracoComposeIntegrationsPickerPropertyEditorDataSource
 		let data = undefined;
 		let error = undefined;
     const context = await this.getContext(UMB_AUTH_CONTEXT);
-    
+
     if(!context) {
       return { data, error: new Error('Authentication context not found')};
     }
@@ -134,7 +133,7 @@ export class UmbracoComposeIntegrationsPickerPropertyEditorDataSource
 
 	async search(args: UmbSearchRequestArgs): Promise<UmbRepositoryResponse<UmbPagedModel<UmbCollectionItemModel>>>
   {
-    // Avoid firing a query where {field} contains one letter. 
+    // Avoid firing a query where {field} contains one letter.
     if(args.query.length < 2) {
       return {
         data: undefined, error: undefined
@@ -152,7 +151,7 @@ export class UmbracoComposeIntegrationsPickerPropertyEditorDataSource
 		let error = undefined;
 
     const context = await this.getContext(UMB_AUTH_CONTEXT);
-    
+
     if(!context) {
       return { data, error: new Error('Authentication context not found')};
     }
@@ -193,18 +192,6 @@ export class UmbracoComposeIntegrationsPickerPropertyEditorDataSource
 
 		this.#typeSchema = typeSchemaValue as string;
 
-		const keyFieldValue = getConfigValue(
-			this.#config,
-			'composeKeyField',
-		) as ComposeDataSourceConfigPropertiesSelectPropertyEditorValue | undefined;
-
-		const keyField = keyFieldValue?.fields?.[0];
-		if (!keyField) {
-			throw new Error('Compose Key field is not configured');
-		}
-
-		this.#keyField = keyField;
-
 		const nameFieldValue = getConfigValue(
 			this.#config,
 			'composeNameField',
@@ -222,7 +209,7 @@ export class UmbracoComposeIntegrationsPickerPropertyEditorDataSource
 
 	#mapItems(serverItems: Array<any>) {
 		return serverItems.map((item) => {
-			const key = item[this.#keyField!];
+			const key = item['id'];
 			const name = item[this.#nameField!];
 			return {
 				unique: key,

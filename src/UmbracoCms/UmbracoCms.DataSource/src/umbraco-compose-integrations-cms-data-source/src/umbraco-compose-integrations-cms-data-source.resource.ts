@@ -10,13 +10,13 @@ export interface DataType {
 }
 
 export async function getContentItems(
-  host: UmbControllerHost, 
-  authContext: UmbAuthContext, 
+  host: UmbControllerHost,
+  authContext: UmbAuthContext,
   dataType: DataType,
   keys: string[])
   : Promise<SearchContentResults> {
     const token = await authContext.getLatestToken();
-    
+
     const queryStringFragments = keys.map(x => `&keys=${encodeURIComponent(x)}`);
     const queryString = ''.concat(...queryStringFragments);
     const options = {
@@ -30,14 +30,14 @@ export async function getContentItems(
 }
 
 export async function getContent(
-  host: UmbControllerHost, 
-  authContext: UmbAuthContext, 
+  host: UmbControllerHost,
+  authContext: UmbAuthContext,
   dataType: DataType,
   filter: Filter)
   : Promise<SearchContentResults> {
     const token = await authContext.getLatestToken();
     const afterCursorOptionalString = filter.afterCursor ? `&afterCursor=${filter.afterCursor}` : ''
-    const searchTermOptionalString = filter.searchTerm ? encodeURIComponent(`&searchTerm=${filter.searchTerm}`) : ''
+    const searchTermOptionalString = filter.searchTerm ? `&searchTerm=${encodeURIComponent(filter.searchTerm)}` : ''
 
     const options = {
       url: `umbraco/${baseUrl}?dataTypeId=${dataType.unique}&take=${filter.take}${afterCursorOptionalString}${searchTermOptionalString}`,

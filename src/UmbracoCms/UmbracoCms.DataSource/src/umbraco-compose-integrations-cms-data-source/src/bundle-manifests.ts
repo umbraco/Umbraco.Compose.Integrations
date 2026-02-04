@@ -6,8 +6,8 @@ import { manifests as propertyEditorManifests } from './config-property-editor-u
 const manifest: UmbExtensionManifest = 	{
   type: 'propertyEditorDataSource',
   dataSourceType: UMB_PICKER_DATA_SOURCE_TYPE,
-  alias: 'Compose.PropertyEditorDataSource.Picker',
-  name: 'Compose Picker Data Source',
+  alias: 'Umbraco.Compose.PropertyEditorDataSource.Picker',
+  name: 'Umbraco Compose Picker Data Source',
   api: () => import('./umbraco-compose-integrations-cms-data-source.js'),
   meta: {
     label: 'Umbraco Compose',
@@ -39,12 +39,6 @@ const manifest: UmbExtensionManifest = 	{
           label: 'Type Schema Fields',
           description: 'Content fields to include in the content query',
           propertyEditorUiAlias: COMPOSE_DATA_SOURCE_CONFIG_PROPERTIES_TYPE_SCHEMA_INCLUDE_FIELDS_EDITOR_UI_ALIAS,
-        },
-        {
-          alias: 'composeKeyField',
-          label: 'Key Field',
-          description: 'Which of the included fields above, should be used as a key to identify the found content.',
-          propertyEditorUiAlias: COMPOSE_DATA_SOURCE_CONFIG_PROPERTIES_SELECT_TYPE_SCHEMA_FIELD_EDITOR_UI_ALIAS,
         },
         {
           alias: 'composeNameField',
