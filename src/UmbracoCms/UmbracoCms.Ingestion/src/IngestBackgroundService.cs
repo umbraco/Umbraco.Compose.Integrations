@@ -20,14 +20,12 @@ internal sealed class IngestBackgroundService : BackgroundService
     private readonly ILogger<IngestBackgroundService> _logger;
     private readonly IServiceProvider _serviceProvider;
 
-
     private UmbracoComposeIngestionOptions _ingestionOptions;
 
     public IngestBackgroundService(
         Channel<IngestQueueItem> channel,
         IHttpClientFactory httpClientFactory,
         IOptionsMonitor<UmbracoComposeIngestionOptions> ingestionOptions,
-        IOptionsMonitor<JsonOptions> options,
         ILogger<IngestBackgroundService> logger,
         IServiceProvider serviceProvider)
     {
@@ -97,6 +95,6 @@ internal sealed class IngestBackgroundService : BackgroundService
 
     private void OnIngestionOptionsChange(UmbracoComposeIngestionOptions options, string? name)
     {
-        this._ingestionOptions = options;
+        _ingestionOptions = options;
     }
 }

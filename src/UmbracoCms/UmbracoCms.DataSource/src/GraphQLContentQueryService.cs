@@ -1,21 +1,20 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using Microsoft.Extensions.Logging;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.DataSource;
 
-internal sealed class GraphQLContentQueryService : IGraphQlContentQueryService
+internal sealed class GraphQLContentQueryService(
+    IHttpClientFactory httpClientFactory,
+    ILogger<GraphQLContentQueryService> logger) : IGraphQlContentQueryService
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-
-    public GraphQLContentQueryService(IHttpClientFactory httpClientFactory)
-    {
-        _httpClientFactory = httpClientFactory;
-    }
+    private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 
     public Task<ContentQueryResult> GetContentItemsAsync(
         UmbracoComposeContentPickerDataSourceConfiguration composeQueryArguments,
         string[] keys)
     {
-        var queryText = ContentGraphQLQueryProvider.ContentItemsQuery(composeQueryArguments, keys);
+        string queryText = ContentGraphQLQueryProvider.ContentItemsQuery(composeQueryArguments, keys);
         return ExecuteQueryAsync(composeQueryArguments.Collection, queryText);
     }
 
@@ -24,7 +23,7 @@ internal sealed class GraphQLContentQueryService : IGraphQlContentQueryService
         UmbracoComposeContentPickerDataSourcePaging paging,
         string? searchTerm)
     {
-        var queryText = ContentGraphQLQueryProvider.SearchContentQuery(composeQueryArguments, paging, searchTerm);
+        string queryText = ContentGraphQLQueryProvider.SearchContentQuery(composeQueryArguments, paging, searchTerm);
         return ExecuteQueryAsync(composeQueryArguments.Collection, queryText);
     }
 
@@ -32,51 +31,58 @@ internal sealed class GraphQLContentQueryService : IGraphQlContentQueryService
     {
         try
         {
-            var httpClient = _httpClientFactory.CreateClient(nameof(GraphQLContentQueryService));
-            var content = new StringContent(queryText);
-            content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/graphql");
-            var response = await httpClient.PostAsync(string.Empty, content);
+            HttpClient httpClient = _httpClientFactory.CreateClient(nameof(GraphQLContentQueryService));
+            StringContent content = new(queryText);
+            content.Headers.ContentType = new("application/graphql");
+            HttpResponseMessage response = await httpClient.PostAsync(string.Empty, content).ConfigureAwait(false);
 
-            var contentString = await response.Content.ReadAsStringAsync();
-            var responseContent = JsonSerializer.Deserialize<JsonElement>(contentString);
+            string contentString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            JsonElement responseContent = JsonSerializer.Deserialize<JsonElement>(contentString);
 
             if (!response.IsSuccessStatusCode)
             {
                 return ContentQueryResult.Error($"An error occurred while searching for content: {contentString}");
             }
 
-            var hasResponseData = responseContent.TryGetProperty("data", out var responseData);
+            bool hasResponseData = responseContent.TryGetProperty("data", out JsonElement responseData);
             if (!hasResponseData)
             {
                 return ContentQueryResult.Error("No response content");
             }
 
-            var collectionItems = responseData.GetProperty(collectionName);
-            var result = JsonSerializer.Deserialize<GraphQlItems>(collectionItems);
+            JsonElement collectionItems = responseData.GetProperty(collectionName);
+            GraphQlItems? result = collectionItems.Deserialize<GraphQlItems>();
 
             return ContentQueryResult.Ok(
-                result?.items ?? [],
+                result?.Items ?? [],
                 new ContentQueryPaging
                 {
-                    EndCursor = result?.pageInfo.endCursor ?? string.Empty,
-                    HasNextPage = result?.pageInfo.hasNextPage ?? false
+                    EndCursor = result?.PageInfo?.EndCursor ?? string.Empty,
+                    HasNextPage = result?.PageInfo?.HasNextPage ?? false,
                 });
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            return ContentQueryResult.Error(e.Message);
+            logger.LogError(ex, "Error while querying Umbraco Compose GraphQL");
+            return ContentQueryResult.Error(ex.Message);
         }
     }
 
-    private sealed class GraphQlPageInfo
+    public sealed class GraphQlPageInfo
     {
-        public string endCursor { get; set; } = string.Empty;
-        public bool hasNextPage { get; set; } = false;
+        [JsonPropertyName("endCursor")]
+        public string EndCursor { get; set; } = string.Empty;
+
+        [JsonPropertyName("hasNextPage")]
+        public bool HasNextPage { get; set; }
     }
 
-    private sealed class GraphQlItems
+    public sealed class GraphQlItems
     {
-        public object[] items { get; set; } = [];
-        public GraphQlPageInfo pageInfo { get; set; } = default!;
+        [JsonPropertyName("items")]
+        public object[]? Items { get; set; }
+
+        [JsonPropertyName("pageInfo")]
+        public GraphQlPageInfo? PageInfo { get; set; }
     }
 }

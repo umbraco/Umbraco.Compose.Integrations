@@ -29,17 +29,15 @@ public static class UmbracoBuilderExtensions
                 .AddHttpClient<GraphQLContentQueryService>()
                 .ConfigureHttpClient(static (services, client) =>
                 {
-                    var options = services.GetRequiredService<IOptions<UmbracoComposeOptions>>();
+                    IOptions<UmbracoComposeOptions> options = services.GetRequiredService<IOptions<UmbracoComposeOptions>>();
                     client.BaseAddress = options.Value.GetGraphQLUrl();
                     client.DefaultRequestHeaders.Add("GraphQL-Require-Preflight", "true");
                     client.DefaultRequestHeaders.AcceptCharset.Add(new StringWithQualityHeaderValue("utf-8"));
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/graphql-response+json"));
                     client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
                 })
                 .AddUmbracoComposeAuthenticationMessageHandler()
                 .SetProductInformation(typeof(UmbracoComposeDataSourceController).Assembly);
-
 
             return builder;
         }

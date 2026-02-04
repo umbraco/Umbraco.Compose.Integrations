@@ -7,7 +7,7 @@ builder.CreateUmbracoBuilder()
     .Build()
     ;
 
-builder.Configuration.AddJsonFile("appsettings.local.json.example", optional: true, reloadOnChange: true);
+builder.Configuration.AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true);
 
 WebApplication app = builder.Build();
 

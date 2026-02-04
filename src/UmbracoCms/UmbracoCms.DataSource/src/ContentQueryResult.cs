@@ -8,23 +8,23 @@ public sealed class ContentQueryResult
     /// <summary>
     /// Indicates whether the content query was successful - and indirectly if we have items, or an error message.
     /// </summary>
-    public bool Success => Items is not null && ErrorMessage is null;
+    public bool Success =>
+        Items is not null && ErrorMessage is null;
 
     /// <summary>
     /// In the case of <see cref="Success"/> being false, this contains the error message.
     /// </summary>
-    public string? ErrorMessage { get; set; } = default;
+    public string? ErrorMessage { get; set; }
 
     /// <summary>
     /// In the case of <see cref="Success"/> being true, this contains the found items.
     /// </summary>
-    public IEnumerable<object>? Items { get; set; } = default;
+    public IEnumerable<object>? Items { get; set; }
 
     /// <summary>
     /// The paging information for the query result.
     /// </summary>
-    public ContentQueryPaging? Paging { get; set; } = default;
-
+    public ContentQueryPaging? Paging { get; set; }
 
     private ContentQueryResult(string? errorMessage, IEnumerable<object>? items, ContentQueryPaging? paging)
     {
@@ -41,7 +41,7 @@ public sealed class ContentQueryResult
     /// <returns>A ContentQueryResult with Success = true</returns>
     public static ContentQueryResult Ok(IEnumerable<object> items, ContentQueryPaging paging)
     {
-        return new (null, items, paging);
+        return new(null, items, paging);
     }
 
     /// <summary>
@@ -49,8 +49,8 @@ public sealed class ContentQueryResult
     /// </summary>
     /// <param name="errorMesssaage">The error mesage descrribing the reason for failure</param>
     /// <returns>A ContentQueryResult with Success = fale</returns>
-    public static ContentQueryResult Error (string errorMesssaage)
+    public static ContentQueryResult Error(string errorMesssaage)
     {
-        return new (errorMesssaage, null, null);
+        return new(errorMesssaage, null, null);
     }
 }

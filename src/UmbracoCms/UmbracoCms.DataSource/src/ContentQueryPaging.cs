@@ -13,5 +13,5 @@ public sealed class ContentQueryPaging
     /// <summary>
     /// The value indicating whether there are more pages of results available beyond the current page.
     /// </summary>
-    public bool HasNextPage { get; set; } = false;
+    public bool HasNextPage { get; set; }
 }

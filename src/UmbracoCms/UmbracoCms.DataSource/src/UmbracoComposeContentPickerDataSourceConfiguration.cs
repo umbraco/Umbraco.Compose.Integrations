@@ -24,21 +24,21 @@ public sealed record UmbracoComposeContentPickerDataSourceConfiguration
 
     internal UmbracoComposeContentPickerDataSourceConfiguration(IDataType dataType)
     {
-        if(dataType?.ConfigurationData is null)
+        if (dataType?.ConfigurationData is null)
         {
             return;
         }
 
         Variant = dataType.ConfigurationData.GetValue(ConfigurationKeys.Variant) as string;
-        var collection= (dataType.ConfigurationData.GetValue(ConfigurationKeys.Collection) as string);
+        var collection = (dataType.ConfigurationData.GetValue(ConfigurationKeys.Collection) as string);
         var typeSchema = (dataType.ConfigurationData.GetValue(ConfigurationKeys.TypeSchema) as string);
-        var includeFields = dataType.ConfigurationData.GetValue(ConfigurationKeys.TypeSchemaIncludeFields);
-        var searchField = dataType.ConfigurationData.GetValue(ConfigurationKeys.SearchField);
-        var keyField = dataType.ConfigurationData.GetValue(ConfigurationKeys.KeyField);
+        object? includeFields = dataType.ConfigurationData.GetValue(ConfigurationKeys.TypeSchemaIncludeFields);
+        object? searchField = dataType.ConfigurationData.GetValue(ConfigurationKeys.SearchField);
+        object? keyField = dataType.ConfigurationData.GetValue(ConfigurationKeys.KeyField);
 
         SearchField = ExtractFieldNameFrom(searchField);
-        KeyField = ExtractFieldNameFrom(keyField) ?? throw new InvalidOperationException($"The data type configuration for '{ConfigurationKeys.KeyField}' is not valid.");
-        var includeFieldsJsonObject = includeFields as JsonObject;
+        KeyField = ExtractFieldNameFrom(keyField)
+            ?? throw new InvalidOperationException($"The data type configuration for '{ConfigurationKeys.KeyField}' is not valid.");
 
         if (collection is null)
         {
@@ -50,17 +50,19 @@ public sealed record UmbracoComposeContentPickerDataSourceConfiguration
             throw new InvalidOperationException($"The data type configuration for '{ConfigurationKeys.TypeSchema}' is not valid.");
         }
 
-        if (includeFieldsJsonObject is null)
+        if (includeFields is not JsonObject includeFieldsJsonObject)
         {
-            throw new InvalidOperationException($"The data type configuration for '{ConfigurationKeys.TypeSchemaIncludeFields}' is not valid.");
+            throw new InvalidOperationException(
+                $"The data type configuration for '{ConfigurationKeys.TypeSchemaIncludeFields}' is not valid.");
         }
 
-        _ = includeFieldsJsonObject.TryGetPropertyValue(ConfigurationKeys.TypeSchemaFieldsProperty, out var node);
+        _ = includeFieldsJsonObject.TryGetPropertyValue(ConfigurationKeys.TypeSchemaFieldsProperty, out JsonNode? node);
         IncludeFields = TypeSchemaFieldFromJsonObject(node as JsonArray);
 
-        if(!IncludeFields.Any())
+        if (!IncludeFields.Any())
         {
-            throw new InvalidOperationException($"The data type configuration for '{ConfigurationKeys.TypeSchemaIncludeFields}' is not valid.");
+            throw new InvalidOperationException(
+                $"The data type configuration for '{ConfigurationKeys.TypeSchemaIncludeFields}' is not valid.");
         }
 
         Collection = collection;
@@ -69,14 +71,14 @@ public sealed record UmbracoComposeContentPickerDataSourceConfiguration
 
     private static string? ExtractFieldNameFrom(object? searchField)
     {
-        if(searchField is not JsonObject o)
+        if (searchField is not JsonObject o)
         {
             return null;
         }
 
-        var hasFields = o.TryGetPropertyValue("fields", out var fields);
+        bool hasFields = o.TryGetPropertyValue("fields", out JsonNode? fields);
 
-        if (!hasFields || fields is not JsonArray a || a.Count == 0) 
+        if (!hasFields || fields is not JsonArray a || a.Count == 0)
         {
             return null;
         }
@@ -90,16 +92,16 @@ public sealed record UmbracoComposeContentPickerDataSourceConfiguration
 
         List<string> fields = [];
 
-        foreach(var node in json)
+        foreach (JsonNode? node in json)
         {
-            var field = node.Deserialize<TypeSchemaIncludedField>();
+            TypeSchemaIncludedField? field = node.Deserialize<TypeSchemaIncludedField>();
             if (!string.IsNullOrEmpty(field?.typeSchemaField))
             {
                 fields.Add(field.typeSchemaField);
             }
         }
 
-        return [.. fields];
+        return [.. fields,];
     }
 
     private static class ConfigurationKeys
@@ -113,11 +115,8 @@ public sealed record UmbracoComposeContentPickerDataSourceConfiguration
         public const string KeyField = "composeKeyField";
     }
 
-    #pragma warning disable IDE1006 // Naming Styles
     private sealed class TypeSchemaIncludedField
     {
         public string typeSchemaField { get; set; } = string.Empty;
     }
-
-    #pragma warning restore IDE1006 // Naming Styles
 }

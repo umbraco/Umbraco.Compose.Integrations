@@ -62,7 +62,7 @@ internal static class ContentGraphQLQueryProvider
     {
         string? variantFilter = VariantFilter(configuration.Variant);
         string? searchFilter = SearchFieldFilter(configuration.SearchField, searchTerm);
-        string?[] allFilters = [variantFilter, searchFilter, ];
+        string?[] allFilters = [variantFilter, searchFilter,];
 
         return string.Join(',', allFilters.Where(x => x is not null));
     }
@@ -83,7 +83,7 @@ internal static class ContentGraphQLQueryProvider
 
     private static string? SearchFieldFilter(string? searchField, string? searchTerm)
     {
-        if(string.IsNullOrEmpty(searchField) || string.IsNullOrEmpty(searchTerm))
+        if (string.IsNullOrEmpty(searchField) || string.IsNullOrEmpty(searchTerm))
         {
             return null;
         }
