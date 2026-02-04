@@ -47,10 +47,17 @@ internal class ComposeSchemaProcessor(
 
     private void AddContentTypeProperties(SchemaProcessorContext context)
     {
+        JsonSchemaProperty propertiesSchema = new()
+        {
+            Type = JsonObjectType.Object
+        };
+
         foreach (ContentTypePropertySchemaInfo property in contentTypeInfo.Properties)
         {
-            context.Schema.Properties[property.Alias] = GetOrCreateSchema(property.DeliveryApiClrType, context);
+            propertiesSchema.Properties[property.Alias] = GetOrCreateSchema(property.DeliveryApiClrType, context);
         }
+
+        context.Schema.Properties["properties"] = propertiesSchema;
     }
 
     private JsonSchemaProperty GetOrCreateSchema(Type type, SchemaProcessorContext context)

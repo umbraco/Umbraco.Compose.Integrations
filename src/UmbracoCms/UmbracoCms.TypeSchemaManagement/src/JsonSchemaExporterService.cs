@@ -51,27 +51,62 @@ internal class JsonSchemaExporterService(
 
     private static JsonElement PostProcessSchema(JsonSchema schema, bool isElement)
     {
-        string json = schema.ToJson();
-        JsonObject root = JsonNode.Parse(json)!.AsObject();
+        JsonObject root = JsonNode.Parse(schema.ToJson())!.AsObject();
 
         _ = root.Remove("title");
+
+        if (root["definitions"] is JsonObject definitions)
+        {
+            definitions.Remove("IApiElementModel");
+
+            if (definitions.Count == 0)
+            {
+                root.Remove("definitions");
+            }
+        }
+
+        ReplaceElementModelRefs(root);
 
         root["$schema"] = ComposeSchemaUrl;
 
         JsonArray allOf =
         [
-            new JsonObject { ["$ref"] = ComposeNodeUrl, },
             new JsonObject { ["$ref"] = nameof(IApiElement), },
         ];
 
         if (!isElement)
         {
+            allOf.Add(new JsonObject { ["$ref"] = ComposeNodeUrl, });
             allOf.Add(new JsonObject { ["$ref"] = nameof(IApiContent), });
         }
 
         root["allOf"] = allOf;
 
         return JsonDocument.Parse(root.ToJsonString()).RootElement;
+    }
+
+    private static void ReplaceElementModelRefs(JsonNode? node)
+    {
+        if (node is JsonObject obj)
+        {
+            if (obj.TryGetPropertyValue("$ref", out JsonNode? refValue) &&
+                refValue?.GetValue<string>() == "#/definitions/IApiElementModel")
+            {
+                obj["$ref"] = "IApiElementModel";
+            }
+
+            foreach (JsonNode? child in obj.Select(kvp => kvp.Value))
+            {
+                ReplaceElementModelRefs(child);
+            }
+        }
+        else if (node is JsonArray arr)
+        {
+            foreach (JsonNode? item in arr)
+            {
+                ReplaceElementModelRefs(item);
+            }
+        }
     }
 
     private sealed class ComposeSchemaNameGenerator(ISchemaIdSelector schemaIdSelector) : ISchemaNameGenerator
