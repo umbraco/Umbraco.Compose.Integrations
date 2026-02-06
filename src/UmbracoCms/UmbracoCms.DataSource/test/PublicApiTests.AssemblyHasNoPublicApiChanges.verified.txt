@@ -1,0 +1,66 @@
+﻿[assembly: System.Reflection.AssemblyMetadata("RepositoryUrl", "https://github.com/umbraco/Umbraco.Compose.Integrations")]
+[assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v10.0", FrameworkDisplayName=".NET 10.0")]
+namespace Umbraco.Cms.Core.DependencyInjection
+{
+    public static class UmbracoBuilderExtensions
+    {
+        extension(Umbraco.Cms.Core.DependencyInjection.IUmbracoBuilder builder)
+        {
+            public Umbraco.Cms.Core.DependencyInjection.IUmbracoBuilder AddUmbracoComposeDataSource() { }
+        }
+    }
+}
+namespace Umbraco.Compose.Integrations.UmbracoCms.DataSource
+{
+    public sealed class ContentQueryPaging
+    {
+        public ContentQueryPaging() { }
+        public string EndCursor { get; set; }
+        public bool HasNextPage { get; set; }
+    }
+    public sealed class ContentQueryResult
+    {
+        public string? ErrorMessage { get; set; }
+        public System.Collections.Generic.IEnumerable<object>? Items { get; set; }
+        public Umbraco.Compose.Integrations.UmbracoCms.DataSource.ContentQueryPaging? Paging { get; set; }
+        public bool Success { get; }
+        public static Umbraco.Compose.Integrations.UmbracoCms.DataSource.ContentQueryResult Error(string errorMesssaage) { }
+        public static Umbraco.Compose.Integrations.UmbracoCms.DataSource.ContentQueryResult Ok(System.Collections.Generic.IEnumerable<object> items, Umbraco.Compose.Integrations.UmbracoCms.DataSource.ContentQueryPaging paging) { }
+    }
+    public sealed class EntityDataPickerDeliveryValueConverter : Umbraco.Cms.Core.PropertyEditors.PropertyValueConverterBase, Umbraco.Cms.Core.Composing.IDiscoverable, Umbraco.Cms.Core.PropertyEditors.DeliveryApi.IDeliveryApiPropertyValueConverter, Umbraco.Cms.Core.PropertyEditors.IPropertyValueConverter
+    {
+        public EntityDataPickerDeliveryValueConverter(Umbraco.Cms.Core.PropertyEditors.ValueConverters.EntityDataPickerValueConverter coreConverter) { }
+        public object? ConvertIntermediateToDeliveryApiObject(Umbraco.Cms.Core.Models.PublishedContent.IPublishedElement owner, Umbraco.Cms.Core.Models.PublishedContent.IPublishedPropertyType propertyType, Umbraco.Cms.Core.PropertyEditors.PropertyCacheLevel referenceCacheLevel, object? inter, bool preview, bool expanding) { }
+        public override object? ConvertSourceToIntermediate(Umbraco.Cms.Core.Models.PublishedContent.IPublishedElement owner, Umbraco.Cms.Core.Models.PublishedContent.IPublishedPropertyType propertyType, object? source, bool preview) { }
+        public Umbraco.Cms.Core.PropertyEditors.PropertyCacheLevel GetDeliveryApiPropertyCacheLevel(Umbraco.Cms.Core.Models.PublishedContent.IPublishedPropertyType propertyType) { }
+        public System.Type GetDeliveryApiPropertyValueType(Umbraco.Cms.Core.Models.PublishedContent.IPublishedPropertyType propertyType) { }
+        public override Umbraco.Cms.Core.PropertyEditors.PropertyCacheLevel GetPropertyCacheLevel(Umbraco.Cms.Core.Models.PublishedContent.IPublishedPropertyType propertyType) { }
+        public override System.Type GetPropertyValueType(Umbraco.Cms.Core.Models.PublishedContent.IPublishedPropertyType propertyType) { }
+        public override bool IsConverter(Umbraco.Cms.Core.Models.PublishedContent.IPublishedPropertyType propertyType) { }
+    }
+    public interface IGraphQlContentQueryService
+    {
+        System.Threading.Tasks.Task<Umbraco.Compose.Integrations.UmbracoCms.DataSource.ContentQueryResult> GetContentAsync(Umbraco.Compose.Integrations.UmbracoCms.DataSource.UmbracoComposeContentPickerDataSourceConfiguration composeQueryArguments, Umbraco.Compose.Integrations.UmbracoCms.DataSource.UmbracoComposeContentPickerDataSourcePaging paging, string? searchTerm);
+        System.Threading.Tasks.Task<Umbraco.Compose.Integrations.UmbracoCms.DataSource.ContentQueryResult> GetContentItemsAsync(Umbraco.Compose.Integrations.UmbracoCms.DataSource.UmbracoComposeContentPickerDataSourceConfiguration composeQueryArguments, string[] keys);
+    }
+    public sealed class UmbracoComposeContentPickerDataSourceConfiguration : System.IEquatable<Umbraco.Compose.Integrations.UmbracoCms.DataSource.UmbracoComposeContentPickerDataSourceConfiguration> { }
+    public sealed class UmbracoComposeContentPickerDataSourcePaging : System.IEquatable<Umbraco.Compose.Integrations.UmbracoCms.DataSource.UmbracoComposeContentPickerDataSourcePaging>
+    {
+        public UmbracoComposeContentPickerDataSourcePaging(string? After, int Take) { }
+        public string? After { get; init; }
+        public int Take { get; init; }
+    }
+    [Microsoft.AspNetCore.Authorization.Authorize(Policy="BackOfficeAccess")]
+    [Microsoft.AspNetCore.Authorization.Authorize(Policy="SectionAccessContent")]
+    [Microsoft.AspNetCore.Mvc.ApiExplorerSettings(GroupName="Umbraco.Compose")]
+    [Umbraco.Cms.Api.Common.Attributes.MapToApi("umbraco-compose-cms-data-source-api")]
+    [Umbraco.Cms.Api.Management.Routing.VersionedApiBackOfficeRoute("compose/data-source")]
+    public sealed class UmbracoComposeDataSourceController : Umbraco.Cms.Api.Management.Controllers.ManagementApiControllerBase
+    {
+        public UmbracoComposeDataSourceController(Umbraco.Cms.Core.Services.IDataTypeService dataTypeService, Umbraco.Compose.Integrations.UmbracoCms.DataSource.IGraphQlContentQueryService graphQlContentQueryService, Microsoft.Extensions.Logging.ILogger<Umbraco.Compose.Integrations.UmbracoCms.DataSource.UmbracoComposeDataSourceController> logger) { }
+        [Microsoft.AspNetCore.Mvc.HttpGet]
+        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> GetContentItemsAsync([Microsoft.AspNetCore.Mvc.FromQuery] string dataTypeId, [Microsoft.AspNetCore.Mvc.FromQuery] int take = 50, [Microsoft.AspNetCore.Mvc.FromQuery] string? afterCursor = null, [Microsoft.AspNetCore.Mvc.FromQuery] string? searchTerm = null) { }
+        [Microsoft.AspNetCore.Mvc.HttpGet("contentItems")]
+        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> GetContentItemsByIdAsync([Microsoft.AspNetCore.Mvc.FromQuery] string dataTypeId, [Microsoft.AspNetCore.Mvc.FromQuery] string[] keys) { }
+    }
+}

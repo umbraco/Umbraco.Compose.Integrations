@@ -12,15 +12,24 @@
   <Folder Name="/UmbracoCms.Core/src/">
     <Project Path="UmbracoCms.Core/src/Umbraco.Compose.Integrations.UmbracoCms.Core.csproj" />
   </Folder>
-  
+  <Folder Name="/UmbracoCms.DataSource/test/">
+    <Project Path="UmbracoCms.DataSource/test/Umbraco.Compose.Integrations.UmbracoCms.DataSource.Tests.Unit.csproj" />
+  </Folder>
+
   <Folder Name="/UmbracoCms.Ingestion/" />
   <Folder Name="/UmbracoCms.Ingestion/src/">
     <Project Path="UmbracoCms.Ingestion/src/Umbraco.Compose.Integrations.UmbracoCms.Ingestion.csproj" />
+  </Folder>
+  <Folder Name="/UmbracoCms.Core/test/">
+    <Project Path="UmbracoCms.Core/test/Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.csproj" />
   </Folder>
 
   <Folder Name="/UmbracoCms.DataSource/" />
   <Folder Name="/UmbracoCms.DataSource/src/">
     <Project Path="UmbracoCms.DataSource/src/Umbraco.Compose.Integrations.UmbracoCms.DataSource.csproj" />
+  </Folder>
+  <Folder Name="/UmbracoCms.Ingestion/test/">
+    <Project Path="UmbracoCms.Ingestion/test/Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Tests.Unit.csproj" />
   </Folder>
 
   <Folder Name="/UmbracoCms.TypeSchemaManagement/" />
@@ -28,6 +37,9 @@
     <Project Path="UmbracoCms.TypeSchemaManagement/src/Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.csproj" />
   </Folder>
   <Folder Name="/UmbracoCms.TypeSchemaManagement/test/">
-    <Project Path="UmbracoCms.TypeSchemaManagement/test/Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Tests.csproj" />
+    <Project Path="UmbracoCms.TypeSchemaManagement/test/Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Tests.Unit.csproj" />
+  </Folder>
+  <Folder Name="/UmbracoCms/test/">
+    <Project Path="UmbracoCms/test/Umbraco.Compose.Integrations.UmbracoCms.Tests.Unit.csproj" />
   </Folder>
 </Solution>

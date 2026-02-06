@@ -23,6 +23,7 @@ obj/
 *.suo
 *.user
 
+*.received.*
 
 logs
 *.log

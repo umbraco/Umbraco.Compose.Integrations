@@ -1,0 +1,10 @@
+﻿[assembly: System.Reflection.AssemblyMetadata("RepositoryUrl", "https://github.com/umbraco/Umbraco.Compose.Integrations")]
+[assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v10.0", FrameworkDisplayName=".NET 10.0")]
+namespace Umbraco.Compose.Integrations.UmbracoCms
+{
+    public sealed class UmbracoComposeComposer : Umbraco.Cms.Core.Composing.IComposer, Umbraco.Cms.Core.Composing.IDiscoverable
+    {
+        public UmbracoComposeComposer() { }
+        public void Compose(Umbraco.Cms.Core.DependencyInjection.IUmbracoBuilder builder) { }
+    }
+}
