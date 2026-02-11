@@ -5,7 +5,7 @@
     <Description>Provides Umbraco Compose Type Schema integration for Umbraco CMS.</Description>
   </PropertyGroup>
 
-  <ItemGroup>
+<ItemGroup>
     <InternalsVisibleTo Include="Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Tests"/>
   </ItemGroup>
 

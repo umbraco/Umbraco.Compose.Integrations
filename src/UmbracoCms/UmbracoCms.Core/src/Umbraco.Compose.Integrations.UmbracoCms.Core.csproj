@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
+<ItemGroup>
     <PackageReference Include="OpenIddict.Client.SystemNetHttp" />
     <PackageReference Include="Umbraco.Cms.Core" />
   </ItemGroup>

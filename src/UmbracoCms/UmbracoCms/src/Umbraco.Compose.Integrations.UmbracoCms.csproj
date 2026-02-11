@@ -5,7 +5,7 @@
     <Description>Provides all Umbraco Compose integrations for Umbraco CMS.</Description>
   </PropertyGroup>
 
-  <ItemGroup>
+<ItemGroup>
     <ProjectReference Include="..\..\UmbracoCms.Ingestion\src\Umbraco.Compose.Integrations.UmbracoCms.Ingestion.csproj" />
     <ProjectReference Include="..\..\UmbracoCms.TypeSchemaManagement\src\Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.csproj" />
     <ProjectReference Include="..\..\UmbracoCms.DataSource\src\Umbraco.Compose.Integrations.UmbracoCms.DataSource.csproj" />

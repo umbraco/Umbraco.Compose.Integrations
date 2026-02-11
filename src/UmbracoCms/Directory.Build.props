@@ -36,4 +36,8 @@
       </_ProjectReferencesWithVersions>
     </ItemGroup>
   </Target>
+
+  <ItemGroup>
+    <None Include="..\version.json" Link="version.json" Condition="Exists('..\version.json')" />
+  </ItemGroup>
 </Project>

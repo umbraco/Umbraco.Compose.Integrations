@@ -7,7 +7,7 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
-  <PropertyGroup>
+<PropertyGroup>
     <StaticWebAssetBasePath>App_Plugins/UmbracoComposeIntegrationsCmsDataSource</StaticWebAssetBasePath>
   </PropertyGroup>
 
