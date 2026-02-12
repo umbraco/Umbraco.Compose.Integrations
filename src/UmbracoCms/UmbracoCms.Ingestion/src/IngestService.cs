@@ -1,24 +1,51 @@
 using System.Threading.Channels;
+using Umbraco.Compose.Integrations.UmbracoCms.QueuePersistence.Persistence;
+using Umbraco.Compose.Integrations.UmbracoCms.QueuePersistence.Persistence.Repositories;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 
 internal sealed class IngestService : IIngestService
 {
     private readonly ChannelWriter<IngestQueueItem> _writer;
+    private readonly IContentQueueRepository _queueRepository;
 
-    public IngestService(Channel<IngestQueueItem> channel)
+    public IngestService(
+        Channel<IngestQueueItem> channel,
+        IContentQueueRepository queueRepository)
     {
         ArgumentNullException.ThrowIfNull(channel);
+        ArgumentNullException.ThrowIfNull(queueRepository);
+        _queueRepository = queueRepository;
 
         _writer = channel.Writer;
     }
 
-    public ValueTask EnqueueAsync(IngestQueueItem item, CancellationToken cancellationToken = default)
+    public async ValueTask EnqueueAsync(IngestQueueItem item, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        // TODO: this should also be persisted in the database along with the concrete type
-        return _writer.WriteAsync(item, cancellationToken);
+        if (item is ContentIngestQueueItem contentIngestQueueItem)
+        {
+            var dto = new ContentQueueDto
+            {
+                Id = contentIngestQueueItem.Id,
+                CreatedAt = contentIngestQueueItem.CreatedAt,
+            };
+
+            List<ContentQueuePayloadDto> payloads = contentIngestQueueItem.Entities.Select(payload => new ContentQueuePayloadDto
+            {
+                Id = Guid.CreateVersion7(),
+                QueueItemId = contentIngestQueueItem.Id,
+                ContentId = payload.Id,
+                TreeChangeTypes = payload.ChangeTypes,
+                AffectedCultures = string.Join(",", payload.AffectedCultures),
+            }).ToList();
+
+            await _queueRepository.InsertWithPayloadsAsync(dto, payloads, cancellationToken).ConfigureAwait(false);
+        }
+
+        await _writer.WriteAsync(item, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     public async ValueTask EnqueueAsync(IEnumerable<IngestQueueItem> items, CancellationToken cancellationToken = default)
@@ -27,7 +54,7 @@ internal sealed class IngestService : IIngestService
 
         foreach (IngestQueueItem item in items)
         {
-            await _writer.WriteAsync(item, cancellationToken).ConfigureAwait(false);
+            await EnqueueAsync(item, cancellationToken).ConfigureAwait(false);
         }
     }
 }

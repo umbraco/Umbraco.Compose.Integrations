@@ -5,11 +5,14 @@ using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Compose.Integrations.UmbracoCms.Core;
+using Umbraco.Compose.Integrations.UmbracoCms.QueuePersistence.Persistence;
+using Umbraco.Compose.Integrations.UmbracoCms.QueuePersistence.Persistence.Repositories;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
-internal class ContentTypeNotificationHandler(
+internal sealed class ContentTypeNotificationHandler(
     ChannelWriter<SchemaQueueItem> writer,
+    ISchemaQueueRepository queueRepository,
     ILogger<ContentTypeNotificationHandler> logger,
     IOptions<UmbracoComposeOptions> options)
     : INotificationAsyncHandler<ContentTypeSavedNotification>
@@ -24,7 +27,15 @@ internal class ContentTypeNotificationHandler(
 
         foreach (IContentType contentType in notification.SavedEntities)
         {
-            await writer.WriteAsync(new SchemaQueueItem(contentType.Alias), cancellationToken).ConfigureAwait(false);
+            var dto = new SchemaQueueDto
+            {
+                Id = Guid.CreateVersion7(),
+                CreatedAt = DateTime.UtcNow,
+                ContentTypeAlias = contentType.Alias,
+            };
+
+            await queueRepository.InsertAsync(dto, cancellationToken).ConfigureAwait(false);
+            await writer.WriteAsync(new SchemaQueueItem(dto.Id, contentType.Alias), cancellationToken).ConfigureAwait(false);
         }
     }
 }

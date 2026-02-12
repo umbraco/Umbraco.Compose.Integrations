@@ -43,6 +43,8 @@ public static partial class UmbracoBuilderExtensions
 
             builder.Services.AddHostedService<IngestBackgroundService>();
 
+            builder.AddComponent<QueueDrainComponent>();
+
             builder
                 .AddNotificationAsyncHandler<
                     PublishedContentCacheRefresherNotification, PublishedContentCacheRefresherNotificationHandler>();

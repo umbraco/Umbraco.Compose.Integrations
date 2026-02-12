@@ -209,7 +209,7 @@ dotnet_diagnostic.rcs1255.severity = warning
 dotnet_diagnostic.rcs1260.severity = warning
 
 # Use 'var' or explicit type
-dotnet_diagnostic.rcs1264.severity = warning
+dotnet_diagnostic.rcs1264.severity = disabled
 
 # Use pattern matching
 dotnet_diagnostic.rcs9001.severity = warning

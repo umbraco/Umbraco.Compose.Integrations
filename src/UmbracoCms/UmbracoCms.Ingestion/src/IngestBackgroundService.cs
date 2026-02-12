@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Umbraco.Compose.Integrations.UmbracoCms.QueuePersistence.Persistence;
+using Umbraco.Compose.Integrations.UmbracoCms.QueuePersistence.Persistence.Repositories;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 
@@ -46,6 +48,17 @@ internal sealed class IngestBackgroundService : BackgroundService
         {
             IngestQueueItem queueItem = await _channel.Reader.ReadAsync(stoppingToken).ConfigureAwait(false);
 
+            await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
+            IContentQueueRepository queueRepository = scope.ServiceProvider.GetRequiredService<IContentQueueRepository>();
+            try
+            {
+                await queueRepository.DeleteByQueueItemIdAsync(queueItem.Id, stoppingToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Failed to delete queue item {QueueItemId} from database", queueItem.Id);
+            }
+
             // TODO: the background worker should find a processor for the payloadType and call the ProcessAsync method
             // which returns one or more entries that should be ingested
             // when done the db entry should be deleted (or marked as complete)
@@ -56,7 +69,6 @@ internal sealed class IngestBackgroundService : BackgroundService
                 continue;
             }
 
-            await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
             UmbracoContentIngestItemQueueProcessor processor = scope.ServiceProvider
                 .GetRequiredService<UmbracoContentIngestItemQueueProcessor>();
 

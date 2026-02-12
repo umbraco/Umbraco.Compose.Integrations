@@ -13,6 +13,7 @@ public sealed class UmbracoComposeComposer : IComposer
     {
         builder
             .AddUmbracoComposeAuthentication()
+            .AddUmbracoComposeQueuePersistence()
             .AddUmbracoComposeIngestion()
             .AddUmbracoComposeDataSource()
             .AddUmbracoComposeTypeSchemaManagement();

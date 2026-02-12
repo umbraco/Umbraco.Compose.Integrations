@@ -15,6 +15,7 @@
     <PackageVersion Include="Umbraco.Cms.Api.Management" Version="[17.1.0, 18.0.0)" />
     <PackageVersion Include="Umbraco.Cms.Api.Delivery" Version="[17.1.0, 18.0.0)" />
     <PackageVersion Include="Umbraco.Cms.Core" Version="[17.1.0, 18.0.0)" />
+    <PackageVersion Include="Umbraco.Cms.Infrastructure" Version="[17.1.0, 18.0.0)" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="PublicApiGenerator" Version="11.5.4" />
     <PackageVersion Include="Verify.XunitV3" Version="31.11.0" />

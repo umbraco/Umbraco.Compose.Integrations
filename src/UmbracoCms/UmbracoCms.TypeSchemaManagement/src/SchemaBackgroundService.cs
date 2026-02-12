@@ -3,6 +3,8 @@ using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Umbraco.Compose.Integrations.UmbracoCms.QueuePersistence.Persistence;
+using Umbraco.Compose.Integrations.UmbracoCms.QueuePersistence.Persistence.Repositories;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
@@ -21,6 +23,11 @@ internal sealed class SchemaBackgroundService(
             try
             {
                 await using AsyncServiceScope scope = serviceProvider.CreateAsyncScope();
+
+                ISchemaQueueRepository queueRepository = scope.ServiceProvider
+                    .GetRequiredService<ISchemaQueueRepository>();
+                await queueRepository.DeleteByIdAsync(queueItem.Id, stoppingToken)
+                    .ConfigureAwait(false);
 
                 JsonSchemaExporterService schemaExporter = scope.ServiceProvider.GetRequiredService<JsonSchemaExporterService>();
                 ManagementApiService apiService = scope.ServiceProvider.GetRequiredService<ManagementApiService>();
