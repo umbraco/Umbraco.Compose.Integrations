@@ -20,24 +20,53 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="wwwroot\**">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    
-    <!-- Remove from Content to prevent Razor SDK from copying, then add as None for Solution visibility -->
-    <Content Remove="umbraco-compose-integrations-cms-data-source\**" />
-    <None Include="umbraco-compose-integrations-cms-data-source\**" />
+    <Content Remove="wwwroot\**" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <ClientAssetsDirectory>umbraco-compose-integrations-cms-data-source</ClientAssetsDirectory>
+    <ClientAssetsRestoreCommand>npm ci</ClientAssetsRestoreCommand>
+    <ClientAssetsBuildCommand>npm run build:$(Configuration)</ClientAssetsBuildCommand>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ClientAssetInputs Include="$(ClientAssetsDirectory)\**" Exclude="$(ClientAssetsDirectory)\node_modules\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="$(ClientAssetsDirectory)\**" Pack="false" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\UmbracoCms.Core\src\Umbraco.Compose.Integrations.UmbracoCms.Core.csproj" />
   </ItemGroup>
 
-  <Target Name="NpmInstall" BeforeTargets="NpmBuild" Condition="'$(Configuration)' == 'Release'">
-    <Exec Command="npm ci" WorkingDirectory="umbraco-compose-integrations-cms-data-source" />
+  <Target Name="NpmInstall"
+    Inputs="$(ClientAssetsDirectory)\package.json;$(ClientAssetsDirectory)\package-lock.json"
+    Outputs="$(ClientAssetsDirectory)\node_modules\.package-lock.json">
+    <Message Importance="high" Text="Running npm install..." />
+    <Exec Command="$(ClientAssetsRestoreCommand)" WorkingDirectory="$(ClientAssetsDirectory)" />
   </Target>
 
-  <Target Name="NpmBuild" BeforeTargets="BeforeBuild" Condition="'$(Configuration)' == 'Release'">
-    <Exec Command="npm run build" WorkingDirectory="umbraco-compose-integrations-cms-data-source" />
+  <Target Name="NpmRunBuild"
+    DependsOnTargets="NpmInstall"
+    BeforeTargets="AssignTargetPaths"
+    Inputs="@(ClientAssetInputs)"
+    Outputs="$(IntermediateOutputPath)npmbuild.complete.txt">
+
+    <Exec Command="$(ClientAssetsBuildCommand)"
+          WorkingDirectory="$(ClientAssetsDirectory)"
+          EnvironmentVariables="BUILD_OUT_DIR=$(MSBuildProjectDirectory)\$(IntermediateOutputPath)npm" />
+
+    <ItemGroup>
+      <_NpmOutput Include="$(IntermediateOutputPath)npm\**" />
+      <Content Include="@(_NpmOutput)" Link="wwwroot\%(_NpmOutput.RecursiveDir)%(_NpmOutput.FileName)%(_NpmOutput.Extension)" />
+      <FileWrites Include="@(_NpmOutput)" />
+      <FileWrites Include="$(IntermediateOutputPath)npmbuild.complete.txt" />
+    </ItemGroup>
+
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)npmbuild.complete.txt"
+      Lines="@(_NpmOutput)" />
   </Target>
 </Project>

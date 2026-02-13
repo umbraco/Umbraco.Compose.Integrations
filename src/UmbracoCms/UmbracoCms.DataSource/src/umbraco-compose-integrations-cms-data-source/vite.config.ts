@@ -7,7 +7,7 @@ export default defineConfig({
             formats: ["es"],
             fileName: 'umbraco-compose-integrations-cms-data-source'
         },
-        outDir: "../wwwroot",
+        outDir: process.env.BUILD_OUT_DIR || "../wwwroot",
         emptyOutDir: true,
         sourcemap: true,
         rollupOptions: {
