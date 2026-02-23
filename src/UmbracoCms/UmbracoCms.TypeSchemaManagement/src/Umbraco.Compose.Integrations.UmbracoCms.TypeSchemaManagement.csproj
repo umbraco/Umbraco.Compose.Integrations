@@ -6,16 +6,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Tests.Unit"/>
+    <InternalsVisibleTo Include="Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Tests.Unit" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="NJsonSchema"/>
-    <PackageReference Include="Umbraco.Cms.Api.Delivery"/>
+    <PackageReference Include="Umbraco.Cms.Api.Delivery" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\UmbracoCms.Core\src\Umbraco.Compose.Integrations.UmbracoCms.Core.csproj"/>
+    <ProjectReference Include="..\..\UmbracoCms.Core\src\Umbraco.Compose.Integrations.UmbracoCms.Core.csproj" />
   </ItemGroup>
 
 </Project>

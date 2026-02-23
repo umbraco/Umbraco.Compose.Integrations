@@ -11,7 +11,7 @@ internal sealed class UmbracoComposeSwaggerGenOptions : IConfigureOptions<Swagge
     {
         options.SwaggerDoc(
             Constants.DataSourceApiName,
-            new OpenApiInfo { Title = Constants.DataSourceApiTitle, Version = Constants.Version_1, }
+            new OpenApiInfo { Title = Constants.DataSourceApiTitle, Version = Constants.Version_1 }
         );
 
         options.OperationFilter<UmbracoComposeOperationSecurityFilter>();

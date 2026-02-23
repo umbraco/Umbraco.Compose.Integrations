@@ -8,7 +8,7 @@ internal sealed class AuthenticationHttpMessageHandler(OpenIddictClientService c
     {
         OpenIddictClientModels.ClientCredentialsAuthenticationResult response = await client.AuthenticateWithClientCredentialsAsync(new()
         {
-            CancellationToken = cancellationToken,
+            CancellationToken = cancellationToken
         })
             .ConfigureAwait(false);
 

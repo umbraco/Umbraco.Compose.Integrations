@@ -1,0 +1,31 @@
+﻿{
+  title: ClassWithCollections,
+  type: object,
+  required: [
+    Tags,
+    Metadata,
+    Names
+  ],
+  properties: {
+    Tags: {
+      type: array,
+      items: {
+        type: string
+      }
+    },
+    Metadata: {
+      type: object,
+      additionalProperties: {
+        type: integer,
+        format: int32
+      }
+    },
+    Names: {
+      type: array,
+      items: {
+        type: string
+      }
+    }
+  },
+  csharpType: Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.Json.JsonSchemaGeneratorTests+ClassWithCollections
+}

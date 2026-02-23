@@ -1,5 +1,5 @@
-using System.Text.Json;
 using System.Text.Json.Serialization;
+using Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
@@ -8,5 +8,5 @@ internal record TypeSchemaDto(
     string TypeSchemaAlias,
     [property: JsonPropertyName("description")]
     string? Description,
-    [property: JsonPropertyName("schema")] JsonElement Schema
+    [property: JsonPropertyName("schema")] JsonSchema Schema
 );

@@ -13,12 +13,24 @@ namespace Umbraco.Cms.Core.DependencyInjection;
 /// </summary>
 public static class UmbracoBuilderExtensions
 {
+    /// <summary>
+    /// Adds all required services for the Umbraco Compose Data Source.
+    /// </summary>
+    /// <returns>The Umbraco builder with data source services added.</returns>
+    /// <remarks>
+    /// This requires a call to <see cref="Extensions.AddUmbracoComposeAuthentication"/> in order to configure
+    /// the <see cref="UmbracoComposeOptions"/> required to authorize requests to the Compose API.
+    /// </remarks>
     extension(IUmbracoBuilder builder)
     {
         /// <summary>
-        /// Adds all required sservices for the Umbraco Compose Data Source.
+        /// Adds all required services for the Umbraco Compose Data Source.
         /// </summary>
-        /// <returns>This requires a call to AddUmbracoComposeAuthentication() in order to configure the <see cref="UmbracoComposeOptions"/> required to authorizate</returns>
+        /// <returns>The Umbraco builder with data source services added.</returns>
+        /// <remarks>
+        /// This requires a call to <see cref="Extensions.AddUmbracoComposeAuthentication"/> in order to configure
+        /// the <see cref="UmbracoComposeOptions"/> required to authorize requests to the Compose API.
+        /// </remarks>
         public IUmbracoBuilder AddUmbracoComposeDataSource()
         {
             ArgumentNullException.ThrowIfNull(builder);

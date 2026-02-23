@@ -1,0 +1,16 @@
+﻿{
+  type: array,
+  maxItems: 3,
+  minItems: 3,
+  prefixItems: [
+    {
+      type: string
+    },
+    {
+      type: integer
+    },
+    {
+      type: boolean
+    }
+  ]
+}

@@ -21,7 +21,7 @@ internal sealed class PublishedContentNotificationHandler(DistributedCache distr
     public void Handle(ContentPublishedNotification notification)
     {
         // we sometimes get unpublished entities here... filter those out, we don't need them
-        IContent[] publishedEntities = [.. notification.PublishedEntities.Where(entity => entity.Published),];
+        IContent[] publishedEntities = [.. notification.PublishedEntities.Where(entity => entity.Published)];
         if (publishedEntities.Length == 0)
         {
             return;
@@ -46,13 +46,13 @@ internal sealed class PublishedContentNotificationHandler(DistributedCache distr
                     ?? [];
                 bool wasUnpublished = entity.WasPropertyDirty(nameof(IContent.Published));
 
-                string[] affectedCultures = [.. publishedCultures.Union(unpublishedCultures).Distinct(),];
+                string[] affectedCultures = [.. publishedCultures.Union(unpublishedCultures).Distinct()];
                 return new PublishedContentCacheRefresher.JsonPayload(
                     entity.Key,
                     wasUnpublished || affectedCultures.Length > 0 ? TreeChangeTypes.RefreshBranch : TreeChangeTypes.RefreshNode,
                     affectedCultures);
             })
-            .WhereNotNull(),];
+            .WhereNotNull()];
 
         _distributedCache.RefreshByPayload(PublishedContentCacheRefresher.UniqueId, payloads);
     }
@@ -63,7 +63,7 @@ internal sealed class PublishedContentNotificationHandler(DistributedCache distr
         // delete entry for all cultures, if doctype varies by culture, or null if it doesn't.
         PublishedContentCacheRefresher.JsonPayload[] payloads = [.. notification
             .UnpublishedEntities
-            .Select(static entity => new PublishedContentCacheRefresher.JsonPayload(entity.Key, TreeChangeTypes.Remove, [])),];
+            .Select(static entity => new PublishedContentCacheRefresher.JsonPayload(entity.Key, TreeChangeTypes.Remove, []))];
 
         _distributedCache.RefreshByPayload(PublishedContentCacheRefresher.UniqueId, payloads);
     }
@@ -82,7 +82,7 @@ internal sealed class PublishedContentNotificationHandler(DistributedCache distr
     {
         IContent[] topmostEntities = FindTopmostEntities(moveEventInfo.Select(i => i.Entity));
         PublishedContentCacheRefresher.JsonPayload[] payloads = [.. topmostEntities.Select(
-            entity => new PublishedContentCacheRefresher.JsonPayload(entity.Key, changeType, [])),];
+            entity => new PublishedContentCacheRefresher.JsonPayload(entity.Key, changeType, []))];
 
         _distributedCache.RefreshByPayload(PublishedContentCacheRefresher.UniqueId, payloads);
     }

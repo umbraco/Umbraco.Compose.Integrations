@@ -1,0 +1,21 @@
+﻿{
+  discriminator: {
+    propertyName: type,
+    mapping: {
+      special: #/$defs/SpecialType,
+      regular: #/$defs/RegularType
+    }
+  },
+  type: object,
+  required: [
+    type
+  ],
+  properties: {
+    type: {
+      enum: [
+        special,
+        regular
+      ]
+    }
+  }
+}

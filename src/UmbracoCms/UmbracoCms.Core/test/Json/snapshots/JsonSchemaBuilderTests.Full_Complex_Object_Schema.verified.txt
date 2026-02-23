@@ -1,0 +1,61 @@
+﻿{
+  $defs: {
+    PriceRange: {
+      type: object,
+      properties: {
+        min: {
+          type: number
+        },
+        max: {
+          type: number
+        }
+      }
+    }
+  },
+  description: A product in the catalog,
+  title: Product,
+  type: object,
+  maxProperties: 10,
+  minProperties: 2,
+  required: [
+    id,
+    name,
+    price
+  ],
+  properties: {
+    id: {
+      type: string,
+      minLength: 1
+    },
+    name: {
+      type: string,
+      maxLength: 200,
+      minLength: 1
+    },
+    description: {
+      type: string
+    },
+    price: {
+      type: number,
+      multipleOf: 0.01,
+      minimum: 0
+    },
+    inStock: {
+      type: boolean
+    },
+    tags: {
+      type: array,
+      minItems: 0,
+      uniqueItems: true,
+      items: {
+        type: string
+      }
+    },
+    metadata: {
+      additionalProperties: {
+        type: object
+      }
+    }
+  },
+  x-internal: false
+}

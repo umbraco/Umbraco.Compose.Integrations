@@ -1,8 +1,11 @@
+using System.Text.Json;
 using System.Threading.Channels;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Compose.Integrations.UmbracoCms.Core;
+using Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
 namespace Umbraco.Cms.Core.DependencyInjection;
@@ -12,22 +15,38 @@ namespace Umbraco.Cms.Core.DependencyInjection;
 /// </summary>
 public static class UmbracoBuilderExtensions
 {
+    /// <summary>
+    /// Extension methods for adding Umbraco Compose Schema Management services to the Umbraco builder.
+    /// </summary>
     extension(IUmbracoBuilder builder)
     {
         /// <summary>
         /// Adds the Umbraco Compose schema management services.
         /// </summary>
+        /// <returns>The Umbraco builder with schema management services added.</returns>
         public IUmbracoBuilder AddUmbracoComposeTypeSchemaManagement()
         {
             ArgumentNullException.ThrowIfNull(builder);
 
-            _ = builder.Services.AddSingleton(Channel.CreateUnbounded<SchemaQueueItem>());
-            _ = builder.Services.AddSingleton(static sp => sp.GetRequiredService<Channel<SchemaQueueItem>>().Writer);
+            builder.Services.AddSingleton(Channel.CreateUnbounded<SchemaQueueItem>());
+            builder.Services.AddSingleton(static sp => sp.GetRequiredService<Channel<SchemaQueueItem>>().Writer);
 
-            _ = builder.Services.AddScoped<IContentTypeSchemaService, ContentTypeSchemaService>();
-            _ = builder.Services.AddScoped<JsonSchemaExporterService>();
+            builder.Services.AddScoped<IContentTypeSchemaService, ContentTypeSchemaService>();
+            builder.Services.AddScoped<JsonSchemaExporterService>();
 
-            _ = builder.Services.AddHttpClient<ManagementApiService>()
+            builder.Services.AddOptions<JsonOptions>(nameof(SchemaBackgroundService))
+                .Configure(o =>
+                    o.SerializerOptions.TypeInfoResolver = TypeSchemaJsonSerializerContext.Default
+                );
+
+            builder.Services.AddOptions<JsonSchemaGeneratorOptions>(nameof(JsonSchemaExporterService))
+                .Configure(o =>
+                {
+                    o.ReferenceMode = ReferenceMode.External;
+                    o.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                });
+
+            builder.Services.AddHttpClient<SchemaBackgroundService>()
                 .ConfigureHttpClient(static (services, client) =>
                 {
                     IOptions<UmbracoComposeOptions> options =
@@ -35,13 +54,16 @@ public static class UmbracoBuilderExtensions
                     client.BaseAddress = options.Value.GetManagementUrl();
                 })
                 .AddUmbracoComposeAuthenticationMessageHandler()
-                .SetProductInformation(typeof(SchemaBackgroundService).Assembly);
+                .SetProductInformation(typeof(SchemaBackgroundService).Assembly)
+                .AddStandardResilienceHandler();
 
-            _ = builder.Services.AddHostedService<SchemaBackgroundService>();
+            builder.Services.AddHostedService<SchemaBackgroundService>();
 
-            _ = builder
+            builder
                 .AddNotificationAsyncHandler<
-                    ContentTypeSavedNotification, ContentTypeNotificationHandler>();
+                    ContentTypeSavedNotification, ContentTypeNotificationHandler>()
+                .AddNotificationAsyncHandler<
+                    DataTypeSavedNotification, ContentTypeNotificationHandler>();
 
             return builder;
         }

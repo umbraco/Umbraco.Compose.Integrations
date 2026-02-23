@@ -1,0 +1,41 @@
+﻿{
+  title: ComplexType,
+  type: object,
+  required: [
+    Id,
+    Name,
+    Tags,
+    Metadata,
+    CreatedAt,
+    IsActive
+  ],
+  properties: {
+    Id: {
+      type: string,
+      format: uuid
+    },
+    Name: {
+      type: string
+    },
+    Tags: {
+      type: array,
+      items: {
+        type: string
+      }
+    },
+    Metadata: {
+      type: object,
+      additionalProperties: {
+        type: object
+      }
+    },
+    CreatedAt: {
+      type: string,
+      format: date-time
+    },
+    IsActive: {
+      type: boolean
+    }
+  },
+  csharpType: Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.Json.JsonSchemaGeneratorTests+ComplexType
+}

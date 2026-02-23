@@ -1,0 +1,18 @@
+﻿{
+  title: ClassWithGuid,
+  type: object,
+  required: [
+    Id
+  ],
+  properties: {
+    Id: {
+      type: string,
+      format: uuid
+    },
+    ParentId: {
+      type: string,
+      format: uuid
+    }
+  },
+  csharpType: Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.Json.JsonSchemaGeneratorTests+ClassWithGuid
+}

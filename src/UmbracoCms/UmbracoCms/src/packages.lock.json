@@ -142,8 +142,8 @@
       },
       "Humanizer.Core": {
         "type": "Transitive",
-        "resolved": "2.14.1",
-        "contentHash": "lQKvtaTDOXnoVJ20ibTuSIOf2i0uO0MPbDhd1jm238I+U/2ZnRENj0cktKZhtchBMtCUSRQ5v4xBCUbKNmyVMw=="
+        "resolved": "3.0.1",
+        "contentHash": "scB3+KcxNmEjZK5V8rKCW2gIiL8m8KH91w14FuuExyhi9xTyAJ+jr+DDxGdy12mHmioe2uvjxTfMgM7WmSUFlw=="
       },
       "J2N": {
         "type": "Transitive",
@@ -152,8 +152,8 @@
       },
       "Json.More.Net": {
         "type": "Transitive",
-        "resolved": "2.1.0",
-        "contentHash": "qtwsyAsL55y2vB2/sK4Pjg3ZyVzD5KKSpV3lOAMHlnjFfsjQ/86eHJfQT9aV1YysVXzF4+xyHOZbh7Iu3YQ7Lg=="
+        "resolved": "2.2.0",
+        "contentHash": "fiyEZJNgiCzDa7/N9bZ+CnM5qnawyJ54+CkHNZ2svwxWBWNNFzydJ7RlroqMdOjokGBiLcKIxdajNvOklzlYqQ=="
       },
       "JsonPatch.Net": {
         "type": "Transitive",
@@ -165,11 +165,19 @@
       },
       "JsonPointer.Net": {
         "type": "Transitive",
-        "resolved": "5.2.0",
-        "contentHash": "qe1F7Tr/p4mgwLPU9P60MbYkp+xnL2uCPnWXGgzfR/AZCunAZIC0RZ32dLGJJEhSuLEfm0YF/1R3u5C7mEVq+w==",
+        "resolved": "6.0.0",
+        "contentHash": "OOObaRq33mNkoMFM1JfdW3nD6U6xF0MHHxPFAxSpKHNNTK6Zbt8U9grquJ+m2onZ1M7cruho0fWzHjhpjEXjog==",
         "dependencies": {
-          "Humanizer.Core": "2.14.1",
-          "Json.More.Net": "2.1.0"
+          "Humanizer.Core": "3.0.1",
+          "Json.More.Net": "2.2.0"
+        }
+      },
+      "JsonSchema.Net": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "YQQo7/ozc7kbmTaCE4p1127z3LyHuWLGfXk/7sTqNVVpUawEIop9mtlyMKSOPZshM777oTjaTHc1f1/S/Gxnjw==",
+        "dependencies": {
+          "JsonPointer.Net": "6.0.0"
         }
       },
       "K4os.Compression.LZ4": {
@@ -812,11 +820,6 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "2.0.0"
         }
       },
-      "Namotion.Reflection": {
-        "type": "Transitive",
-        "resolved": "3.4.3",
-        "contentHash": "KLk2gLR9f8scM82EiL+p9TONXXPy9+IAZVMzJOA/Wsa7soZD7UJGG6j0fq0D9ZoVnBRRnSeEC7kShhRo3Olgaw=="
-      },
       "NCrontab": {
         "type": "Transitive",
         "resolved": "3.4.0",
@@ -834,11 +837,6 @@
         "type": "Transitive",
         "resolved": "13.0.3",
         "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
-      },
-      "NJsonSchema.Annotations": {
-        "type": "Transitive",
-        "resolved": "11.5.2",
-        "contentHash": "OfYQgNzJZb1r/gR5vza0DbBLxnmcITDhA5CXFuX1qxuP3rRdQMjbIz5VyDVHCU1QxyrfAymzajbh7iszEvyFGQ=="
       },
       "NPoco": {
         "type": "Transitive",
@@ -1362,9 +1360,19 @@
       "umbraco.compose.integrations.umbracocms.typeschemamanagement": {
         "type": "Project",
         "dependencies": {
-          "NJsonSchema": "[11.5.2, )",
+          "JsonSchema.Net.Generation": "[6.0.0, )",
           "Umbraco.Cms.Api.Delivery": "[17.1.0, 18.0.0)",
           "Umbraco.Compose.Integrations.UmbracoCms.Core": "[1.0.0, )"
+        }
+      },
+      "JsonSchema.Net.Generation": {
+        "type": "CentralTransitive",
+        "requested": "[6.0.0, )",
+        "resolved": "6.0.0",
+        "contentHash": "n9vI/jqJbxqXyO5D/brSCn/qNfYKHxw4t6uEjU12Qhqlc6yzeRhb/UuPUIKN4cP0dIL/WKDTkMK9RUJaRusAAA==",
+        "dependencies": {
+          "Humanizer.Core": "3.0.1",
+          "JsonSchema.Net": "8.0.0"
         }
       },
       "Microsoft.Extensions.Http": {
@@ -1379,17 +1387,6 @@
           "Microsoft.Extensions.Logging": "10.0.1",
           "Microsoft.Extensions.Logging.Abstractions": "10.0.1",
           "Microsoft.Extensions.Options": "10.0.1"
-        }
-      },
-      "NJsonSchema": {
-        "type": "CentralTransitive",
-        "requested": "[11.5.2, )",
-        "resolved": "11.5.2",
-        "contentHash": "CAmnt4tnylb82Ro6f2EFIGz8rmThuCsITECUNqGhVEQ5VvxV+XwsTPz6LF58MbvUEV1jVcH+uxxljgM/etgK7A==",
-        "dependencies": {
-          "NJsonSchema.Annotations": "11.5.2",
-          "Namotion.Reflection": "3.4.3",
-          "Newtonsoft.Json": "13.0.3"
         }
       },
       "OpenIddict.Client.SystemNetHttp": {

@@ -1,0 +1,25 @@
+﻿{
+  description: A user entity,
+  title: User,
+  type: object,
+  required: [
+    id,
+    name
+  ],
+  properties: {
+    id: {
+      type: integer,
+      minimum: 1
+    },
+    name: {
+      type: string,
+      maxLength: 100,
+      minLength: 1
+    },
+    email: {
+      type: string,
+      format: email
+    }
+  },
+  additionalProperties: {}
+}

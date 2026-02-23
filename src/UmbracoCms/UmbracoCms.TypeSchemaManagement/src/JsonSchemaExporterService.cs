@@ -1,117 +1,156 @@
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using NJsonSchema;
-using NJsonSchema.Generation;
-using Umbraco.Cms.Api.Common.OpenApi;
-using Umbraco.Cms.Core;
-using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.DeliveryApi;
+using Umbraco.Cms.Core.Models.PublishedContent;
+using Umbraco.Cms.Core.PublishedCache;
+using Umbraco.Cms.Core.Services;
+using Umbraco.Compose.Integrations.UmbracoCms.Core;
+using Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
-internal class JsonSchemaExporterService(
-    IContentTypeSchemaService contentTypeSchemaService,
-    ISchemaIdSelector schemaIdSelector,
-    IOptionsMonitor<JsonOptions> options)
+internal class JsonSchemaExporterService
 {
 #pragma warning disable S1075 // refactor you code to not use hardcoded absolute paths or URIs.
     private const string ComposeSchemaUrl = "https://umbracocompose.com/v1/schema";
     private const string ComposeNodeUrl = "https://umbracocompose.com/v1/node";
 #pragma warning restore S1075 // refactor you code to not use hardcoded absolute paths or URIs.
 
-    private readonly JsonSerializerOptions _jsonSerializerOptions =
-        options.Get(Constants.JsonOptionsNames.DeliveryApi).JsonSerializerOptions;
+    private readonly JsonSchemaGenerator _jsonSchemaGenerator;
+    private readonly IContentTypeService _contentTypeService;
+    private readonly IPublishedContentTypeCache _publishedContentTypeCache;
+    private readonly ITypeNameGenerator _typeNameGenerator;
+    private readonly PropertySchemaResolverCollection _propertySchemaResolvers;
 
-    public JsonElement? GenerateSchema(string contentTypeAlias)
+    public JsonSchemaExporterService(
+        IContentTypeService contentTypeService,
+        IPublishedContentTypeCache publishedContentTypeCache,
+        ITypeNameGenerator typeNameGenerator,
+        PropertySchemaResolverCollection propertySchemaResolvers,
+        IOptionsSnapshot<JsonSchemaGeneratorOptions> jsonSchemaGeneratorOptions)
     {
-        ContentTypeSchemaInfo? contentTypeInfo = contentTypeSchemaService.GetDocumentTypeByAlias(contentTypeAlias);
-        if (contentTypeInfo is null)
-        {
-            return null;
-        }
+        _contentTypeService = contentTypeService;
+        _publishedContentTypeCache = publishedContentTypeCache;
+        _typeNameGenerator = typeNameGenerator;
+        _propertySchemaResolvers = propertySchemaResolvers;
 
-        SystemTextJsonSchemaGeneratorSettings settings = new()
-        {
-            SerializerOptions = _jsonSerializerOptions,
-            SchemaNameGenerator = new ComposeSchemaNameGenerator(schemaIdSelector),
-            SchemaProcessors =
-            {
-                new ComposeSchemaProcessor(contentTypeInfo, schemaIdSelector, _jsonSerializerOptions, ComposeNodeUrl),
-            },
-        };
-
-        bool isElement = contentTypeInfo.IsElement;
-        Type baseType = isElement ? typeof(IApiElement) : typeof(IApiContent);
-        JsonSchema schema = JsonSchema.FromType(baseType, settings);
-
-        return PostProcessSchema(schema, isElement);
+        _jsonSchemaGenerator = new(jsonSchemaGeneratorOptions.Get(nameof(JsonSchemaExporterService)));
     }
 
-    private static JsonElement PostProcessSchema(JsonSchema schema, bool isElement)
+    public IReadOnlyDictionary<string, JsonSchema> GenerateSchemas(string contentTypeAlias)
     {
-        JsonObject root = JsonNode.Parse(schema.ToJson())!.AsObject();
+        Dictionary<string, JsonSchema> schemas = [];
 
-        root.Remove("title");
+        GenerateSchemaInternal(schemas, contentTypeAlias);
 
-        if (root["definitions"] is JsonObject definitions)
-        {
-            definitions.Remove("IApiElementModel");
-
-            if (definitions.Count == 0)
-            {
-                root.Remove("definitions");
-            }
-        }
-
-        ReplaceElementModelRefs(root);
-
-        root["$schema"] = ComposeSchemaUrl;
-
-        JsonArray allOf =
-        [
-            new JsonObject { ["$ref"] = nameof(IApiElement), },
-        ];
-
-        if (!isElement)
-        {
-            allOf.Add(new JsonObject { ["$ref"] = ComposeNodeUrl, });
-            allOf.Add(new JsonObject { ["$ref"] = nameof(IApiContent), });
-        }
-
-        root["allOf"] = allOf;
-
-        return JsonDocument.Parse(root.ToJsonString()).RootElement;
+        return schemas;
     }
 
-    private static void ReplaceElementModelRefs(JsonNode? node)
+    private void GenerateSchemaInternal(Dictionary<string, JsonSchema> schemas, string contentTypeAlias)
     {
-        if (node is JsonObject obj)
+        if (schemas.ContainsKey(contentTypeAlias))
         {
-            if (obj.TryGetPropertyValue("$ref", out JsonNode? refValue) &&
-                refValue?.GetValue<string>() == "#/definitions/IApiElementModel")
+            return;
+        }
+
+        IPublishedContentType contentType = _publishedContentTypeCache.Get(PublishedItemType.Content, contentTypeAlias);
+
+        JsonSchemaBuilder builder = JsonSchemaBuilder
+            .Create()
+            .Schema(ComposeSchemaUrl)
+            .Type(JsonValueType.Object)
+            .Title(contentType.Alias);
+
+        schemas.Add(contentTypeAlias, builder.Build());
+
+        if (_contentTypeService.GetComposedOf(contentType.Id).Any())
+        {
+            builder.CustomKeyword("x-abstract", true);
+        }
+        else if (contentType.ItemType is PublishedItemType.Content or PublishedItemType.Media or PublishedItemType.Element)
+        {
+            if (contentType.ItemType is PublishedItemType.Content or PublishedItemType.Media)
             {
-                obj["$ref"] = "IApiElementModel";
+                builder.AllOf(x => x.Ref(ComposeNodeUrl));
             }
 
-            foreach (JsonNode? child in obj.Select(kvp => kvp.Value))
+            (string? typeName, _) = contentType.ItemType switch
             {
-                ReplaceElementModelRefs(child);
+                PublishedItemType.Element => GenerateTypes<IApiElement>(schemas),
+                PublishedItemType.Content => GenerateTypes<IApiContent>(schemas),
+                PublishedItemType.Media => GenerateTypes<IApiMedia>(schemas),
+                PublishedItemType.Member => (null, null),
+                PublishedItemType.Unknown => (null, null),
+                _ => (null, null)
+            };
+
+            if (typeName is not null)
+            {
+                builder.AllOf(x => x.Ref(typeName));
+            }
+
+            foreach (string composition in contentType.CompositionAliases)
+            {
+                builder.AllOf(x => x.Ref(composition));
+
+                GenerateSchemaInternal(schemas, composition);
             }
         }
-        else if (node is JsonArray arr)
-        {
-            foreach (JsonNode? item in arr)
+
+        builder.Property(
+            "properties",
+            builder =>
             {
-                ReplaceElementModelRefs(item);
-            }
-        }
+                foreach (PublishedPropertyType propertyType in contentType.PropertyTypes.Cast<PublishedPropertyType>())
+                {
+                    string? typeName = null;
+                    JsonSchema? schema;
+                    if (_propertySchemaResolvers.FirstOrDefault(x => x.CanHandle(propertyType)) is { } handler)
+                    {
+                        schema = handler.Process(propertyType, _jsonSchemaGenerator);
+                    }
+                    else
+                    {
+                        (typeName, schema) = GenerateTypes(schemas, propertyType.DeliveryApiModelClrType);
+                    }
+
+                    if (schema is not null)
+                    {
+                        if (schema.Type is JsonValueType.Array && typeName is not null)
+                        {
+                            builder.Property(propertyType.Alias, builder => builder.Ref(typeName));
+                        }
+                        else
+                        {
+                            builder.Property(propertyType.Alias, schema);
+                        }
+                    }
+                    else
+                    {
+                        builder.Property(propertyType.Alias, _jsonSchemaGenerator.Generate(propertyType.DeliveryApiModelClrType));
+                    }
+                }
+
+                return builder;
+            });
     }
 
-    private sealed class ComposeSchemaNameGenerator(ISchemaIdSelector schemaIdSelector) : ISchemaNameGenerator
+    private (string TypeName, JsonSchema? RootSchema) GenerateTypes<T>(Dictionary<string, JsonSchema> schemas) =>
+        GenerateTypes(schemas, typeof(T));
+
+    private (string TypeName, JsonSchema? RootSchema) GenerateTypes(Dictionary<string, JsonSchema> schemas, Type type)
     {
-        public string Generate(Type type) =>
-            schemaIdSelector.SchemaId(type);
+        string typeName = _typeNameGenerator.GenerateName(type);
+
+        if (!schemas.ContainsKey(typeName))
+        {
+            foreach ((string? name, JsonSchema? schema) in _jsonSchemaGenerator.GenerateAll(type, ComposeSchemaUrl))
+            {
+                schemas.TryAdd(name, schema);
+            }
+        }
+
+        schemas.TryGetValue(typeName, out JsonSchema? rootSchema);
+
+        return (typeName, rootSchema);
     }
 }

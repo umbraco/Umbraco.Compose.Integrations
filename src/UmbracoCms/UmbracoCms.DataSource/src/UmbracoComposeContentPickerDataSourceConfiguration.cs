@@ -90,7 +90,7 @@ public sealed record UmbracoComposeContentPickerDataSourceConfiguration
             }
         }
 
-        return [.. fields,];
+        return [.. fields];
     }
 
     private static class ConfigurationKeys

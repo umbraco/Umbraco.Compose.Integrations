@@ -1,0 +1,10 @@
+﻿{
+  title: Item List,
+  type: array,
+  maxItems: 100,
+  minItems: 1,
+  uniqueItems: true,
+  items: {
+    type: string
+  }
+}

@@ -38,20 +38,20 @@ internal sealed class UmbracoContentIngestItemQueueProcessor(
         {
             _logger.LogDebug("Processing entry {Entity}", entity);
 
-            if (entity is { ChangeTypes: TreeChangeTypes.Remove, })
+            if (entity is { ChangeTypes: TreeChangeTypes.Remove })
             {
-                if (entity.AffectedCultures is { Count: > 0, })
+                if (entity.AffectedCultures is { Count: > 0 })
                 {
                     foreach (string culture in entity.AffectedCultures)
                     {
-                        yield return new DeleteEntry { Id = entity.Id.ToString(), Variant = culture, };
+                        yield return new DeleteEntry { Id = entity.Id.ToString(), Variant = culture };
                     }
                 }
                 else
                 {
                     // hmm... we somehow need to delete all items with the specified id both for all cultures, and invariant
                     // maybe JsonPath stuff wil help us
-                    yield return new DeleteEntry { Id = entity.Id.ToString(), };
+                    yield return new DeleteEntry { Id = entity.Id.ToString() };
                 }
                 continue;
             }
@@ -65,11 +65,11 @@ internal sealed class UmbracoContentIngestItemQueueProcessor(
                 continue;
             }
 
-            if (entity is { ChangeTypes: TreeChangeTypes.RefreshNode or TreeChangeTypes.RefreshBranch, })
+            if (entity is { ChangeTypes: TreeChangeTypes.RefreshNode or TreeChangeTypes.RefreshBranch })
             {
                 if (content.ContentType.VariesByCulture())
                 {
-                    foreach (string culture in entity.AffectedCultures is { Count: > 0, }
+                    foreach (string culture in entity.AffectedCultures is { Count: > 0 }
                         ? entity.AffectedCultures
                         : content.Cultures.Select(static x => x.Value.Culture))
                     {
@@ -123,7 +123,7 @@ internal sealed class UmbracoContentIngestItemQueueProcessor(
         }
         Guid[] ancestors =
             [.. content.Ancestors<IPublishedContent>(_navigationQueryService, _publishedStatusFilteringService)
-                .Select(static x => x.Key),];
+                .Select(static x => x.Key)];
 
         yield return new()
         {
@@ -134,7 +134,7 @@ internal sealed class UmbracoContentIngestItemQueueProcessor(
                 ancestors),
             Id = content.Key.ToString(),
             Type = content.ContentType.Alias,
-            Variant = string.IsNullOrEmpty(culture) ? null : culture,
+            Variant = string.IsNullOrEmpty(culture) ? null : culture
         };
 
         if (!includeChildren)

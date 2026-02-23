@@ -12,7 +12,7 @@ internal sealed class IngestBackgroundService : BackgroundService
 {
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
     private readonly Channel<IngestQueueItem> _channel;

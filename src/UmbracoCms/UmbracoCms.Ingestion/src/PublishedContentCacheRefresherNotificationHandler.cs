@@ -31,7 +31,7 @@ internal sealed class PublishedContentCacheRefresherNotificationHandler(
             return;
         }
 
-        if (serverRoleAccessor is not { CurrentServerRole: ServerRole.SchedulingPublisher or ServerRole.Single, })
+        if (serverRoleAccessor is not { CurrentServerRole: ServerRole.SchedulingPublisher or ServerRole.Single })
         {
             logger.LogDebug(
                 "Skipping ingestion - Current server role is '{ServerRole}', expected 'SchedulingPublisher' or 'Single'.",
@@ -49,7 +49,7 @@ internal sealed class PublishedContentCacheRefresherNotificationHandler(
         }
 
         List<ContentChangePayload> entities =
-            [.. payload.Select(x => new ContentChangePayload(x.ContentKey, x.ChangeTypes, x.AffectedCultures)),];
+            [.. payload.Select(x => new ContentChangePayload(x.ContentKey, x.ChangeTypes, x.AffectedCultures))];
 
         await ExecuteDeferredAsync(() => ingestService.EnqueueAsync(new ContentIngestQueueItem(entities), cancellationToken))
             .ConfigureAwait(false);

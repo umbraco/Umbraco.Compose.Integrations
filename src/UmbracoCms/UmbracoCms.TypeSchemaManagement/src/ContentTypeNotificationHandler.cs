@@ -4,15 +4,18 @@ using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
+using Umbraco.Cms.Core.Services;
 using Umbraco.Compose.Integrations.UmbracoCms.Core;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
 internal class ContentTypeNotificationHandler(
     ChannelWriter<SchemaQueueItem> writer,
+    IDataTypeService dataTypeService,
     ILogger<ContentTypeNotificationHandler> logger,
-    IOptions<UmbracoComposeOptions> options)
-    : INotificationAsyncHandler<ContentTypeSavedNotification>
+    IOptions<UmbracoComposeOptions> options) :
+        INotificationAsyncHandler<ContentTypeSavedNotification>,
+        INotificationAsyncHandler<DataTypeSavedNotification>
 {
     public async Task HandleAsync(ContentTypeSavedNotification notification, CancellationToken cancellationToken)
     {
@@ -25,6 +28,19 @@ internal class ContentTypeNotificationHandler(
         foreach (IContentType contentType in notification.SavedEntities)
         {
             await writer.WriteAsync(new SchemaQueueItem(contentType.Alias), cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    public async Task HandleAsync(DataTypeSavedNotification notification, CancellationToken cancellationToken)
+    {
+        foreach (IDataType entity in notification.SavedEntities)
+        {
+            PagedModel<RelationItemModel> relations = await dataTypeService.GetPagedRelationsAsync(entity.Key, 0, 1000)
+                .ConfigureAwait(false);
+            foreach (string contentTypeAlias in relations.Items.Select(x => x.ContentTypeAlias).OfType<string>())
+            {
+                await writer.WriteAsync(new SchemaQueueItem(contentTypeAlias), cancellationToken).ConfigureAwait(false);
+            }
         }
     }
 }

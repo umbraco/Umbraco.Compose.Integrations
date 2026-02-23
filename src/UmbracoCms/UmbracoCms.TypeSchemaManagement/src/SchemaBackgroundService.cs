@@ -1,14 +1,20 @@
-using System.Text.Json;
+using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Channels;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
 internal sealed class SchemaBackgroundService(
     Channel<SchemaQueueItem> channel,
+    IHttpClientFactory httpClientFactory,
     IServiceProvider serviceProvider,
+    IOptionsFactory<JsonOptions> jsonOptionsFactory,
     ILogger<SchemaBackgroundService> logger)
     : BackgroundService
 {
@@ -23,42 +29,35 @@ internal sealed class SchemaBackgroundService(
                 await using AsyncServiceScope scope = serviceProvider.CreateAsyncScope();
 
                 JsonSchemaExporterService schemaExporter = scope.ServiceProvider.GetRequiredService<JsonSchemaExporterService>();
-                ManagementApiService apiService = scope.ServiceProvider.GetRequiredService<ManagementApiService>();
+                IReadOnlyDictionary<string, JsonSchema> schemas = schemaExporter.GenerateSchemas(queueItem.ContentTypeAlias);
+                JsonOptions jsonOptions = jsonOptionsFactory.Create(nameof(SchemaBackgroundService));
 
-                JsonElement? jsonSchema = schemaExporter.GenerateSchema(queueItem.ContentTypeAlias);
-                if (jsonSchema is null)
-                {
-                    continue;
-                }
+                HttpClient client = httpClientFactory.CreateClient(nameof(SchemaBackgroundService));
 
-                TypeSchemaDto? existing = await apiService.GetTypeSchemaAsync(queueItem.ContentTypeAlias, stoppingToken)
+                HttpResponseMessage response = await client.PutAsJsonAsync(
+                    "type-schemas",
+                    schemas.Select(x => new TypeSchemaDto(x.Key, null, x.Value)).ToList(),
+                    jsonOptions.SerializerOptions,
+                    stoppingToken)
                     .ConfigureAwait(false);
 
-                if (existing is null)
+                if (response.IsSuccessStatusCode)
                 {
-                    CreateTypeSchemaRequest request = new(
-                        queueItem.ContentTypeAlias,
-                        $"Created by Umbraco CMS: {queueItem.ContentTypeAlias}",
-                        jsonSchema.Value);
-
-                    _ = await apiService.CreateTypeSchemaAsync(request, stoppingToken).ConfigureAwait(false);
-
-                    logger.LogInformation("Created type schema '{Alias}' in Umbraco Compose", queueItem.ContentTypeAlias);
+                    logger.LogDebug("Upserted type schema '{Alias}'", queueItem.ContentTypeAlias);
                 }
                 else
                 {
-                    _ = await apiService.UpdateTypeSchemaSchemaAsync(
+                    string responseContent = await response.Content.ReadAsStringAsync(stoppingToken).ConfigureAwait(false);
+                    logger.LogError(
+                        "Failed to create or update type schema '{Alias}'. Status Code: {StatusCode}, Response: {ResponseBody}",
                         queueItem.ContentTypeAlias,
-                        jsonSchema.Value,
-                        stoppingToken)
-                        .ConfigureAwait(false);
-
-                    logger.LogInformation("Updated type schema '{Alias}' in Umbraco Compose", queueItem.ContentTypeAlias);
+                        response.StatusCode,
+                        responseContent);
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to create or update type schema '{Alias}' in Umbraco Compose", queueItem.ContentTypeAlias);
+                logger.LogError(ex, "Failed to create or update type schema '{Alias}'", queueItem.ContentTypeAlias);
             }
         }
     }
