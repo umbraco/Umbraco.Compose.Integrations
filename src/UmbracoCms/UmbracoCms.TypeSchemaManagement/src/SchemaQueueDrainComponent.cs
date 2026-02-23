@@ -48,5 +48,6 @@ internal sealed class SchemaQueueDrainComponent(
         logger.LogInformation("Finished draining persisted schema queue items");
     }
 
-    public Task TerminateAsync(bool isRestarting, CancellationToken cancellationToken) => Task.CompletedTask;
+    public Task TerminateAsync(bool isRestarting, CancellationToken cancellationToken) =>
+        Task.CompletedTask;
 }

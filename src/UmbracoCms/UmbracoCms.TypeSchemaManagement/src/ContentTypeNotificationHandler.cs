@@ -24,6 +24,7 @@ internal sealed class ContentTypeNotificationHandler(
             return;
         }
 
+
         foreach (IContentType contentType in notification.SavedEntities)
         {
             var dto = new SchemaQueueDto
