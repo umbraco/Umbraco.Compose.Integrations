@@ -3,8 +3,8 @@ using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.Services;
-using Umbraco.Compose.Integrations.UmbracoCms.QueuePersistence.Persistence;
-using Umbraco.Compose.Integrations.UmbracoCms.QueuePersistence.Persistence.Repositories;
+using Umbraco.Cms.Core.Sync;
+using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Persistence;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
@@ -12,6 +12,7 @@ internal sealed class SchemaQueueDrainComponent(
     ISchemaQueueRepository queueRepository,
     Channel<SchemaQueueItem> channel,
     IRuntimeState runtimeState,
+    IServerRoleAccessor serverRoleAccessor,
     ILogger<SchemaQueueDrainComponent> logger) : IAsyncComponent
 {
     public async Task InitializeAsync(bool isRestarting, CancellationToken cancellationToken)
@@ -21,8 +22,13 @@ internal sealed class SchemaQueueDrainComponent(
             return;
         }
 
+        if (serverRoleAccessor is { CurrentServerRole: ServerRole.Subscriber or ServerRole.SchedulingPublisher })
+        {
+            return;
+        }
+
         IReadOnlyList<SchemaQueueDto> queueItems = await queueRepository
-            .GetAllAsync<SchemaQueueDto>(cancellationToken)
+            .GetAllAsync(cancellationToken)
             .ConfigureAwait(false);
 
         if (queueItems.Count is 0)
@@ -37,8 +43,6 @@ internal sealed class SchemaQueueDrainComponent(
             await channel.Writer
                 .WriteAsync(new SchemaQueueItem(dto.Id, dto.ContentTypeAlias), cancellationToken)
                 .ConfigureAwait(false);
-
-            await queueRepository.DeleteAsync(dto, cancellationToken).ConfigureAwait(false);
         }
 
         logger.LogInformation("Finished draining persisted schema queue items");

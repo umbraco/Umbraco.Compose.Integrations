@@ -1,11 +1,11 @@
 using NPoco;
 
-namespace Umbraco.Compose.Integrations.UmbracoCms.QueuePersistence.Persistence;
+namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Persistence;
 
 /// <summary>Database DTO for a type schema queue item.</summary>
 [TableName("umbracoComposeSchemaQueue")]
 [PrimaryKey("id", AutoIncrement = false)]
-public sealed class SchemaQueueDto : IHaveCreatedAt
+public sealed class SchemaQueueDto
 {
     /// <summary>Gets or sets the unique identifier.</summary>
     [Column("id")]

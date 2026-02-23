@@ -5,8 +5,7 @@ using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Compose.Integrations.UmbracoCms.Core;
-using Umbraco.Compose.Integrations.UmbracoCms.QueuePersistence.Persistence;
-using Umbraco.Compose.Integrations.UmbracoCms.QueuePersistence.Persistence.Repositories;
+using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Persistence;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 

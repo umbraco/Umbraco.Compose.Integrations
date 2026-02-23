@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\UmbracoCms.Core\src\Umbraco.Compose.Integrations.UmbracoCms.Core.csproj"/>
-    <ProjectReference Include="..\..\UmbracoCms.QueuePersistence\src\Umbraco.Compose.Integrations.UmbracoCms.QueuePersistence.csproj" />
   </ItemGroup>
 
 </Project>

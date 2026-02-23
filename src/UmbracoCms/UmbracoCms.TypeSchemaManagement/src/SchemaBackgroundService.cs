@@ -3,8 +3,7 @@ using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Umbraco.Compose.Integrations.UmbracoCms.QueuePersistence.Persistence;
-using Umbraco.Compose.Integrations.UmbracoCms.QueuePersistence.Persistence.Repositories;
+using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Persistence;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
@@ -20,15 +19,13 @@ internal sealed class SchemaBackgroundService(
         {
             SchemaQueueItem queueItem = await channel.Reader.ReadAsync(stoppingToken).ConfigureAwait(false);
 
+            await using AsyncServiceScope scope = serviceProvider.CreateAsyncScope();
+
+            ISchemaQueueRepository queueRepository = scope.ServiceProvider
+                .GetRequiredService<ISchemaQueueRepository>();
+
             try
             {
-                await using AsyncServiceScope scope = serviceProvider.CreateAsyncScope();
-
-                ISchemaQueueRepository queueRepository = scope.ServiceProvider
-                    .GetRequiredService<ISchemaQueueRepository>();
-                await queueRepository.DeleteByIdAsync(queueItem.Id, stoppingToken)
-                    .ConfigureAwait(false);
-
                 JsonSchemaExporterService schemaExporter = scope.ServiceProvider.GetRequiredService<JsonSchemaExporterService>();
                 ManagementApiService apiService = scope.ServiceProvider.GetRequiredService<ManagementApiService>();
 
@@ -66,6 +63,18 @@ internal sealed class SchemaBackgroundService(
             catch (Exception ex)
             {
                 logger.LogError(ex, "Failed to create or update type schema '{Alias}' in Umbraco Compose", queueItem.ContentTypeAlias);
+            }
+            finally
+            {
+                try
+                {
+                    await queueRepository.DeleteByIdAsync(queueItem.Id, stoppingToken)
+                        .ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Failed to delete schema queue item {QueueItemId} from database", queueItem.Id);
+                }
             }
         }
     }

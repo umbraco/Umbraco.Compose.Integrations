@@ -1,17 +1,22 @@
+using System.Text.Json;
 using System.Threading.Channels;
-using Umbraco.Compose.Integrations.UmbracoCms.QueuePersistence.Persistence;
-using Umbraco.Compose.Integrations.UmbracoCms.QueuePersistence.Persistence.Repositories;
+using Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Persistence;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 
 internal sealed class IngestService : IIngestService
 {
+    private static readonly JsonSerializerOptions s_jsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    };
+
     private readonly ChannelWriter<IngestQueueItem> _writer;
-    private readonly IContentQueueRepository _queueRepository;
+    private readonly IIngestQueueRepository _queueRepository;
 
     public IngestService(
         Channel<IngestQueueItem> channel,
-        IContentQueueRepository queueRepository)
+        IIngestQueueRepository queueRepository)
     {
         ArgumentNullException.ThrowIfNull(channel);
         ArgumentNullException.ThrowIfNull(queueRepository);
@@ -24,25 +29,15 @@ internal sealed class IngestService : IIngestService
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        if (item is ContentIngestQueueItem contentIngestQueueItem)
+        IngestQueueDto dto = new()
         {
-            var dto = new ContentQueueDto
-            {
-                Id = contentIngestQueueItem.Id,
-                CreatedAt = contentIngestQueueItem.CreatedAt,
-            };
+            Id = item.Id,
+            CreatedAt = item.CreatedAt,
+            ItemType = $"{item.GetType().FullName}, {item.GetType().Assembly.GetName().Name}",
+            Payload = JsonSerializer.Serialize(item, item.GetType(), s_jsonOptions),
+        };
 
-            List<ContentQueuePayloadDto> payloads = contentIngestQueueItem.Entities.Select(payload => new ContentQueuePayloadDto
-            {
-                Id = Guid.CreateVersion7(),
-                QueueItemId = contentIngestQueueItem.Id,
-                ContentId = payload.Id,
-                TreeChangeTypes = payload.ChangeTypes,
-                AffectedCultures = string.Join(",", payload.AffectedCultures),
-            }).ToList();
-
-            await _queueRepository.InsertWithPayloadsAsync(dto, payloads, cancellationToken).ConfigureAwait(false);
-        }
+        await _queueRepository.InsertAsync(dto, cancellationToken).ConfigureAwait(false);
 
         await _writer.WriteAsync(item, cancellationToken)
             .ConfigureAwait(false);
