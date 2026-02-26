@@ -7,7 +7,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Migrations;
 /// Creates the ingest queue persistence database table and index.
 /// </summary>
 /// <param name="context">The migration context.</param>
-public sealed class AddIngestQueueTableMigration(IMigrationContext context) : AsyncMigrationBase(context)
+internal sealed class AddIngestQueueTableMigration(IMigrationContext context) : AsyncMigrationBase(context)
 {
     /// <inheritdoc />
     protected override Task MigrateAsync()

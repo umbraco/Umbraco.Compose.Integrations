@@ -1,4 +1,5 @@
 ﻿[assembly: System.Reflection.AssemblyMetadata("RepositoryUrl", "https://github.com/umbraco/Umbraco.Compose.Integrations")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Tests.Unit")]
 [assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v10.0", FrameworkDisplayName=".NET 10.0")]
 namespace Umbraco.Cms.Core.DependencyInjection
 {
@@ -57,8 +58,8 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion
     public abstract class IngestQueueItem : System.IEquatable<Umbraco.Compose.Integrations.UmbracoCms.Ingestion.IngestQueueItem>
     {
         protected IngestQueueItem() { }
-        public System.DateTime CreatedAt { get; }
-        public System.Guid Id { get; }
+        public System.DateTime CreatedAt { get; init; }
+        public System.Guid Id { get; init; }
     }
     public sealed class UmbracoComposeIngestionOptions
     {
@@ -77,5 +78,13 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion
         public override string Action { get; }
         public required T Data { get; set; }
         public required string Type { get; set; }
+    }
+}
+namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Migrations
+{
+    public sealed class IngestQueueMigrationPlan : Umbraco.Cms.Core.Packaging.PackageMigrationPlan
+    {
+        public IngestQueueMigrationPlan() { }
+        protected override void DefinePlan() { }
     }
 }

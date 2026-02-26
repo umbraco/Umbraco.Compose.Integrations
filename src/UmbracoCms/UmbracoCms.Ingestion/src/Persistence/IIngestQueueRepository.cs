@@ -3,7 +3,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Persistence;
 /// <summary>
 /// Repository for ingest queue persistence.
 /// </summary>
-public interface IIngestQueueRepository
+internal interface IIngestQueueRepository
 {
     /// <summary>Inserts a single queue item.</summary>
     /// <param name="dto">The queue item to insert.</param>

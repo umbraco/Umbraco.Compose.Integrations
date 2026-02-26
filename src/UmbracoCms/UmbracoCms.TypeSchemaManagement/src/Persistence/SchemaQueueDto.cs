@@ -5,7 +5,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Persisten
 /// <summary>Database DTO for a type schema queue item.</summary>
 [TableName("umbracoComposeSchemaQueue")]
 [PrimaryKey("id", AutoIncrement = false)]
-public sealed class SchemaQueueDto
+internal sealed class SchemaQueueDto
 {
     /// <summary>Gets or sets the unique identifier.</summary>
     [Column("id")]
@@ -16,5 +16,6 @@ public sealed class SchemaQueueDto
     public DateTime CreatedAt { get; set; }
 
     /// <summary>Gets or sets the content type alias this schema change applies to.</summary>
-    [Column("contentTypeAlias")] public string ContentTypeAlias { get; set; } = default!;
+    [Column("contentTypeAlias")]
+    public string ContentTypeAlias { get; set; } = default!;
 }

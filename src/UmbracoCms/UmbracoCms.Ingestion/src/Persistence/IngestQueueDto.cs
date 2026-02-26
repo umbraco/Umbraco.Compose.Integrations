@@ -6,7 +6,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Persistence;
 /// <summary>Database DTO for a generic ingest queue item with JSON payload.</summary>
 [TableName("umbracoComposeIngestQueue")]
 [PrimaryKey("id", AutoIncrement = false)]
-public sealed class IngestQueueDto
+internal sealed class IngestQueueDto
 {
     /// <summary>Gets or sets the unique identifier.</summary>
     [Column("id")]

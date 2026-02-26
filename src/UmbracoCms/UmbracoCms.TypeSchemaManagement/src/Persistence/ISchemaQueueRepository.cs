@@ -3,7 +3,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Persisten
 /// <summary>
 /// Repository for type schema queue persistence.
 /// </summary>
-public interface ISchemaQueueRepository
+internal interface ISchemaQueueRepository
 {
     /// <summary>Inserts a single queue item.</summary>
     /// <typeparam name="T">The DTO type.</typeparam>

@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Compose.Integrations.UmbracoCms.Core;
 using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
-using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Migrations;
 using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Persistence;
 
 namespace Umbraco.Cms.Core.DependencyInjection;
@@ -24,7 +23,6 @@ public static class UmbracoBuilderExtensions
             ArgumentNullException.ThrowIfNull(builder);
 
             _ = builder.Services.AddSingleton<ISchemaQueueRepository, SchemaQueueRepository>();
-            builder.AddComponent<SchemaQueueMigrationComponent>();
 
             _ = builder.Services.AddSingleton(Channel.CreateUnbounded<SchemaQueueItem>());
             _ = builder.Services.AddSingleton(static sp => sp.GetRequiredService<Channel<SchemaQueueItem>>().Writer);

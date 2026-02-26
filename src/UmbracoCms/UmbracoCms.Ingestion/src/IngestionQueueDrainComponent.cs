@@ -28,8 +28,11 @@ internal sealed class IngestionQueueDrainComponent(
             return;
         }
 
-        if (serverRoleAccessor is { CurrentServerRole: ServerRole.Subscriber or ServerRole.SchedulingPublisher })
+        if (serverRoleAccessor is not { CurrentServerRole: ServerRole.SchedulingPublisher or ServerRole.Single })
         {
+            logger.LogDebug(
+                "Skipping queue drain - Current server role is '{ServerRole}', expected 'SchedulingPublisher' or 'Single'.",
+                serverRoleAccessor.CurrentServerRole);
             return;
         }
 

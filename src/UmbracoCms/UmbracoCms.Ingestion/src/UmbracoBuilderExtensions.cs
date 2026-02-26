@@ -4,7 +4,6 @@ using Microsoft.Extensions.Options;
 using Umbraco.Compose.Integrations.UmbracoCms.Core;
 using Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 using Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Cache.Content;
-using Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Migrations;
 using Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Persistence;
 
 namespace Umbraco.Cms.Core.DependencyInjection;
@@ -31,7 +30,6 @@ public static partial class UmbracoBuilderExtensions
                 .AddComposeCustomCacheRefresherNotificationHandlers();
 
             builder.Services.AddSingleton<IIngestQueueRepository, IngestQueueRepository>();
-            builder.AddComponent<IngestQueueMigrationComponent>();
 
             builder.Services.AddSingleton(static _ => Channel.CreateUnbounded<IngestQueueItem>());
             builder.Services.AddSingleton<IIngestService, IngestService>()
