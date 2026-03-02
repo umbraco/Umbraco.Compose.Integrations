@@ -13,9 +13,9 @@ namespace Umbraco.Cms.Core.DependencyInjection
 }
 namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Migrations
 {
-    public sealed class SchemaQueueMigrationPlan : Umbraco.Cms.Core.Packaging.PackageMigrationPlan
+    public sealed class TypeSchemaMigrationPlan : Umbraco.Cms.Core.Packaging.PackageMigrationPlan
     {
-        public SchemaQueueMigrationPlan() { }
+        public TypeSchemaMigrationPlan() { }
         protected override void DefinePlan() { }
     }
 }

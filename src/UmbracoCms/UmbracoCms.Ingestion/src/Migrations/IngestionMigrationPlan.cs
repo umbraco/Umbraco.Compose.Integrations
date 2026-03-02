@@ -3,13 +3,13 @@ using Umbraco.Cms.Core.Packaging;
 namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Migrations;
 
 /// <summary>
-/// Package migration plan for ingest queue persistence.
+/// Package migration plan for the Ingestion package.
 /// </summary>
-public sealed class IngestQueueMigrationPlan : PackageMigrationPlan
+public sealed class IngestionMigrationPlan : PackageMigrationPlan
 {
     /// <inheritdoc />
-    public IngestQueueMigrationPlan()
-        : base("UmbracoComposeIngestQueuePersistence") { }
+    public IngestionMigrationPlan()
+        : base("Umbraco Compose Ingestion") { }
 
     /// <inheritdoc />
     protected override void DefinePlan()

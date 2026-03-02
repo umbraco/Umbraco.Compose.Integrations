@@ -82,9 +82,9 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion
 }
 namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Migrations
 {
-    public sealed class IngestQueueMigrationPlan : Umbraco.Cms.Core.Packaging.PackageMigrationPlan
+    public sealed class IngestionMigrationPlan : Umbraco.Cms.Core.Packaging.PackageMigrationPlan
     {
-        public IngestQueueMigrationPlan() { }
+        public IngestionMigrationPlan() { }
         protected override void DefinePlan() { }
     }
 }

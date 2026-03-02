@@ -3,13 +3,13 @@ using Umbraco.Cms.Core.Packaging;
 namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Migrations;
 
 /// <summary>
-/// Package migration plan for schema queue persistence.
+/// Package migration plan for the TypeSchemaManagement package.
 /// </summary>
-public sealed class SchemaQueueMigrationPlan : PackageMigrationPlan
+public sealed class TypeSchemaMigrationPlan : PackageMigrationPlan
 {
     /// <inheritdoc />
-    public SchemaQueueMigrationPlan()
-        : base("UmbracoComposeSchemaQueuePersistence") { }
+    public TypeSchemaMigrationPlan()
+        : base("Umbraco Compose TypeSchema") { }
 
     /// <inheritdoc />
     protected override void DefinePlan()
