@@ -67,26 +67,42 @@ internal sealed class UmbracoContentIngestItemQueueProcessor(
 
             if (entity is { ChangeTypes: TreeChangeTypes.RefreshNode or TreeChangeTypes.RefreshBranch, })
             {
-                foreach (string culture in entity.AffectedCultures is { Count: > 0, }
-                    ? entity.AffectedCultures
-                    : content.Cultures.Select(static x => x.Value.Culture))
+                if (content.ContentType.VariesByCulture())
                 {
-                    if (!content.IsPublished(culture))
+                    foreach (string culture in entity.AffectedCultures is { Count: > 0, }
+                        ? entity.AffectedCultures
+                        : content.Cultures.Select(static x => x.Value.Culture))
                     {
-                        _logger.LogWarning("Got unpublished content from cache");
-                        continue;
-                    }
+                        if (!content.IsPublished(culture))
+                        {
+                            _logger.LogWarning("Got unpublished content from cache");
+                            continue;
+                        }
 
-                    _variationContextAccessor.VariationContext = new(culture);
-                    _umbracoContextAccessor.Set(context.UmbracoContext);
+                        _variationContextAccessor.VariationContext = new(culture);
+                        _umbracoContextAccessor.Set(context.UmbracoContext);
 
-                    foreach (UpsertContentEntry processedItem in ProcessItem(
-                        content,
-                        culture,
-                        entity.ChangeTypes is TreeChangeTypes.RefreshBranch))
-                    {
-                        yield return processedItem;
+                        foreach (UpsertContentEntry processedItem in ProcessItem(
+                            content,
+                            culture,
+                            entity.ChangeTypes is TreeChangeTypes.RefreshBranch))
+                        {
+                            yield return processedItem;
+                        }
                     }
+                }
+                else
+                {
+                        _variationContextAccessor.VariationContext = new(string.Empty);
+                        _umbracoContextAccessor.Set(context.UmbracoContext);
+
+                        foreach (UpsertContentEntry processedItem in ProcessItem(
+                            content,
+                            string.Empty,
+                            entity.ChangeTypes is TreeChangeTypes.RefreshBranch))
+                        {
+                            yield return processedItem;
+                        }
                 }
             }
         }
