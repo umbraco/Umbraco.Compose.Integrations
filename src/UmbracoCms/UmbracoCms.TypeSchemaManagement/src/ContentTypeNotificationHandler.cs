@@ -26,7 +26,7 @@ internal sealed class ContentTypeNotificationHandler(
 
         foreach (IContentType contentType in notification.SavedEntities)
         {
-            var dto = new SchemaQueueDto
+            SchemaQueueDto dto = new()
             {
                 Id = Guid.CreateVersion7(),
                 CreatedAt = DateTime.UtcNow,

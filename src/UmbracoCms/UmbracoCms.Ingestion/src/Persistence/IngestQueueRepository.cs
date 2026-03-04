@@ -7,7 +7,7 @@ internal sealed class IngestQueueRepository(IScopeProvider scopeProvider) : IIng
 {
     public async Task InsertAsync(IngestQueueDto dto, CancellationToken ct = default)
     {
-        using var scope = scopeProvider.CreateScope();
+        using IScope scope = scopeProvider.CreateScope();
         await scope.Database.InsertAsync(dto, ct)
             .ConfigureAwait(false);
         scope.Complete();
@@ -15,8 +15,8 @@ internal sealed class IngestQueueRepository(IScopeProvider scopeProvider) : IIng
 
     public async Task<IReadOnlyList<IngestQueueDto>> GetAllAsync(CancellationToken ct = default)
     {
-        using var scope = scopeProvider.CreateScope();
-        var sql = scope.SqlContext.Sql()
+        using IScope scope = scopeProvider.CreateScope();
+        NPoco.Sql<Cms.Infrastructure.Persistence.ISqlContext> sql = scope.SqlContext.Sql()
             .Select<IngestQueueDto>()
             .From<IngestQueueDto>()
             .OrderBy<IngestQueueDto>(x => x.CreatedAt);
@@ -26,8 +26,8 @@ internal sealed class IngestQueueRepository(IScopeProvider scopeProvider) : IIng
 
     public async Task DeleteByIdAsync(Guid id, CancellationToken ct = default)
     {
-        using var scope = scopeProvider.CreateScope();
-        var sql = scope.SqlContext.Sql()
+        using IScope scope = scopeProvider.CreateScope();
+        NPoco.Sql<Cms.Infrastructure.Persistence.ISqlContext> sql = scope.SqlContext.Sql()
             .Delete<IngestQueueDto>()
             .Where<IngestQueueDto>(x => x.Id == id);
         await scope.Database.ExecuteAsync(sql, ct).ConfigureAwait(false);

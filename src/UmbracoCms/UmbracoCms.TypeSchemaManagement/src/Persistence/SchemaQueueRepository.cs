@@ -7,7 +7,7 @@ internal sealed class SchemaQueueRepository(IScopeProvider scopeProvider) : ISch
 {
     public async Task InsertAsync<T>(T dto, CancellationToken ct = default) where T : class
     {
-        using var scope = scopeProvider.CreateScope();
+        using IScope scope = scopeProvider.CreateScope();
         await scope.Database.InsertAsync(dto, ct)
             .ConfigureAwait(false);
         scope.Complete();
@@ -15,8 +15,8 @@ internal sealed class SchemaQueueRepository(IScopeProvider scopeProvider) : ISch
 
     public async Task<IReadOnlyList<SchemaQueueDto>> GetAllAsync(CancellationToken ct = default)
     {
-        using var scope = scopeProvider.CreateScope();
-        var sql = scope.SqlContext.Sql()
+        using IScope scope = scopeProvider.CreateScope();
+        NPoco.Sql<Cms.Infrastructure.Persistence.ISqlContext> sql = scope.SqlContext.Sql()
             .Select<SchemaQueueDto>()
             .From<SchemaQueueDto>()
             .OrderBy<SchemaQueueDto>(x => x.CreatedAt);
@@ -26,7 +26,7 @@ internal sealed class SchemaQueueRepository(IScopeProvider scopeProvider) : ISch
 
     public async Task DeleteAsync<T>(T dto, CancellationToken ct = default) where T : class
     {
-        using var scope = scopeProvider.CreateScope();
+        using IScope scope = scopeProvider.CreateScope();
         await scope.Database.DeleteAsync(dto, ct)
             .ConfigureAwait(false);
         scope.Complete();
@@ -34,8 +34,8 @@ internal sealed class SchemaQueueRepository(IScopeProvider scopeProvider) : ISch
 
     public async Task DeleteByIdAsync(Guid id, CancellationToken ct = default)
     {
-        using var scope = scopeProvider.CreateScope();
-        var sql = scope.SqlContext.Sql()
+        using IScope scope = scopeProvider.CreateScope();
+        NPoco.Sql<Cms.Infrastructure.Persistence.ISqlContext> sql = scope.SqlContext.Sql()
             .Delete<SchemaQueueDto>()
             .Where<SchemaQueueDto>(x => x.Id == id);
         await scope.Database.ExecuteAsync(sql, ct).ConfigureAwait(false);
