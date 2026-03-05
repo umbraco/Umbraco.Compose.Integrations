@@ -1,0 +1,548 @@
+{
+  "ProductId": 315,
+  "Values": {
+    "AccountingGroup": {
+      "Id": "1",
+      "Text": "Acc1"
+    },
+    "ActiveOnWebshop": null,
+    "AvgTotalCO2eFootprint": null,
+    "Brand": {
+      "Name": "Ralph Lauren",
+      "Description": [
+        {
+          "CultureCode": "en-GB",
+          "Segment": null,
+          "Dimension": null,
+          "Data": null
+        },
+        {
+          "CultureCode": "de-DE",
+          "Segment": null,
+          "Dimension": null,
+          "Data": null
+        },
+        {
+          "CultureCode": "da-DK",
+          "Segment": null,
+          "Dimension": null,
+          "Data": null
+        },
+        {
+          "CultureCode": "fr-FR",
+          "Segment": null,
+          "Dimension": null,
+          "Data": null
+        },
+        {
+          "CultureCode": "sv-SE",
+          "Segment": null,
+          "Dimension": null,
+          "Data": null
+        }
+      ],
+      "Logo": null
+    },
+    "CatalogueDescription": [
+      {
+        "CultureCode": "en-GB",
+        "Segment": null,
+        "Dimension": null,
+        "Data": null
+      },
+      {
+        "CultureCode": "de-DE",
+        "Segment": null,
+        "Dimension": null,
+        "Data": null
+      },
+      {
+        "CultureCode": "da-DK",
+        "Segment": null,
+        "Dimension": null,
+        "Data": null
+      },
+      {
+        "CultureCode": "fr-FR",
+        "Segment": null,
+        "Dimension": null,
+        "Data": null
+      },
+      {
+        "CultureCode": "sv-SE",
+        "Segment": null,
+        "Dimension": null,
+        "Data": null
+      }
+    ],
+    "ChemicalSubstances": null,
+    "CompareAtPrice": [
+      {
+        "CultureCode": null,
+        "Segment": "EUR",
+        "Dimension": "Currency",
+        "Data": null
+      },
+      {
+        "CultureCode": null,
+        "Segment": "SEK",
+        "Dimension": "Currency",
+        "Data": null
+      },
+      {
+        "CultureCode": null,
+        "Segment": "NOK",
+        "Dimension": "Currency",
+        "Data": null
+      },
+      {
+        "CultureCode": null,
+        "Segment": "DKK",
+        "Dimension": "Currency",
+        "Data": null
+      }
+    ],
+    "CostPrice": [
+      {
+        "CultureCode": null,
+        "Segment": "EUR",
+        "Dimension": "Currency",
+        "Data": null
+      },
+      {
+        "CultureCode": null,
+        "Segment": "SEK",
+        "Dimension": "Currency",
+        "Data": null
+      },
+      {
+        "CultureCode": null,
+        "Segment": "NOK",
+        "Dimension": "Currency",
+        "Data": null
+      },
+      {
+        "CultureCode": null,
+        "Segment": "DKK",
+        "Dimension": "Currency",
+        "Data": null
+      }
+    ],
+    "CountryOfOrigin": null,
+    "CrossSale": null,
+    "DangerousGoods": null,
+    "DeliveryGroup": null,
+    "DiscountPercentage": null,
+    "DisposalFootprint": null,
+    "DistributionFactorExternal": null,
+    "DistributionFactorOur": null,
+    "DistributionFactorTotal": null,
+    "DistributionFootprint": null,
+    "DistributionManufacturer": null,
+    "DistributionSalesAndReturn": null,
+    "Documents": null,
+    "ESGCertification": null,
+    "ESGDocumentation": null,
+    "ExtraImages": null,
+    "HazardousWasteLeft": null,
+    "Highlight": null,
+    "ImportedDescription": [
+      {
+        "CultureCode": "en-GB",
+        "Segment": "Global",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "de-DE",
+        "Segment": "Global",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "da-DK",
+        "Segment": "Global",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "fr-FR",
+        "Segment": "Global",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "sv-SE",
+        "Segment": "Global",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "en-GB",
+        "Segment": "Denmark",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "de-DE",
+        "Segment": "Denmark",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "da-DK",
+        "Segment": "Denmark",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "fr-FR",
+        "Segment": "Denmark",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "sv-SE",
+        "Segment": "Denmark",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "en-GB",
+        "Segment": "USA",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "de-DE",
+        "Segment": "USA",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "da-DK",
+        "Segment": "USA",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "fr-FR",
+        "Segment": "USA",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "sv-SE",
+        "Segment": "USA",
+        "Dimension": "Market",
+        "Data": null
+      }
+    ],
+    "InServiceFootprint": null,
+    "IsOrganicGG": null,
+    "LongDescription": [
+      {
+        "CultureCode": "en-GB",
+        "Segment": "Global",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "de-DE",
+        "Segment": "Global",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "da-DK",
+        "Segment": "Global",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "fr-FR",
+        "Segment": "Global",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "sv-SE",
+        "Segment": "Global",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "en-GB",
+        "Segment": "Denmark",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "de-DE",
+        "Segment": "Denmark",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "da-DK",
+        "Segment": "Denmark",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "fr-FR",
+        "Segment": "Denmark",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "sv-SE",
+        "Segment": "Denmark",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "en-GB",
+        "Segment": "USA",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "de-DE",
+        "Segment": "USA",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "da-DK",
+        "Segment": "USA",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "fr-FR",
+        "Segment": "USA",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "sv-SE",
+        "Segment": "USA",
+        "Dimension": "Market",
+        "Data": null
+      }
+    ],
+    "ManufacturingFootprint": null,
+    "MaterialFootprint": null,
+    "MaxCO2eFootprint": null,
+    "ModelNumber": "M10034",
+    "Name": [
+      {
+        "CultureCode": "en-GB",
+        "Segment": null,
+        "Dimension": null,
+        "Data": "Polo Ralph Lauren Custom Cotton T-Shirt P"
+      },
+      {
+        "CultureCode": "de-DE",
+        "Segment": null,
+        "Dimension": null,
+        "Data": "Polo Ralph Lauren Custom Cotton T-Shirt P"
+      },
+      {
+        "CultureCode": "da-DK",
+        "Segment": null,
+        "Dimension": null,
+        "Data": "Polo Ralph Lauren Custom Cotton T-Shirt P"
+      },
+      {
+        "CultureCode": "fr-FR",
+        "Segment": null,
+        "Dimension": null,
+        "Data": "Polo Ralph Lauren Custom Cotton T-Shirt P"
+      },
+      {
+        "CultureCode": "sv-SE",
+        "Segment": null,
+        "Dimension": null,
+        "Data": "Polo Ralph Lauren Custom Cotton T-Shirt P"
+      }
+    ],
+    "OrganicFactor": null,
+    "PackageSize": null,
+    "PackageWeight": 10.0,
+    "PackagingFootprint": null,
+    "PreventionofWaste": null,
+    "PrimaryImage": "1380",
+    "Recycled": null,
+    "RecyclingFactor": null,
+    "Reparability": null,
+    "SalesChannels": null,
+    "SalesPrice": [
+      {
+        "CultureCode": null,
+        "Segment": "EUR",
+        "Dimension": "Currency",
+        "Data": null
+      },
+      {
+        "CultureCode": null,
+        "Segment": "SEK",
+        "Dimension": "Currency",
+        "Data": null
+      },
+      {
+        "CultureCode": null,
+        "Segment": "NOK",
+        "Dimension": "Currency",
+        "Data": null
+      },
+      {
+        "CultureCode": null,
+        "Segment": "DKK",
+        "Dimension": "Currency",
+        "Data": null
+      }
+    ],
+    "SalesUnit": {
+      "Name": [
+        {
+          "CultureCode": "en-GB",
+          "Segment": null,
+          "Dimension": null,
+          "Data": "pcs."
+        },
+        {
+          "CultureCode": "de-DE",
+          "Segment": null,
+          "Dimension": null,
+          "Data": null
+        },
+        {
+          "CultureCode": "da-DK",
+          "Segment": null,
+          "Dimension": null,
+          "Data": null
+        },
+        {
+          "CultureCode": "fr-FR",
+          "Segment": null,
+          "Dimension": null,
+          "Data": null
+        },
+        {
+          "CultureCode": "sv-SE",
+          "Segment": null,
+          "Dimension": null,
+          "Data": null
+        }
+      ]
+    },
+    "ServiceLife": null,
+    "ShortDescription": [
+      {
+        "CultureCode": "en-GB",
+        "Segment": "Global",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "de-DE",
+        "Segment": "Global",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "da-DK",
+        "Segment": "Global",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "fr-FR",
+        "Segment": "Global",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "sv-SE",
+        "Segment": "Global",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "en-GB",
+        "Segment": "Denmark",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "de-DE",
+        "Segment": "Denmark",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "da-DK",
+        "Segment": "Denmark",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "fr-FR",
+        "Segment": "Denmark",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "sv-SE",
+        "Segment": "Denmark",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "en-GB",
+        "Segment": "USA",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "de-DE",
+        "Segment": "USA",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "da-DK",
+        "Segment": "USA",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "fr-FR",
+        "Segment": "USA",
+        "Dimension": "Market",
+        "Data": null
+      },
+      {
+        "CultureCode": "sv-SE",
+        "Segment": "USA",
+        "Dimension": "Market",
+        "Data": null
+      }
+    ],
+    "SumTotalCO2eFootprint": 0.0,
+    "TaxPositionNo": "5033",
+    "TotalCO2eFootprint": null,
+    "Upgradability": null,
+    "Upsale": null,
+    "USP": null,
+    "VAS": null,
+    "Videos": null,
+    "Warranty": null,
+    "WaterConsumption": null,
+    "Fit": null,
+    "Materials": null,
+    "WashDegrees": null
+  }
+}
