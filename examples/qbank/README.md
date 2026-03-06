@@ -2,7 +2,7 @@
 This integration demonstrates how to sync product data from QBank DAM to Umbraco Compose through an Ingestion Function.
 
 ## About QBank DAM
-[QBank](https://qbankdam.com/) is a flexible, cloud based Digital Asset Management (DAM) platform for manaing and distributing complex media assets across global organizations. 
+[QBank](https://qbankdam.com/) is a cloud-based Digital Asset Management (DAM) platform that enables global organizations to work more efficiently with their content creation and to manage and distribute digital assets seamlessly across teams, markets, and systems.
 
 ## Getting started
 
