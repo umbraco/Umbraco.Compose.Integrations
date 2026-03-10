@@ -61,7 +61,7 @@ public sealed record UmbracoComposeContentPickerDataSourceConfiguration
                 $"The data type configuration for '{ConfigurationKeys.TypeSchemaIncludeFields}' is not valid.");
         }
 
-        Collection = collection;
+        Collection = collection.ToGraphQLFieldNameCase();
         TypeSchema = typeSchema;
     }
 
