@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Events;
+using Umbraco.Cms.Core.Scoping;
 using Umbraco.Cms.Core.Sync;
 using Umbraco.Compose.Integrations.UmbracoCms.Core;
 using Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Cache.Content;
@@ -9,6 +10,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 
 internal sealed class PublishedContentCacheRefresherNotificationHandler(
     IServerRoleAccessor serverRoleAccessor,
+    ICoreScopeProvider coreScopeProvider,
     ILogger<PublishedContentCacheRefresherNotificationHandler> logger,
     IIngestService ingestService,
     IOptions<UmbracoComposeOptions> composeOptions,
@@ -49,8 +51,21 @@ internal sealed class PublishedContentCacheRefresherNotificationHandler(
         List<ContentChangePayload> entities =
             [.. payload.Select(x => new ContentChangePayload(x.ContentKey, x.ChangeTypes, x.AffectedCultures)),];
 
-        await ingestService
-            .EnqueueAsync(new ContentIngestQueueItem(entities), cancellationToken)
-            .ConfigureAwait(false);
+        await ExecuteDeferred(() => ingestService.EnqueueAsync(new ContentIngestQueueItem(entities), cancellationToken)).ConfigureAwait(false);
+    }
+
+    private ValueTask ExecuteDeferred(Func<ValueTask> action)
+    {
+        DeferredActions? actions = DeferredActions.Get(coreScopeProvider);
+        if (actions is not null)
+        {
+            actions.Add(action);
+        }
+        else
+        {
+            return action();
+        }
+
+        return default;
     }
 }
