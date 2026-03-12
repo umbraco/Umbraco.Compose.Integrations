@@ -2,7 +2,6 @@ using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Events;
-using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Compose.Integrations.UmbracoCms.Core;
 using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Persistence;
@@ -24,17 +23,17 @@ internal sealed class ContentTypeNotificationHandler(
             return;
         }
 
-        foreach (IContentType contentType in notification.SavedEntities)
+        foreach (string contentTypeAlias in notification.SavedEntities.Select(contentType => contentType.Alias))
         {
             SchemaQueueDto dto = new()
             {
                 Id = Guid.CreateVersion7(),
                 CreatedAt = DateTime.UtcNow,
-                ContentTypeAlias = contentType.Alias,
+                ContentTypeAlias = contentTypeAlias,
             };
 
             await queueRepository.InsertAsync(dto, cancellationToken).ConfigureAwait(false);
-            await writer.WriteAsync(new SchemaQueueItem(dto.Id, contentType.Alias), cancellationToken).ConfigureAwait(false);
+            await writer.WriteAsync(new SchemaQueueItem(dto.Id, contentTypeAlias), cancellationToken).ConfigureAwait(false);
         }
     }
 }

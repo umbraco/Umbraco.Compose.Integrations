@@ -9,7 +9,7 @@ public sealed class TypeSchemaMigrationPlan : PackageMigrationPlan
 {
     /// <inheritdoc />
     public TypeSchemaMigrationPlan()
-        : base("Umbraco Compose TypeSchema") { }
+        : base("Umbraco Compose Type Schema Management") { }
 
     /// <inheritdoc />
     protected override void DefinePlan()

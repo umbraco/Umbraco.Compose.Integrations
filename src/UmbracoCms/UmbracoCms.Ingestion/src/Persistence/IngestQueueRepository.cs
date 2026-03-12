@@ -1,3 +1,5 @@
+using NPoco;
+using Umbraco.Cms.Infrastructure.Persistence;
 using Umbraco.Cms.Infrastructure.Scoping;
 using Umbraco.Extensions;
 
@@ -16,7 +18,7 @@ internal sealed class IngestQueueRepository(IScopeProvider scopeProvider) : IIng
     public async Task<IReadOnlyList<IngestQueueDto>> GetAllAsync(CancellationToken ct = default)
     {
         using IScope scope = scopeProvider.CreateScope();
-        NPoco.Sql<Cms.Infrastructure.Persistence.ISqlContext> sql = scope.SqlContext.Sql()
+        Sql<ISqlContext> sql = scope.SqlContext.Sql()
             .Select<IngestQueueDto>()
             .From<IngestQueueDto>()
             .OrderBy<IngestQueueDto>(x => x.CreatedAt);
@@ -27,7 +29,7 @@ internal sealed class IngestQueueRepository(IScopeProvider scopeProvider) : IIng
     public async Task DeleteByIdAsync(Guid id, CancellationToken ct = default)
     {
         using IScope scope = scopeProvider.CreateScope();
-        NPoco.Sql<Cms.Infrastructure.Persistence.ISqlContext> sql = scope.SqlContext.Sql()
+        Sql<ISqlContext> sql = scope.SqlContext.Sql()
             .Delete<IngestQueueDto>()
             .Where<IngestQueueDto>(x => x.Id == id);
         await scope.Database.ExecuteAsync(sql, ct).ConfigureAwait(false);
