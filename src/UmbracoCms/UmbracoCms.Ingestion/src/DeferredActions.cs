@@ -4,7 +4,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 
 internal sealed class DeferredActions
 {
-    private readonly List<Func<ValueTask>> _actions = new();
+    private readonly List<Func<ValueTask>> _actions = [];
 
     public static DeferredActions? Get(ICoreScopeProvider scopeProvider)
     {
@@ -23,11 +23,11 @@ internal sealed class DeferredActions
             });
     }
 
-    public void Add(Func<ValueTask> action)
-        => _actions.Add(action);
+    public void Add(Func<ValueTask> action) =>
+        _actions.Add(action);
 
-    public void Add(Action action)
-        => Add(() => { action(); return default; });
+    public void Add(Action action) =>
+        Add(() => { action(); return default; });
 
     private async ValueTask ExecuteAsync()
     {

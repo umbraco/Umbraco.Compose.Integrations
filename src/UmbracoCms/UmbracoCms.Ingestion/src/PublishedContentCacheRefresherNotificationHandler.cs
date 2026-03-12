@@ -51,10 +51,11 @@ internal sealed class PublishedContentCacheRefresherNotificationHandler(
         List<ContentChangePayload> entities =
             [.. payload.Select(x => new ContentChangePayload(x.ContentKey, x.ChangeTypes, x.AffectedCultures)),];
 
-        await ExecuteDeferred(() => ingestService.EnqueueAsync(new ContentIngestQueueItem(entities), cancellationToken)).ConfigureAwait(false);
+        await ExecuteDeferredAsync(() => ingestService.EnqueueAsync(new ContentIngestQueueItem(entities), cancellationToken))
+            .ConfigureAwait(false);
     }
 
-    private ValueTask ExecuteDeferred(Func<ValueTask> action)
+    private ValueTask ExecuteDeferredAsync(Func<ValueTask> action)
     {
         DeferredActions? actions = DeferredActions.Get(coreScopeProvider);
         if (actions is not null)

@@ -29,19 +29,17 @@ public sealed record UmbracoComposeContentPickerDataSourceConfiguration
         }
 
         Variant = dataType.ConfigurationData.GetValue(ConfigurationKeys.Variant) as string;
-        var collection = dataType.ConfigurationData.GetValue(ConfigurationKeys.Collection) as string;
-        var typeSchema = dataType.ConfigurationData.GetValue(ConfigurationKeys.TypeSchema) as string;
         object? includeFields = dataType.ConfigurationData.GetValue(ConfigurationKeys.TypeSchemaIncludeFields);
         object? searchField = dataType.ConfigurationData.GetValue(ConfigurationKeys.SearchField);
 
         SearchField = ExtractFieldNameFrom(searchField);
 
-        if (collection is null)
+        if (dataType.ConfigurationData.GetValue(ConfigurationKeys.Collection) is not string collection)
         {
             throw new InvalidOperationException($"The data type configuration for '{ConfigurationKeys.Collection}' is not valid.");
         }
 
-        if (typeSchema is null)
+        if (dataType.ConfigurationData.GetValue(ConfigurationKeys.TypeSchema) is not string typeSchema)
         {
             throw new InvalidOperationException($"The data type configuration for '{ConfigurationKeys.TypeSchema}' is not valid.");
         }

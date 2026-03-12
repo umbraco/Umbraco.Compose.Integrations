@@ -93,16 +93,16 @@ internal sealed class UmbracoContentIngestItemQueueProcessor(
                 }
                 else
                 {
-                        _variationContextAccessor.VariationContext = new(string.Empty);
-                        _umbracoContextAccessor.Set(context.UmbracoContext);
+                    _variationContextAccessor.VariationContext = new(string.Empty);
+                    _umbracoContextAccessor.Set(context.UmbracoContext);
 
-                        foreach (UpsertContentEntry processedItem in ProcessItem(
-                            content,
-                            string.Empty,
-                            entity.ChangeTypes is TreeChangeTypes.RefreshBranch))
-                        {
-                            yield return processedItem;
-                        }
+                    foreach (UpsertContentEntry processedItem in ProcessItem(
+                        content,
+                        string.Empty,
+                        entity.ChangeTypes is TreeChangeTypes.RefreshBranch))
+                    {
+                        yield return processedItem;
+                    }
                 }
             }
         }

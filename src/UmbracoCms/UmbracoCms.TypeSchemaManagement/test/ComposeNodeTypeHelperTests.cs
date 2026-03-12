@@ -1,5 +1,4 @@
 using Umbraco.Cms.Core.Models.DeliveryApi;
-using Xunit;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Tests.Unit;
 
