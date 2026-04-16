@@ -26,13 +26,13 @@ internal class ContentTypeSchemaService(
         }
 
         IPublishedContentType publishedContentType = publishedContentTypeCache.Get(itemType, contentType.Alias);
-        HashSet<string> ownPropertyAliases = [.. contentType.PropertyTypes.Select(p => p.Alias),];
+        HashSet<string> ownPropertyAliases = [.. contentType.PropertyTypes.Select(p => p.Alias)];
 
         return new()
         {
             Alias = contentType.Alias,
             SchemaId = GetContentTypeSchemaId(contentType.Alias),
-            CompositionSchemaIds = [.. publishedContentType.CompositionAliases.Select(GetContentTypeSchemaId),],
+            CompositionSchemaIds = [.. publishedContentType.CompositionAliases.Select(GetContentTypeSchemaId)],
             Properties =
             [
                 ..publishedContentType.PropertyTypes.Select(p => new ContentTypePropertySchemaInfo
@@ -40,10 +40,10 @@ internal class ContentTypeSchemaService(
                     Alias = p.Alias,
                     EditorAlias = p.EditorAlias,
                     DeliveryApiClrType = p.DeliveryApiModelClrType,
-                    Inherited = !ownPropertyAliases.Contains(p.Alias),
-                }),
+                    Inherited = !ownPropertyAliases.Contains(p.Alias)
+                })
             ],
-            IsElement = publishedContentType.IsElement,
+            IsElement = publishedContentType.IsElement
         };
     }
 

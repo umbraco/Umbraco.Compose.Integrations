@@ -50,7 +50,7 @@ public sealed class UmbracoComposeOptions
     {
         return new UriBuilder(Endpoints.ManagementUrl ?? new($"https://management.{BaseDomainHostAndPort}"))
         {
-            Path = "v1",
+            Path = "v1"
         }.Uri;
     }
 
@@ -61,7 +61,7 @@ public sealed class UmbracoComposeOptions
     {
         return new UriBuilder(GetManagementBaseUrl())
         {
-            Path = $"v1/projects/{ProjectAlias}/environments/{EnvironmentAlias}/",
+            Path = $"v1/projects/{ProjectAlias}/environments/{EnvironmentAlias}/"
         }.Uri;
     }
 
@@ -72,7 +72,7 @@ public sealed class UmbracoComposeOptions
     {
         return new UriBuilder(Endpoints.IngestionUrl ?? new($"https://ingest.{Region}.{BaseDomainHostAndPort}"))
         {
-            Path = $"v1/{ProjectAlias}/{EnvironmentAlias}/",
+            Path = $"v1/{ProjectAlias}/{EnvironmentAlias}/"
         }.Uri;
     }
 
@@ -83,7 +83,7 @@ public sealed class UmbracoComposeOptions
     {
         return new UriBuilder(Endpoints.GraphQLUrl ?? new($"https://graphql.{Region}.{BaseDomainHostAndPort}"))
         {
-            Path = $"{ProjectAlias}/{EnvironmentAlias}/",
+            Path = $"{ProjectAlias}/{EnvironmentAlias}/"
         }.Uri;
     }
 

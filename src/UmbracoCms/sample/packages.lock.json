@@ -687,11 +687,6 @@
         "resolved": "4.5.4",
         "contentHash": "f8ckFm/xTS8C2Bn4BdVc94dNvg+tRfk0e4XFaETOqRi6r0PUOyn3Z9jTQCVpB3R1pP5WiRsEIrqqxux95BVpTA=="
       },
-      "Namotion.Reflection": {
-        "type": "Transitive",
-        "resolved": "3.4.3",
-        "contentHash": "KLk2gLR9f8scM82EiL+p9TONXXPy9+IAZVMzJOA/Wsa7soZD7UJGG6j0fq0D9ZoVnBRRnSeEC7kShhRo3Olgaw=="
-      },
       "NCrontab": {
         "type": "Transitive",
         "resolved": "3.4.0",
@@ -709,11 +704,6 @@
         "type": "Transitive",
         "resolved": "13.0.3",
         "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
-      },
-      "NJsonSchema.Annotations": {
-        "type": "Transitive",
-        "resolved": "11.5.2",
-        "contentHash": "OfYQgNzJZb1r/gR5vza0DbBLxnmcITDhA5CXFuX1qxuP3rRdQMjbIz5VyDVHCU1QxyrfAymzajbh7iszEvyFGQ=="
       },
       "NPoco": {
         "type": "Transitive",
@@ -1712,7 +1702,7 @@
       "umbraco.compose.integrations.umbracocms.typeschemamanagement": {
         "type": "Project",
         "dependencies": {
-          "NJsonSchema": "[11.5.2, )",
+          "NJsonSchema": "(, )",
           "Umbraco.Cms.Api.Delivery": "[17.2.2, 18.0.0)",
           "Umbraco.Cms.Infrastructure": "[17.2.2, 18.0.0)",
           "Umbraco.Compose.Integrations.UmbracoCms.Core": "[1.0.0, )"
@@ -1726,17 +1716,6 @@
         "dependencies": {
           "BouncyCastle.Cryptography": "2.6.2",
           "System.Security.Cryptography.Pkcs": "10.0.0"
-        }
-      },
-      "NJsonSchema": {
-        "type": "CentralTransitive",
-        "requested": "[11.5.2, )",
-        "resolved": "11.5.2",
-        "contentHash": "CAmnt4tnylb82Ro6f2EFIGz8rmThuCsITECUNqGhVEQ5VvxV+XwsTPz6LF58MbvUEV1jVcH+uxxljgM/etgK7A==",
-        "dependencies": {
-          "NJsonSchema.Annotations": "11.5.2",
-          "Namotion.Reflection": "3.4.3",
-          "Newtonsoft.Json": "13.0.3"
         }
       },
       "OpenIddict.Client.SystemNetHttp": {

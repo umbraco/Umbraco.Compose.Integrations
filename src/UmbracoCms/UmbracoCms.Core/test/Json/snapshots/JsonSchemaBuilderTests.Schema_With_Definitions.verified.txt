@@ -1,0 +1,24 @@
+﻿{
+  $defs: {
+    Address: {
+      type: object,
+      required: [
+        street,
+        city
+      ]
+    },
+    Name: {
+      type: string,
+      minLength: 1
+    }
+  },
+  type: object,
+  properties: {
+    address: {
+      $ref: #/$defs/Address
+    },
+    name: {
+      $ref: #/$defs/Name
+    }
+  }
+}

@@ -1,0 +1,21 @@
+﻿{
+  title: ClassWithProperties,
+  type: object,
+  required: [
+    Name,
+    Age
+  ],
+  properties: {
+    Name: {
+      type: string
+    },
+    Age: {
+      type: integer,
+      format: int32
+    },
+    Email: {
+      type: string
+    }
+  },
+  csharpType: Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.Json.JsonSchemaGeneratorTests+ClassWithProperties
+}

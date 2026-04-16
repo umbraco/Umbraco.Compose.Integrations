@@ -1,0 +1,5 @@
+﻿{
+  title: EmptyClass,
+  type: object,
+  csharpType: Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.Json.JsonSchemaGeneratorTests+EmptyClass
+}

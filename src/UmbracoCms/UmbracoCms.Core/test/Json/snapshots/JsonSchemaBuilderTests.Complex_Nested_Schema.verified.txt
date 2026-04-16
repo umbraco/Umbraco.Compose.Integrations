@@ -1,0 +1,49 @@
+﻿{
+  $schema: https://json-schema.org/draft/2020-12/schema,
+  $id: https://example.com/schemas/complex-type,
+  $defs: {
+    Tag: {
+      type: string,
+      minLength: 1
+    }
+  },
+  description: A complex nested type example,
+  title: ComplexType,
+  type: object,
+  required: [
+    id,
+    name,
+    tags
+  ],
+  properties: {
+    id: {
+      type: integer,
+      minimum: 1
+    },
+    name: {
+      type: string,
+      maxLength: 255,
+      minLength: 1
+    },
+    age: {
+      type: integer,
+      maximum: 150,
+      minimum: 0
+    },
+    isActive: {
+      type: boolean
+    },
+    tags: {
+      type: array,
+      minItems: 0,
+      uniqueItems: true,
+      items: {
+        type: string
+      }
+    },
+    metadata: {
+      type: object
+    }
+  },
+  x-version: 1.0.0
+}

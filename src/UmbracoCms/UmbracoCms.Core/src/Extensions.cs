@@ -6,6 +6,7 @@ using OpenIddict.Client;
 using Polly;
 using Polly.Extensions.Http;
 using Umbraco.Compose.Integrations.UmbracoCms.Core;
+using Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 using static OpenIddict.Client.OpenIddictClientEvents;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers;
 
@@ -18,11 +19,16 @@ namespace Umbraco.Cms.Core.DependencyInjection;
 /// </summary>
 public static class Extensions
 {
+    /// <summary>
+    /// Adds the Umbraco Compose authentication services to the Umbraco builder.
+    /// </summary>
+    /// <returns>The Umbraco builder with authentication services added.</returns>
     extension(IUmbracoBuilder builder)
     {
         /// <summary>
         /// Adds the Umbraco Compose authentication services.
         /// </summary>
+        /// <returns>The Umbraco builder.</returns>
         public IUmbracoBuilder AddUmbracoComposeAuthentication()
         {
             ArgumentNullException.ThrowIfNull(builder);
@@ -77,21 +83,30 @@ public static class Extensions
                         ClientId = composeOptions.Value.ClientId,
                         ClientSecret = composeOptions.Value.ClientSecret,
                         Properties = {
-                            { "Umbraco-Compose-Integration-Core-Version", GetProductInformationHeaderValue(typeof(Extensions).Assembly)},
-                        },
+                            { "Umbraco-Compose-Integration-Core-Version", GetProductInformationHeaderValue(typeof(Extensions).Assembly)}
+                        }
                     });
                 });
+
+            builder.Services.AddSingleton<ITypeNameGenerator>(DefaultTypeNameGenerator.Instance);
+
+            builder.WithCollectionBuilder<PropertySchemaResolverCollectionBuilder>()
+                .Append(builder.TypeLoader.GetTypes<IPropertySchemaResolver>());
 
             return builder;
         }
     }
 
+    /// <summary>
+    /// Extension methods for <see cref="HttpClient"/>.
+    /// </summary>
     extension(HttpClient client)
     {
         /// <summary>
-        /// Sets the product information header.
+        /// Sets the product information header on the HTTP client.
         /// </summary>
-        /// <param name="assembly">The assembly to get the name and version from</param>
+        /// <param name="assembly">The assembly to get the name and version from.</param>
+        /// <returns>The HTTP client with the product information header set.</returns>
         public HttpClient SetProductInformation(Assembly assembly)
         {
             ArgumentNullException.ThrowIfNull(client);
@@ -110,11 +125,15 @@ public static class Extensions
         }
     }
 
+    /// <summary>
+    /// Extension methods for <see cref="IHttpClientBuilder"/>.
+    /// </summary>
     extension(IHttpClientBuilder builder)
     {
         /// <summary>
-        /// Adds the Umbraco Compose authentication message handler.
+        /// Adds the Umbraco Compose authentication message handler to the HTTP client builder.
         /// </summary>
+        /// <returns>The HTTP client builder with the authentication message handler added.</returns>
         public IHttpClientBuilder AddUmbracoComposeAuthenticationMessageHandler()
         {
             ArgumentNullException.ThrowIfNull(builder);
@@ -124,9 +143,10 @@ public static class Extensions
         }
 
         /// <summary>
-        /// Sets the product information header.
+        /// Sets the product information header on the HTTP client configured by the builder.
         /// </summary>
-        /// <param name="assembly">The assembly to get the name and version from</param>
+        /// <param name="assembly">The assembly to get the name and version from.</param>
+        /// <returns>The HTTP client builder with the product information header set.</returns>
         public IHttpClientBuilder SetProductInformation(Assembly assembly)
         {
             ArgumentNullException.ThrowIfNull(builder);
@@ -138,6 +158,11 @@ public static class Extensions
         }
     }
 
+    /// <summary>
+    /// Gets the product information header value from the specified assembly.
+    /// </summary>
+    /// <param name="assembly">The assembly to get the product information from.</param>
+    /// <returns>The product information header value, or null if the assembly name cannot be determined.</returns>
     private static ProductInfoHeaderValue? GetProductInformationHeaderValue(Assembly assembly)
     {
         AssemblyName name = assembly.GetName();

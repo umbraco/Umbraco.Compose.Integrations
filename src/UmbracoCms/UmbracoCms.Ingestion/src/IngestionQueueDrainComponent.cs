@@ -18,7 +18,7 @@ internal sealed class IngestionQueueDrainComponent(
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
     public async Task InitializeAsync(bool isRestarting, CancellationToken cancellationToken)

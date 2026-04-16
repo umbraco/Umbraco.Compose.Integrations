@@ -1269,14 +1269,6 @@
         "resolved": "10.0.0",
         "contentHash": "UPWqLSygJlFerRi9XNIuM0a1VC8gHUIufyP24xQ0sc+XimqUAEcjpOz9DhKpyDjH+5B/wO3RpC0KpkEeDj/ddg=="
       },
-      "System.Security.Cryptography.Xml": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "HQSFbakswZ1OXFz2Bt3AJlC6ENDqWeVpgqhf213xqQUMDifzydOHIKVb1RV4prayobvR3ETIScMaQdDF2hwGZA==",
-        "dependencies": {
-          "System.Security.Cryptography.Pkcs": "8.0.0"
-        }
-      },
       "System.Threading.RateLimiting": {
         "type": "Transitive",
         "resolved": "8.0.0",
@@ -1497,6 +1489,15 @@
           "Microsoft.Extensions.Http.Polly": "10.0.0",
           "Microsoft.Extensions.Http.Resilience": "10.0.0",
           "OpenIddict.Client": "7.2.0"
+        }
+      },
+      "System.Security.Cryptography.Xml": {
+        "type": "CentralTransitive",
+        "requested": "[8.0.3, )",
+        "resolved": "8.0.3",
+        "contentHash": "1cHAWDYwOyyoRy+nxS7/Ro/Zcio6i5yHoIJ6xUA+fU8lNu4yGQgja5dEovAxBVud3RnfwRVWOl0B2vr+9LP/mg==",
+        "dependencies": {
+          "System.Security.Cryptography.Pkcs": "8.0.1"
         }
       },
       "Umbraco.Cms.Core": {

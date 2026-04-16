@@ -1,0 +1,20 @@
+﻿{
+  title: ClassWithNullable,
+  type: object,
+  required: [
+    Name
+  ],
+  properties: {
+    Name: {
+      type: string
+    },
+    Nickname: {
+      type: string
+    },
+    Age: {
+      type: integer,
+      format: int32
+    }
+  },
+  csharpType: Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.Json.JsonSchemaGeneratorTests+ClassWithNullable
+}

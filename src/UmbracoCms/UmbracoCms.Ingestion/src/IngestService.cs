@@ -8,7 +8,7 @@ internal sealed class IngestService : IIngestService
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
     private readonly ChannelWriter<IngestQueueItem> _writer;
@@ -34,7 +34,7 @@ internal sealed class IngestService : IIngestService
             Id = item.Id,
             CreatedAt = item.CreatedAt,
             ItemType = $"{item.GetType().FullName}, {item.GetType().Assembly.GetName().Name}",
-            Payload = JsonSerializer.Serialize(item, item.GetType(), s_jsonOptions),
+            Payload = JsonSerializer.Serialize(item, item.GetType(), s_jsonOptions)
         };
 
         await _queueRepository.InsertAsync(dto, cancellationToken).ConfigureAwait(false);

@@ -5,21 +5,23 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="JsonSchema.Net.Generation" Version="6.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.2" />
     <PackageVersion Include="Microsoft.ICU.ICU4C.Runtime" Version="72.1.0.3" />
-    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.4.1" />
+    <PackageVersion Include="Microsoft.Testing.Extensions.CodeCoverage" Version="18.5.2" />
     <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="2.1.0" />
 	<PackageVersion Include="MimeKit" Version="4.15.1" />
-    <PackageVersion Include="NJsonSchema" Version="11.5.2" />
     <PackageVersion Include="OpenIddict.Client.SystemNetHttp" Version="7.2.0" />
     <PackageVersion Include="Umbraco.Cms" Version="[17.2.2, 18.0.0)" />
     <PackageVersion Include="Umbraco.Cms.Api.Management" Version="[17.2.2, 18.0.0)" />
     <PackageVersion Include="Umbraco.Cms.Api.Delivery" Version="[17.2.2, 18.0.0)" />
     <PackageVersion Include="Umbraco.Cms.Core" Version="[17.2.2, 18.0.0)" />
     <PackageVersion Include="Umbraco.Cms.Infrastructure" Version="[17.2.2, 18.0.0)" />
+	<PackageVersion Include="System.Security.Cryptography.Xml" Version="8.0.3" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="PublicApiGenerator" Version="11.5.4" />
-    <PackageVersion Include="Verify.XunitV3" Version="31.11.0" />
+    <PackageVersion Include="Verify.SystemJson" Version="1.4.1" />
+    <PackageVersion Include="Verify.XunitV3" Version="31.13.5" />
     <PackageVersion Include="xunit.v3.mtp-v2" Version="3.2.2" />
   </ItemGroup>
   <ItemGroup>

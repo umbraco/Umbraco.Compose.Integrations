@@ -1,0 +1,29 @@
+﻿{
+  title: ClassWithDateTime,
+  type: object,
+  required: [
+    CreatedAt,
+    UpdatedAt,
+    BirthDate,
+    Duration
+  ],
+  properties: {
+    CreatedAt: {
+      type: string,
+      format: date-time
+    },
+    UpdatedAt: {
+      type: string,
+      format: date-time
+    },
+    BirthDate: {
+      type: string,
+      format: date
+    },
+    Duration: {
+      type: string,
+      format: duration
+    }
+  },
+  csharpType: Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.Json.JsonSchemaGeneratorTests+ClassWithDateTime
+}

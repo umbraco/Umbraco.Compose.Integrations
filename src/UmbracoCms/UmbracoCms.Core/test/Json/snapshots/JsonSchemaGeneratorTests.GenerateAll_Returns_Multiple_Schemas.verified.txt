@@ -1,0 +1,39 @@
+﻿{
+  Address: {
+    $id: Address,
+    title: Address,
+    type: object,
+    required: [
+      Street,
+      City
+    ],
+    properties: {
+      Street: {
+        type: string
+      },
+      City: {
+        type: string
+      }
+    },
+    csharpType: Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.Json.JsonSchemaGeneratorTests+Address
+  },
+  ClassWithNested: {
+    $id: ClassWithNested,
+    title: ClassWithNested,
+    type: object,
+    required: [
+      Name
+    ],
+    properties: {
+      Name: {
+        type: string
+      },
+      Address: {
+        $ref: Address,
+        title: Address,
+        type: object
+      }
+    },
+    csharpType: Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.Json.JsonSchemaGeneratorTests+ClassWithNested
+  }
+}

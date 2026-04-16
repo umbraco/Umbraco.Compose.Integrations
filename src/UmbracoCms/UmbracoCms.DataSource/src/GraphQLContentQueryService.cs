@@ -21,7 +21,7 @@ internal sealed class GraphQLContentQueryService(
             queryText,
             new() {
                 { "ids", keys },
-                { "variant", string.IsNullOrEmpty(composeQueryArguments.Variant) ? null :  composeQueryArguments.Variant},
+                { "variant", string.IsNullOrEmpty(composeQueryArguments.Variant) ? null :  composeQueryArguments.Variant}
             });
     }
 
@@ -38,7 +38,7 @@ internal sealed class GraphQLContentQueryService(
                 { "searchTerm", searchTerm ?? string.Empty },
                 { "variant", string.IsNullOrEmpty(composeQueryArguments.Variant) ? null :  composeQueryArguments.Variant},
                 { "after", paging.After },
-                { "first", paging.Take },
+                { "first", paging.Take }
             });
     }
 
@@ -52,7 +52,7 @@ internal sealed class GraphQLContentQueryService(
                 new
                 {
                     query = queryText,
-                    variables,
+                    variables
                 })
                 .ConfigureAwait(false);
 
@@ -77,7 +77,7 @@ internal sealed class GraphQLContentQueryService(
                 new ContentQueryPaging
                 {
                     EndCursor = result?.PageInfo?.EndCursor ?? string.Empty,
-                    HasNextPage = result?.PageInfo?.HasNextPage ?? false,
+                    HasNextPage = result?.PageInfo?.HasNextPage ?? false
                 });
         }
         catch (Exception ex)

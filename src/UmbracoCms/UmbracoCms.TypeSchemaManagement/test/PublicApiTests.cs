@@ -7,7 +7,7 @@ public sealed class PublicApiTests
     [Fact]
     public Task AssemblyHasNoPublicApiChanges()
     {
-        string publicApi = typeof(ComposeSchemaProcessor).Assembly.GeneratePublicApi();
+        string publicApi = typeof(SchemaQueueItem).Assembly.GeneratePublicApi();
 
         return Verify(publicApi);
     }

@@ -1,0 +1,17 @@
+﻿{
+  type: object,
+  minProperties: 1,
+  required: [
+    name
+  ],
+  properties: {
+    name: {
+      type: string
+    }
+  },
+  patternProperties: {
+    ^[a-z]+$: {
+      type: integer
+    }
+  }
+}

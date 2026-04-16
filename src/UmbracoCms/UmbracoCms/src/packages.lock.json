@@ -810,11 +810,6 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "2.0.0"
         }
       },
-      "Namotion.Reflection": {
-        "type": "Transitive",
-        "resolved": "3.4.3",
-        "contentHash": "KLk2gLR9f8scM82EiL+p9TONXXPy9+IAZVMzJOA/Wsa7soZD7UJGG6j0fq0D9ZoVnBRRnSeEC7kShhRo3Olgaw=="
-      },
       "NCrontab": {
         "type": "Transitive",
         "resolved": "3.4.0",
@@ -832,11 +827,6 @@
         "type": "Transitive",
         "resolved": "13.0.3",
         "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
-      },
-      "NJsonSchema.Annotations": {
-        "type": "Transitive",
-        "resolved": "11.5.2",
-        "contentHash": "OfYQgNzJZb1r/gR5vza0DbBLxnmcITDhA5CXFuX1qxuP3rRdQMjbIz5VyDVHCU1QxyrfAymzajbh7iszEvyFGQ=="
       },
       "NPoco": {
         "type": "Transitive",
@@ -1240,14 +1230,6 @@
         "resolved": "10.0.0",
         "contentHash": "UPWqLSygJlFerRi9XNIuM0a1VC8gHUIufyP24xQ0sc+XimqUAEcjpOz9DhKpyDjH+5B/wO3RpC0KpkEeDj/ddg=="
       },
-      "System.Security.Cryptography.Xml": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "HQSFbakswZ1OXFz2Bt3AJlC6ENDqWeVpgqhf213xqQUMDifzydOHIKVb1RV4prayobvR3ETIScMaQdDF2hwGZA==",
-        "dependencies": {
-          "System.Security.Cryptography.Pkcs": "8.0.0"
-        }
-      },
       "System.Threading.RateLimiting": {
         "type": "Transitive",
         "resolved": "8.0.0",
@@ -1453,7 +1435,6 @@
       "umbraco.compose.integrations.umbracocms.typeschemamanagement": {
         "type": "Project",
         "dependencies": {
-          "NJsonSchema": "[11.5.2, )",
           "Umbraco.Cms.Api.Delivery": "[17.2.2, 18.0.0)",
           "Umbraco.Cms.Infrastructure": "[17.2.2, 18.0.0)",
           "Umbraco.Compose.Integrations.UmbracoCms.Core": "[1.0.0, )"
@@ -1483,17 +1464,6 @@
           "System.Security.Cryptography.Pkcs": "10.0.0"
         }
       },
-      "NJsonSchema": {
-        "type": "CentralTransitive",
-        "requested": "[11.5.2, )",
-        "resolved": "11.5.2",
-        "contentHash": "CAmnt4tnylb82Ro6f2EFIGz8rmThuCsITECUNqGhVEQ5VvxV+XwsTPz6LF58MbvUEV1jVcH+uxxljgM/etgK7A==",
-        "dependencies": {
-          "NJsonSchema.Annotations": "11.5.2",
-          "Namotion.Reflection": "3.4.3",
-          "Newtonsoft.Json": "13.0.3"
-        }
-      },
       "OpenIddict.Client.SystemNetHttp": {
         "type": "CentralTransitive",
         "requested": "[7.2.0, )",
@@ -1503,6 +1473,15 @@
           "Microsoft.Extensions.Http.Polly": "10.0.0",
           "Microsoft.Extensions.Http.Resilience": "10.0.0",
           "OpenIddict.Client": "7.2.0"
+        }
+      },
+      "System.Security.Cryptography.Xml": {
+        "type": "CentralTransitive",
+        "requested": "[8.0.3, )",
+        "resolved": "8.0.3",
+        "contentHash": "1cHAWDYwOyyoRy+nxS7/Ro/Zcio6i5yHoIJ6xUA+fU8lNu4yGQgja5dEovAxBVud3RnfwRVWOl0B2vr+9LP/mg==",
+        "dependencies": {
+          "System.Security.Cryptography.Pkcs": "8.0.1"
         }
       },
       "Umbraco.Cms.Api.Delivery": {

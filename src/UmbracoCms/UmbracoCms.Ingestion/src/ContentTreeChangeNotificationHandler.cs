@@ -36,14 +36,13 @@ internal sealed class ContentTreeChangeNotificationHandler(
             return;
         }
 
-        List<ContentChangePayload> entities =
-            [..
-                notification.Changes
-                    .Select(change => new ContentChangePayload(
-                        change.Item.Key,
-                        GetChangeType(change),
-                        GetAffectedCultures(change)))
-            ,];
+        List<ContentChangePayload> entities = [..
+            notification.Changes
+                .Select(change => new ContentChangePayload(
+                    change.Item.Key,
+                    GetChangeType(change),
+                    GetAffectedCultures(change)))
+        ];
 
         await ingestService
             .EnqueueAsync(new ContentIngestQueueItem(entities), cancellationToken)
@@ -63,7 +62,7 @@ internal sealed class ContentTreeChangeNotificationHandler(
             // Eventually we may want to change the channel message to include a dictionary of
             // Culture => ContentChangeType per item.
             (change.PublishedCultures ?? [])
-                .Union(change.UnpublishedCultures ?? []),];
+                .Union(change.UnpublishedCultures ?? [])];
 
     private static ContentChangeType GetChangeType(TreeChange<IContent> change) =>
         change.ChangeTypes switch
@@ -71,6 +70,6 @@ internal sealed class ContentTreeChangeNotificationHandler(
             TreeChangeTypes.Remove => ContentChangeType.Delete,
             _ when change.UnpublishedCultures?.Any() is true => ContentChangeType.Delete,
             TreeChangeTypes.RefreshBranch => ContentChangeType.UpdateWithDescendants,
-            _ => ContentChangeType.Update,
+            _ => ContentChangeType.Update
         };
 }
