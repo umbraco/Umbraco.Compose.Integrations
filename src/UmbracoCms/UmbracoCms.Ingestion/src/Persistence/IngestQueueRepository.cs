@@ -28,7 +28,7 @@ internal sealed class IngestQueueRepository(IScopeProvider scopeProvider) : IIng
 
     public async Task DeleteByIdAsync(Guid id, CancellationToken ct = default)
     {
-        using IScope scope = scopeProvider.CreateScope();
+        using IScope scope = scopeProvider.CreateScope(autoComplete: false);
         Sql<ISqlContext> sql = scope.SqlContext.Sql()
             .Delete<IngestQueueDto>()
             .Where<IngestQueueDto>(x => x.Id == id);

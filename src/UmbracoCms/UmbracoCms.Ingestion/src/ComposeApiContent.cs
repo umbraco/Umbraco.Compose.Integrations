@@ -6,12 +6,10 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 /// Represents a content item in the Umbraco Content Delivery API.
 /// </summary>
 /// <param name="content">The content item.</param>
-/// <param name="culture">The culture of the content item.</param>
 /// <param name="parentId">The parent ID of the content item.</param>
 /// <param name="ancestors">The ancestors of the content item.</param>
 public sealed class ComposeApiContent(
     IApiContent content,
-    string culture,
     Guid? parentId,
     Guid[] ancestors
 ) : ApiContent(
@@ -23,11 +21,6 @@ public sealed class ComposeApiContent(
     content.Route,
     content.Properties)
 {
-    /// <summary>
-    /// The culture of the hcontent item.
-    /// </summary>
-    public string Culture { get; } = culture;
-
     /// <summary>
     /// The ancestors of the content item.
     /// </summary>

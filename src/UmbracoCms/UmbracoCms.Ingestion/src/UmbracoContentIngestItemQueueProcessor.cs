@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualBasic;
 using Umbraco.Cms.Core.DeliveryApi;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Services.Navigation;
@@ -109,12 +110,11 @@ internal sealed class UmbracoContentIngestItemQueueProcessor(
         {
             Data = new(
                 apiContent,
-                culture,
                 content.Parent<IPublishedContent>(_navigationQueryService, _publishedStatusFilteringService)?.Key,
                 ancestors),
             Id = content.Key.ToString(),
             Type = content.ContentType.Alias,
-            Variant = string.IsNullOrEmpty(culture) ? null : culture
+            Variant = string.IsNullOrEmpty(culture) || culture == "*" ? null : culture
         };
 
         if (!includeChildren)
