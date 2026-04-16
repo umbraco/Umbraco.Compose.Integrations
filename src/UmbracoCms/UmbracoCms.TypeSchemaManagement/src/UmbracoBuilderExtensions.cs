@@ -42,8 +42,9 @@ public static class UmbracoBuilderExtensions
             builder.Services.AddOptions<JsonSchemaGeneratorOptions>(nameof(JsonSchemaExporterService))
                 .Configure(o =>
                 {
-                    o.ReferenceMode = ReferenceMode.External;
+                    o.DefaultSchema = "https://umbracocompose.com/v1/schema";
                     o.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                    o.ReferenceMode = ReferenceMode.External;
                 });
 
             builder.Services.AddHttpClient<SchemaBackgroundService>()

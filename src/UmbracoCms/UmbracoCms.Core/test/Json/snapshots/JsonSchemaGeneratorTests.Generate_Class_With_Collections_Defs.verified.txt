@@ -1,0 +1,77 @@
+﻿{
+  $defs: {
+    IArea: {
+      title: IArea,
+      type: object,
+      required: [
+        Country
+      ],
+      properties: {
+        Country: {
+          type: string
+        }
+      },
+      csharpType: Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.Json.JsonSchemaGeneratorTests+IArea,
+      x-abstract: true
+    },
+    IAddress: {
+      title: IAddress,
+      type: object,
+      required: [
+        Street,
+        City,
+        Area
+      ],
+      properties: {
+        Street: {
+          type: string
+        },
+        City: {
+          type: string
+        },
+        Area: {
+          $ref: #/defs/IArea,
+          type: object
+        }
+      },
+      csharpType: Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.Json.JsonSchemaGeneratorTests+IAddress,
+      x-abstract: true
+    }
+  },
+  title: ClassWithCollections,
+  type: object,
+  required: [
+    Tags,
+    Metadata,
+    Names,
+    Adresses
+  ],
+  properties: {
+    Tags: {
+      type: array,
+      items: {
+        type: string
+      }
+    },
+    Metadata: {
+      type: object,
+      additionalProperties: {
+        type: integer,
+        format: int32
+      }
+    },
+    Names: {
+      type: array,
+      items: {
+        type: string
+      }
+    },
+    Adresses: {
+      type: array,
+      items: {
+        $ref: #/defs/IAddress
+      }
+    }
+  },
+  csharpType: Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.Json.JsonSchemaGeneratorTests+ClassWithCollections
+}

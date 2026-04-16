@@ -6,7 +6,6 @@ using OpenIddict.Client;
 using Polly;
 using Polly.Extensions.Http;
 using Umbraco.Compose.Integrations.UmbracoCms.Core;
-using Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 using static OpenIddict.Client.OpenIddictClientEvents;
 using static OpenIddict.Client.SystemNetHttp.OpenIddictClientSystemNetHttpHandlers;
 
@@ -87,8 +86,6 @@ public static class Extensions
                         }
                     });
                 });
-
-            builder.Services.AddSingleton<ITypeNameGenerator>(DefaultTypeNameGenerator.Instance);
 
             builder.WithCollectionBuilder<PropertySchemaResolverCollectionBuilder>()
                 .Append(builder.TypeLoader.GetTypes<IPropertySchemaResolver>());

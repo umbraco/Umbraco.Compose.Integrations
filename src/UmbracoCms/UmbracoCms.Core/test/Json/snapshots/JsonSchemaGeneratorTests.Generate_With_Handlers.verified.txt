@@ -15,17 +15,29 @@
         type: string
       },
       Area: {
-        $ref: ./IArea,
+        $ref: ./Area,
         type: object
       }
     },
     csharpType: Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.Json.JsonSchemaGeneratorTests+Address
   },
-  ClassWithNested: {
-    title: ClassWithNested,
+  Area: {
+    type: object,
+    properties: {
+      state: {
+        type: string
+      },
+      country: {
+        type: string
+      }
+    }
+  },
+  ClassWithHandledProperties: {
+    title: ClassWithHandledProperties,
     type: object,
     required: [
-      Name
+      Name,
+      Address
     ],
     properties: {
       Name: {
@@ -36,20 +48,6 @@
         type: object
       }
     },
-    csharpType: Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.Json.JsonSchemaGeneratorTests+ClassWithNested
-  },
-  IArea: {
-    title: IArea,
-    type: object,
-    required: [
-      Country
-    ],
-    properties: {
-      Country: {
-        type: string
-      }
-    },
-    csharpType: Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.Json.JsonSchemaGeneratorTests+IArea,
-    x-abstract: true
+    csharpType: Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.Json.JsonSchemaGeneratorTests+ClassWithHandledProperties
   }
 }

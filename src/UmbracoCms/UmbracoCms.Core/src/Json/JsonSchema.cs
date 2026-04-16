@@ -12,6 +12,18 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 /// </summary>
 public sealed class JsonSchema
 {
+    [JsonIgnore]
+    internal Type? ClrType { get; set; }
+
+    /// <summary>
+    /// Gets or sets the name of the .NET type that this schema represents. This property is used
+    /// internally by the schema generator to track the source type and is not serialized to JSON.
+    /// The TypeName helps correlate generated schemas back to their original .NET types for debugging
+    /// and inspection purposes, but does not affect validation behavior or schema output.
+    /// </summary>
+    [JsonIgnore]
+    public string? TypeName { get; set; }
+
     /// <summary>
     /// Gets or sets the JSON Schema version URI. This defines which specification version
     /// the schema conforms to.
@@ -109,7 +121,7 @@ public sealed class JsonSchema
     /// </summary>
     [JsonPropertyName("type")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public JsonValueType? Type { get; set; }
+    public JsonPropertyType? Type { get; set; }
 
     /// <summary>
     /// Gets or sets a format hint for type validation. Formats provide additional semantic
@@ -392,9 +404,12 @@ public sealed class JsonSchema
     public Dictionary<string, object?>? Extensions { get; set; }
 
     /// <summary>
-    /// Creates a new JsonSchema instance.
+    /// Creates a new empty JsonSchema instance with all properties initialized to null. This factory
+    /// method provides a convenient way to create schema objects that will be populated using property
+    /// setters or the JsonSchemaBuilder. Use this when you need to construct a schema programmatically
+    /// or when building schemas through direct property assignment rather than the fluent builder API.
     /// </summary>
-    /// <returns>A new JsonSchema instance</returns>
+    /// <returns>A new empty JsonSchema instance ready for configuration.</returns>
     public static JsonSchema Create() =>
         new();
 

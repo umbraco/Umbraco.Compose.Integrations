@@ -24,7 +24,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core
     public interface IPropertySchemaResolver
     {
         bool CanHandle(Umbraco.Cms.Core.Models.PublishedContent.PublishedPropertyType propertyType);
-        Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema? Process(Umbraco.Cms.Core.Models.PublishedContent.PublishedPropertyType propertyType, Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGenerator generator);
+        Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema? Process(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorContext context, Umbraco.Cms.Core.Models.PublishedContent.PublishedPropertyType propertyType);
     }
     public sealed class PropertySchemaResolverCollection : Umbraco.Cms.Core.Composing.BuilderCollectionBase<Umbraco.Compose.Integrations.UmbracoCms.Core.IPropertySchemaResolver>
     {
@@ -71,11 +71,26 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json
     public interface IJsonSchemaTypeHandler
     {
         bool CanHandle(System.Type type);
-        Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema? Handle(System.Type type);
+        string GetTypeName(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorContext context, System.Type type);
+        Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema Handle(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorContext context, System.Type type);
     }
-    public interface ITypeNameGenerator
+    [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonPropertyType>))]
+    public enum JsonPropertyType
     {
-        string GenerateName(System.Type type);
+        [System.Text.Json.Serialization.JsonStringEnumMemberName("string")]
+        String = 0,
+        [System.Text.Json.Serialization.JsonStringEnumMemberName("number")]
+        Number = 1,
+        [System.Text.Json.Serialization.JsonStringEnumMemberName("integer")]
+        Integer = 2,
+        [System.Text.Json.Serialization.JsonStringEnumMemberName("boolean")]
+        Boolean = 3,
+        [System.Text.Json.Serialization.JsonStringEnumMemberName("object")]
+        Object = 4,
+        [System.Text.Json.Serialization.JsonStringEnumMemberName("array")]
+        Array = 5,
+        [System.Text.Json.Serialization.JsonStringEnumMemberName("null")]
+        Null = 6,
     }
     public sealed class JsonSchema
     {
@@ -201,7 +216,9 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json
         public string? Title { get; set; }
         [System.Text.Json.Serialization.JsonIgnore(Condition=System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
         [System.Text.Json.Serialization.JsonPropertyName("type")]
-        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonValueType? Type { get; set; }
+        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonPropertyType? Type { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string? TypeName { get; set; }
         [System.Text.Json.Serialization.JsonIgnore(Condition=System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
         [System.Text.Json.Serialization.JsonPropertyName("uniqueItems")]
         public bool? UniqueItems { get; set; }
@@ -211,6 +228,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json
     public sealed class JsonSchemaBuilder
     {
         public JsonSchemaBuilder() { }
+        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema JsonSchema { get; }
         public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder AdditionalProperties(System.Func<Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder, Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder> configure) { }
         public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder AdditionalProperties(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema schema) { }
         public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder AdditionalProperties(bool allowed) { }
@@ -224,6 +242,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json
         public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder CustomKeyword(string key, System.Func<Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder, Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder>? configure) { }
         public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder CustomKeyword(string key, object? value) { }
         public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder Def(string name, System.Func<Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder, Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder> configure) { }
+        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder Def(string name, Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema schema) { }
         public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder Description(string description) { }
         public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder Discriminator(string propertyName, System.Collections.Generic.Dictionary<string, string>? mapping = null) { }
         public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder Enum(params object[] values) { }
@@ -255,7 +274,8 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json
         public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder Required(params string[] properties) { }
         public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder Schema(string? schemaUri) { }
         public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder Title(string title) { }
-        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder Type(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonValueType type) { }
+        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder Type(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonPropertyType type) { }
+        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder TypeName(string? typeName) { }
         public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder UniqueItems(bool value = true) { }
         public static Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder Create() { }
     }
@@ -267,44 +287,60 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json
         [System.Text.Json.Serialization.JsonPropertyName("propertyName")]
         public string? PropertyName { get; set; }
     }
-    public sealed class JsonSchemaGenerator
+    public static class JsonSchemaGenerator
     {
-        public JsonSchemaGenerator(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorOptions? options = null) { }
-        public void ClearCache() { }
-        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema Generate(System.Type type, Umbraco.Compose.Integrations.UmbracoCms.Core.Json.ReferenceMode? mode = default) { }
-        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema Generate<T>() { }
-        public System.Collections.Generic.Dictionary<string, Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema> GenerateAll(System.Type type, string? schema = null) { }
+        public static Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema Generate(System.Type type, Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorContext context) { }
+        public static Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema Generate(System.Type type, Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorOptions? options = null) { }
+        public static Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema Generate<T>(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorContext context) { }
+        public static Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema Generate<T>(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorOptions? options = null) { }
     }
-    public class JsonSchemaGeneratorOptions
+    public sealed class JsonSchemaGeneratorContext
+    {
+        public JsonSchemaGeneratorContext(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorOptions? options = null) { }
+        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorOptions Options { get; }
+        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema? RootSchema { get; }
+        public System.Collections.Generic.IReadOnlyDictionary<string, Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema> Schemas { get; }
+        public bool ContainsType(System.Type type) { }
+        public bool ContainsType(string name) { }
+        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder CreateBuilder(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonPropertyType type, string? schema = null) { }
+        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema Generate(System.Type type) { }
+        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema Generate<T>() { }
+        public void RegisterSchema(System.Type type, Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema schema) { }
+        public void RegisterSchema(string name, Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema schema) { }
+        public void RegisterSchema(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema schema, System.Type type, string name) { }
+        public bool TryFindHandler(System.Type type, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out Umbraco.Compose.Integrations.UmbracoCms.Core.Json.IJsonSchemaTypeHandler? handler) { }
+        public bool TryGetSchema(System.Type type, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema? schema) { }
+        public bool TryGetSchema(string name, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema? schema) { }
+        public bool TryRegisterSchema(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema schema, System.Type? type, string name) { }
+    }
+    public sealed class JsonSchemaGeneratorOptions
     {
         public JsonSchemaGeneratorOptions() { }
+        public string? DefaultSchema { get; set; }
         public System.Collections.Generic.List<Umbraco.Compose.Integrations.UmbracoCms.Core.Json.IJsonSchemaTypeHandler> Handlers { get; }
-        public System.Collections.Generic.Dictionary<System.Type, System.Action<Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder>> PrimitiveTypeHandlers { get; }
         public System.Text.Json.JsonNamingPolicy? PropertyNamingPolicy { get; set; }
         public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.ReferenceMode ReferenceMode { get; set; }
+        public System.Collections.Generic.Dictionary<System.Type, System.Action<Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorContext, Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder>> TypeMapping { get; }
+        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.TypeNameGenerator TypeNameGenerator { get; set; }
+        public static Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorOptions Default { get; }
     }
-    [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonValueType>))]
-    public enum JsonValueType
+    public abstract class JsonSchemaTypeHandler<T> : Umbraco.Compose.Integrations.UmbracoCms.Core.Json.IJsonSchemaTypeHandler
     {
-        [System.Text.Json.Serialization.JsonStringEnumMemberName("string")]
-        String = 0,
-        [System.Text.Json.Serialization.JsonStringEnumMemberName("number")]
-        Number = 1,
-        [System.Text.Json.Serialization.JsonStringEnumMemberName("integer")]
-        Integer = 2,
-        [System.Text.Json.Serialization.JsonStringEnumMemberName("boolean")]
-        Boolean = 3,
-        [System.Text.Json.Serialization.JsonStringEnumMemberName("object")]
-        Object = 4,
-        [System.Text.Json.Serialization.JsonStringEnumMemberName("array")]
-        Array = 5,
-        [System.Text.Json.Serialization.JsonStringEnumMemberName("null")]
-        Null = 6,
+        protected JsonSchemaTypeHandler() { }
+        public bool CanHandle(System.Type type) { }
+        public abstract string GetTypeName(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorContext context, System.Type type);
+        public abstract Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema Handle(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorContext context, System.Type type);
     }
     public enum ReferenceMode
     {
         Defs = 0,
         Inline = 1,
         External = 2,
+    }
+    public abstract class TypeNameGenerator
+    {
+        protected TypeNameGenerator() { }
+        public static Umbraco.Compose.Integrations.UmbracoCms.Core.Json.TypeNameGenerator Default { get; }
+        public abstract string GenerateName(System.Type type);
     }
 }

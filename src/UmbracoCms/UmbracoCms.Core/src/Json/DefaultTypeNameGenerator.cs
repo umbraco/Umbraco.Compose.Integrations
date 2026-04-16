@@ -1,11 +1,7 @@
 namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 
-internal sealed class DefaultTypeNameGenerator : ITypeNameGenerator
+internal sealed class DefaultTypeNameGenerator : TypeNameGenerator
 {
-    public static readonly DefaultTypeNameGenerator Instance = new();
-
-    private DefaultTypeNameGenerator() { }
-
-    public string GenerateName(Type type) =>
+    public override string GenerateName(Type type) =>
         type.Name;
 }

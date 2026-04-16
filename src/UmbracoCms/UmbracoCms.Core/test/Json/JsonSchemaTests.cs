@@ -68,7 +68,7 @@ public sealed class JsonSchemaTests
     public void AddExtension_Allows_JsonSchema_Object()
     {
         JsonSchema schema = new();
-        JsonSchema nestedSchema = new() { Type = JsonValueType.String };
+        JsonSchema nestedSchema = new() { Type = JsonPropertyType.String };
 
         schema.AddExtension("x-schema", nestedSchema);
 
@@ -87,7 +87,7 @@ public sealed class JsonSchemaTests
         schema.Ref = "#/defs/MyType";
         schema.Title = "My Schema";
         schema.Description = "A test schema";
-        schema.Type = JsonValueType.String;
+        schema.Type = JsonPropertyType.String;
         schema.Format = "email";
         schema.Enum = ["option1", "option2"];
         schema.Const = "fixed";
@@ -102,22 +102,22 @@ public sealed class JsonSchemaTests
         schema.MaxItems = 10;
         schema.MinItems = 1;
         schema.UniqueItems = true;
-        schema.Contains = new() { Type = JsonValueType.String };
+        schema.Contains = new() { Type = JsonPropertyType.String };
         schema.MaxProperties = 5;
         schema.MinProperties = 1;
         schema.Required = ["prop1"];
-        schema.Properties = new() { { "name", new JsonSchema { Type = JsonValueType.String } } };
-        schema.PatternProperties = new() { { "^[a-z]+$", new JsonSchema { Type = JsonValueType.String } } };
-        schema.AdditionalProperties = new() { Type = JsonValueType.Integer };
-        schema.Items = new() { Type = JsonValueType.String };
-        schema.PrefixItems = [new() { Type = JsonValueType.String }, new() { Type = JsonValueType.Integer }];
-        schema.AllOf = [new() { Type = JsonValueType.Object }];
-        schema.AnyOf = [new() { Type = JsonValueType.String }, new() { Type = JsonValueType.Integer }];
-        schema.OneOf = [new() { Type = JsonValueType.Boolean }];
+        schema.Properties = new() { { "name", new JsonSchema { Type = JsonPropertyType.String } } };
+        schema.PatternProperties = new() { { "^[a-z]+$", new JsonSchema { Type = JsonPropertyType.String } } };
+        schema.AdditionalProperties = new() { Type = JsonPropertyType.Integer };
+        schema.Items = new() { Type = JsonPropertyType.String };
+        schema.PrefixItems = [new() { Type = JsonPropertyType.String }, new() { Type = JsonPropertyType.Integer }];
+        schema.AllOf = [new() { Type = JsonPropertyType.Object }];
+        schema.AnyOf = [new() { Type = JsonPropertyType.String }, new() { Type = JsonPropertyType.Integer }];
+        schema.OneOf = [new() { Type = JsonPropertyType.Boolean }];
         schema.Not = new() { Const = "forbidden" };
         schema.If = JsonSchemaBuilder.Create().Property("type", JsonSchemaBuilder.Create().Const("special").Build()).Build();
-        schema.Then = new() { Type = JsonValueType.String };
-        schema.Else = new() { Type = JsonValueType.Integer };
+        schema.Then = new() { Type = JsonPropertyType.String };
+        schema.Else = new() { Type = JsonPropertyType.Integer };
 
         Assert.Equal("https://json-schema.org/draft/2020-12/schema", schema.Schema);
         Assert.Equal("https://example.com/schema", schema.Id);
@@ -125,7 +125,7 @@ public sealed class JsonSchemaTests
         Assert.Equal("#/defs/MyType", schema.Ref);
         Assert.Equal("My Schema", schema.Title);
         Assert.Equal("A test schema", schema.Description);
-        Assert.Equal(JsonValueType.String, schema.Type);
+        Assert.Equal(JsonPropertyType.String, schema.Type);
         Assert.Equal("email", schema.Format);
         Assert.NotNull(schema.Enum);
         Assert.Equal("fixed", schema.Const);
@@ -210,14 +210,14 @@ public sealed class JsonSchemaTests
     {
         JsonSchema schema = new()
         {
-            Type = JsonValueType.Object,
+            Type = JsonPropertyType.Object,
             Title = "Test",
             Description = "A test schema",
             Required = ["name"],
             Properties = new()
             {
                 ["name"] = new()
-                { Type = JsonValueType.String }
+                { Type = JsonPropertyType.String }
             },
             AdditionalProperties = new()
         };
@@ -234,16 +234,16 @@ public sealed class JsonSchemaTests
     {
         JsonSchema original = new()
         {
-            Type = JsonValueType.Object,
+            Type = JsonPropertyType.Object,
             Title = "User",
             Description = "A user entity",
             Required = ["id", "name"],
             Properties = new()
             {
                 ["id"] = new()
-                { Type = JsonValueType.Integer },
+                { Type = JsonPropertyType.Integer },
                 ["name"] = new()
-                { Type = JsonValueType.String }
+                { Type = JsonPropertyType.String }
             },
             AdditionalProperties = new()
         };
@@ -264,16 +264,16 @@ public sealed class JsonSchemaTests
     {
         JsonSchema schema = new()
         {
-            Type = JsonValueType.Object,
+            Type = JsonPropertyType.Object,
             Properties = new()
             {
                 ["nested"] = new()
                 {
-                    Type = JsonValueType.Object,
+                    Type = JsonPropertyType.Object,
                     Properties = new()
                     {
                         ["value"] = new()
-                        { Type = JsonValueType.Integer }
+                        { Type = JsonPropertyType.Integer }
                     }
                 }
             }
@@ -290,16 +290,16 @@ public sealed class JsonSchemaTests
     {
         JsonSchema schema = new()
         {
-            Type = JsonValueType.Object,
+            Type = JsonPropertyType.Object,
             Defs = new()
             {
                 ["Address"] = new()
                 {
-                    Type = JsonValueType.Object,
+                    Type = JsonPropertyType.Object,
                     Properties = new()
                     {
                         ["street"] = new()
-                        { Type = JsonValueType.String }
+                        { Type = JsonPropertyType.String }
                     }
                 }
             }
@@ -318,8 +318,8 @@ public sealed class JsonSchemaTests
         {
             OneOf =
             [
-                new JsonSchema { Type = JsonValueType.String },
-                new JsonSchema { Type = JsonValueType.Integer }
+                new JsonSchema { Type = JsonPropertyType.String },
+                new JsonSchema { Type = JsonPropertyType.Integer }
             ]
         };
 
@@ -335,7 +335,7 @@ public sealed class JsonSchemaTests
     {
         JsonSchema schema = new()
         {
-            Type = JsonValueType.Object,
+            Type = JsonPropertyType.Object,
             Discriminator = new()
             {
                 PropertyName = "type",
@@ -359,9 +359,9 @@ public sealed class JsonSchemaTests
         {
             If = JsonSchemaBuilder.Create().Property("type", JsonSchemaBuilder.Create().Const("special").Build()).Build(),
             Then = new()
-            { Type = JsonValueType.String },
+            { Type = JsonPropertyType.String },
             Else = new()
-            { Type = JsonValueType.Integer }
+            { Type = JsonPropertyType.Integer }
         };
 
         string json = JsonSerializer.Serialize(schema);
@@ -400,7 +400,7 @@ public sealed class JsonSchemaTests
     {
         JsonSchema schema = new()
         {
-            Type = JsonValueType.String
+            Type = JsonPropertyType.String
         };
 
         string json = JsonSerializer.Serialize(schema);
@@ -489,8 +489,8 @@ public sealed class JsonSchemaTests
         {
             PrefixItems =
             [
-                new JsonSchema { Type = JsonValueType.String },
-                new JsonSchema { Type = JsonValueType.Integer }
+                new JsonSchema { Type = JsonPropertyType.String },
+                new JsonSchema { Type = JsonPropertyType.Integer }
             ]
         };
 
