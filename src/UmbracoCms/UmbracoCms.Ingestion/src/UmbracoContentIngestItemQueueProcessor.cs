@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Core.DeliveryApi;
 using Umbraco.Cms.Core.Models.PublishedContent;
-using Umbraco.Cms.Core.Services.Changes;
 using Umbraco.Cms.Core.Services.Navigation;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Extensions;
@@ -38,7 +37,7 @@ internal sealed class UmbracoContentIngestItemQueueProcessor(
         {
             _logger.LogDebug("Processing entry {Entity}", entity);
 
-            if (entity is { ChangeTypes: TreeChangeTypes.Remove, })
+            if (entity is { ChangeType: ContentChangeType.Delete, })
             {
                 if (entity.AffectedCultures is { Count: > 0, })
                 {
@@ -65,28 +64,25 @@ internal sealed class UmbracoContentIngestItemQueueProcessor(
                 continue;
             }
 
-            if (entity is { ChangeTypes: TreeChangeTypes.RefreshNode or TreeChangeTypes.RefreshBranch, })
+            foreach (string culture in entity.AffectedCultures is { Count: > 0, }
+                ? entity.AffectedCultures
+                : content.Cultures.Select(static x => x.Value.Culture))
             {
-                foreach (string culture in entity.AffectedCultures is { Count: > 0, }
-                    ? entity.AffectedCultures
-                    : content.Cultures.Select(static x => x.Value.Culture))
+                if (!content.IsPublished(culture))
                 {
-                    if (!content.IsPublished(culture))
-                    {
-                        _logger.LogWarning("Got unpublished content from cache");
-                        continue;
-                    }
+                    _logger.LogWarning("Got unpublished content from cache");
+                    continue;
+                }
 
-                    _variationContextAccessor.VariationContext = new(culture);
-                    _umbracoContextAccessor.Set(context.UmbracoContext);
+                _variationContextAccessor.VariationContext = new(culture);
+                _umbracoContextAccessor.Set(context.UmbracoContext);
 
-                    foreach (UpsertContentEntry processedItem in ProcessItem(
-                        content,
-                        culture,
-                        entity.ChangeTypes is TreeChangeTypes.RefreshBranch))
-                    {
-                        yield return processedItem;
-                    }
+                foreach (UpsertContentEntry processedItem in ProcessItem(
+                    content,
+                    culture,
+                    entity.ChangeType is ContentChangeType.UpdateWithDescendants))
+                {
+                    yield return processedItem;
                 }
             }
         }

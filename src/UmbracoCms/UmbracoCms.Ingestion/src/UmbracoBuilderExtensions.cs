@@ -1,9 +1,9 @@
 using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Umbraco.Cms.Core.Notifications;
 using Umbraco.Compose.Integrations.UmbracoCms.Core;
 using Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
-using Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Cache.Content;
 using Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Persistence;
 
 namespace Umbraco.Cms.Core.DependencyInjection;
@@ -26,9 +26,6 @@ public static partial class UmbracoBuilderExtensions
             builder.Services.AddOptions<UmbracoComposeIngestionOptions>()
                 .BindConfiguration("Umbraco:Compose:Ingestion");
 
-            builder
-                .AddComposeCustomCacheRefresherNotificationHandlers();
-
             builder.Services.AddSingleton<IIngestQueueRepository, IngestQueueRepository>();
 
             builder.Services.AddSingleton(static _ => Channel.CreateUnbounded<IngestQueueItem>());
@@ -49,8 +46,7 @@ public static partial class UmbracoBuilderExtensions
             builder.AddComponent<IngestionQueueDrainComponent>();
 
             builder
-                .AddNotificationAsyncHandler<
-                    PublishedContentCacheRefresherNotification, PublishedContentCacheRefresherNotificationHandler>();
+                .AddNotificationAsyncHandler<ContentTreeChangeNotification, ContentTreeChangeNotificationHandler>();
 
             return builder;
         }
