@@ -45,6 +45,9 @@ public static class UmbracoBuilderExtensions
                     o.DefaultSchema = "https://umbracocompose.com/v1/schema";
                     o.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                     o.ReferenceMode = ReferenceMode.External;
+
+                    o.Handlers.Add(new ApiContentRouteHandler());
+                    o.Handlers.Add(new ApiContentStartItemHandler());
                 });
 
             builder.Services.AddHttpClient<SchemaBackgroundService>()
