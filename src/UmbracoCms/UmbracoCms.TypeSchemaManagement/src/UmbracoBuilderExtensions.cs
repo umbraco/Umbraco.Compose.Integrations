@@ -46,6 +46,7 @@ public static class UmbracoBuilderExtensions
                     o.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                     o.ReferenceMode = ReferenceMode.External;
 
+                    o.Handlers.Add(new ApiElementHandler());
                     o.Handlers.Add(new ApiContentRouteHandler());
                     o.Handlers.Add(new ApiContentStartItemHandler());
                 });

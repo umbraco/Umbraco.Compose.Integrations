@@ -20,7 +20,7 @@ public sealed class ComposeEntityPickerPropertySchemaResolver(IDataTypeService d
             configuration.DataSource.Equals("Umbraco.Compose.PropertyEditorDataSource.Picker");
 
     /// <inheritdoc />
-    public JsonSchema? Process(JsonSchemaGeneratorContext context, PublishedPropertyType propertyType)
+    public JsonSchema Process(JsonSchemaGeneratorContext context, PublishedPropertyType propertyType)
     {
         ArgumentNullException.ThrowIfNull(propertyType);
         ArgumentNullException.ThrowIfNull(context);
@@ -28,9 +28,10 @@ public sealed class ComposeEntityPickerPropertySchemaResolver(IDataTypeService d
 #pragma warning disable CS0618 // 'IDataTypeService.GetDataType(int)' is obsolete: 'Please use GetAsync. Will be removed in V15.
         IDataType? dataType = dataTypeService.GetDataType(propertyType.DataType.Id);
 #pragma warning restore CS0618
+
         if (dataType is null)
         {
-            return null;
+            throw new InvalidOperationException($"Could not get data type '{propertyType.DataType.Id}'.");
         }
 
         UmbracoComposeContentPickerDataSourceConfiguration configuration = new(dataType);

@@ -95,16 +95,18 @@ public static class JsonSchemaGenerator
             return schema;
         }
 
-        if (context.TryFindHandler(type, out IJsonSchemaTypeHandler? handler))
+        if (context.CurrentHandling != type && context.TryFindHandler(type, out IJsonSchemaTypeHandler? handler))
         {
             if (context.TryGetSchema(type, out schema))
             {
                 return schema;
             }
 
+            context.CurrentHandling = type;
             schema = handler.Handle(context, type);
             schema.TypeName = typeName;
             context.TryRegisterSchema(schema, type, typeName);
+            context.CurrentHandling = null;
 
             return schema;
         }

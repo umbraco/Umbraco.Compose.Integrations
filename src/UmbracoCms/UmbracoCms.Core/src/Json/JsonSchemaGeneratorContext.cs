@@ -1,4 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 
@@ -13,6 +14,8 @@ public sealed class JsonSchemaGeneratorContext
     private readonly Dictionary<Type, JsonSchema> _schemasByType = [];
     private readonly Dictionary<string, JsonSchema> _schemasByName = [];
     private JsonSchemaBuilder? _rootSchemaBuilder;
+
+    internal TypeInfo? CurrentHandling { get; set; }
 
     /// <summary>
     /// Gets the configuration options controlling schema generation behavior. These options determine

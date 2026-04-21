@@ -38,9 +38,6 @@ internal class JsonSchemaExporterService
 
         GenerateSchemaInternal(context, contentTypeAlias);
 
-        Console.WriteLine(System.Text.Json.JsonSerializer
-            .Serialize(context.Schemas, new System.Text.Json.JsonSerializerOptions() { WriteIndented = true }));
-
         return context.Schemas;
     }
 
@@ -130,9 +127,9 @@ internal class JsonSchemaExporterService
             });
     }
 
-    private JsonSchema? GenerateType<T>(JsonSchemaGeneratorContext context) =>
+    private static JsonSchema? GenerateType<T>(JsonSchemaGeneratorContext context) =>
         GenerateType(context, typeof(T));
 
-    private JsonSchema GenerateType(JsonSchemaGeneratorContext context, Type type) =>
+    private static JsonSchema GenerateType(JsonSchemaGeneratorContext context, Type type) =>
         context.Generate(type);
 }
