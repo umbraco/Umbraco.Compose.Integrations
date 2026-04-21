@@ -79,7 +79,7 @@ public static class JsonSchemaGenerator
         JsonSchemaBuilder builder;
         if (context.Options.TypeMapping.TryGetValue(type, out Action<JsonSchemaGeneratorContext, JsonSchemaBuilder>? mapHandler))
         {
-            builder = context.CreateBuilder(JsonPropertyType.Object);
+            builder = context.CreateBuilder();
             mapHandler(context, builder);
             return builder.Build();
         }
@@ -142,8 +142,6 @@ public static class JsonSchemaGenerator
         string typeName = context.GetTypeName(type);
         builder.JsonSchema.TypeName = typeName;
         builder.JsonSchema.ClrType = type;
-
-        builder.Type(JsonPropertyType.Object);
 
         if (type == typeof(Object))
         {
@@ -213,7 +211,7 @@ public static class JsonSchemaGenerator
 
                 if (propertySchema.Type is JsonPropertyType.Array && path is not null)
                 {
-                    builder.Property(propertyName, builder => builder.Type(JsonPropertyType.Array).Items(builder => builder.Ref(path)));
+                    builder.Property(propertyName, builder => builder.Type(JsonPropertyType.Array).Items(builder => builder.Type(JsonPropertyType.Object).Ref(path)));
                 }
                 else if (propertySchema.Type is JsonPropertyType.Object && path is not null)
                 {

@@ -224,14 +224,17 @@ public sealed class JsonSchemaGeneratorContext
     /// <param name="type">The JsonPropertyType to initialize the builder with. This determines the base type of the schema being built.</param>
     /// <param name="schema">Optional schema URI to set on object types. If null, Options.DefaultSchema is used for object types.</param>
     /// <returns>A new JsonSchemaBuilder instance configured with the specified type and schema URI.</returns>
-    public JsonSchemaBuilder CreateBuilder(JsonPropertyType type, string? schema = default)
+    public JsonSchemaBuilder CreateBuilder(JsonPropertyType? type = default, string? schema = default)
     {
         JsonSchemaBuilder builder = new();
-        builder.Type(type);
-
-        if (type is JsonPropertyType.Object)
+        if (type.HasValue)
         {
-            builder.Schema(schema ?? Options.DefaultSchema);
+            builder.Type(type.Value);
+
+            if (type.Value is JsonPropertyType.Object)
+            {
+                builder.Schema(schema ?? Options.DefaultSchema);
+            }
         }
 
         _rootSchemaBuilder ??= builder;
