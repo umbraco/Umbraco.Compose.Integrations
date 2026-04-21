@@ -38,7 +38,7 @@ public sealed class ComposeEntityPickerPropertySchemaResolver(IDataTypeService d
 
         return context
             .CreateBuilder(JsonPropertyType.Array)
-            .Items(builder => builder.Ref("https://umbracocompose.com/v1/node"))
+            .Items(builder => builder.Type(JsonPropertyType.Object).Ref("https://umbracocompose.com/v1/node"))
             .CustomKeyword("$delivery", builder => builder.CustomKeyword("refCollection", configuration.Collection))
             .Build();
     }

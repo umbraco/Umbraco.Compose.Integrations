@@ -94,6 +94,8 @@ internal class JsonSchemaExporterService
             "properties",
             builder =>
             {
+                builder.Type(JsonPropertyType.Object);
+
                 foreach (PublishedPropertyType propertyType in contentType.PropertyTypes.Cast<PublishedPropertyType>())
                 {
                     JsonSchema? schema;
@@ -110,7 +112,11 @@ internal class JsonSchemaExporterService
                     {
                         if (schema.Type is JsonPropertyType.Object && schema.TypeName is not null)
                         {
-                            builder.Property(propertyType.Alias, builder => builder.Ref(schema.TypeName));
+                            builder.Property(propertyType.Alias, builder => builder.Type(JsonPropertyType.Object).Ref($"./{schema.TypeName}"));
+                        }
+                        else if (schema.Type is JsonPropertyType.Array && schema.Items?.TypeName is not null)
+                        {
+                            builder.Property(propertyType.Alias, builder => builder.Type(JsonPropertyType.Array).Items(builder => builder.Type(JsonPropertyType.Object).Ref($"./{schema.Items.TypeName}")));
                         }
                         else
                         {
