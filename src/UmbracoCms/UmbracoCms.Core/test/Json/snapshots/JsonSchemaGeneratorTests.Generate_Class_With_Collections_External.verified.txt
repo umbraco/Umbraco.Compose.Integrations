@@ -30,7 +30,8 @@
     Adresses: {
       type: array,
       items: {
-        $ref: ./IAddress
+        $ref: ./IAddress,
+        type: object
       }
     }
   },

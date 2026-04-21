@@ -302,7 +302,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json
         public System.Collections.Generic.IReadOnlyDictionary<string, Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema> Schemas { get; }
         public bool ContainsType(System.Type type) { }
         public bool ContainsType(string name) { }
-        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder CreateBuilder(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonPropertyType type, string? schema = null) { }
+        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaBuilder CreateBuilder(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonPropertyType? type = default, string? schema = null) { }
         public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema Generate(System.Type type) { }
         public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema Generate<T>() { }
         public void RegisterSchema(System.Type type, Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema schema) { }

@@ -69,7 +69,8 @@
     Adresses: {
       type: array,
       items: {
-        $ref: #/defs/IAddress
+        $ref: #/defs/IAddress,
+        type: object
       }
     }
   },

@@ -8,29 +8,21 @@ using Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
-internal class JsonSchemaExporterService
+internal class JsonSchemaExporterService(
+    IContentTypeService contentTypeService,
+    IPublishedContentTypeCache publishedContentTypeCache,
+    PropertySchemaResolverCollection propertySchemaResolvers,
+    IOptionsSnapshot<JsonSchemaGeneratorOptions> jsonSchemaGeneratorOptions)
 {
 #pragma warning disable S1075 // refactor you code to not use hardcoded absolute paths or URIs.
     private const string ComposeNodeUrl = "https://umbracocompose.com/v1/node";
 #pragma warning restore S1075 // refactor you code to not use hardcoded absolute paths or URIs.
 
-    private readonly IContentTypeService _contentTypeService;
-    private readonly IPublishedContentTypeCache _publishedContentTypeCache;
-    private readonly PropertySchemaResolverCollection _propertySchemaResolvers;
-    private readonly JsonSchemaGeneratorOptions _jsonSchemaGeneratorOptions;
-
-    public JsonSchemaExporterService(
-        IContentTypeService contentTypeService,
-        IPublishedContentTypeCache publishedContentTypeCache,
-        PropertySchemaResolverCollection propertySchemaResolvers,
-        IOptionsSnapshot<JsonSchemaGeneratorOptions> jsonSchemaGeneratorOptions)
-    {
-        _contentTypeService = contentTypeService;
-        _publishedContentTypeCache = publishedContentTypeCache;
-        _propertySchemaResolvers = propertySchemaResolvers;
-
-        _jsonSchemaGeneratorOptions = jsonSchemaGeneratorOptions.Get(nameof(JsonSchemaExporterService));
-    }
+    private readonly IContentTypeService _contentTypeService = contentTypeService;
+    private readonly IPublishedContentTypeCache _publishedContentTypeCache = publishedContentTypeCache;
+    private readonly PropertySchemaResolverCollection _propertySchemaResolvers = propertySchemaResolvers;
+    private readonly JsonSchemaGeneratorOptions _jsonSchemaGeneratorOptions = jsonSchemaGeneratorOptions.Get(
+        nameof(JsonSchemaExporterService));
 
     public IReadOnlyDictionary<string, JsonSchema> GenerateSchemas(string contentTypeAlias)
     {
@@ -112,11 +104,16 @@ internal class JsonSchemaExporterService
                     {
                         if (schema.Type is JsonPropertyType.Object && schema.TypeName is not null)
                         {
-                            builder.Property(propertyType.Alias, builder => builder.Type(JsonPropertyType.Object).Ref($"./{schema.TypeName}"));
+                            builder.Property(
+                                propertyType.Alias,
+                                builder => builder.Type(JsonPropertyType.Object).Ref($"./{schema.TypeName}"));
                         }
                         else if (schema.Type is JsonPropertyType.Array && schema.Items?.TypeName is not null)
                         {
-                            builder.Property(propertyType.Alias, builder => builder.Type(JsonPropertyType.Array).Items(builder => builder.Type(JsonPropertyType.Object).Ref($"./{schema.Items.TypeName}")));
+                            builder.Property(
+                                propertyType.Alias,
+                                builder => builder.Type(JsonPropertyType.Array)
+                                    .Items(builder => builder.Type(JsonPropertyType.Object).Ref($"./{schema.Items.TypeName}")));
                         }
                         else
                         {

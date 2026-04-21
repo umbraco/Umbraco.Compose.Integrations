@@ -9,7 +9,14 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 /// between custom handlers and the default generator. Use this class when you need fine-grained
 /// control over schema generation or want to reuse generation state across multiple type schemas.
 /// </summary>
-public sealed class JsonSchemaGeneratorContext
+/// <remarks>
+/// Initializes a new JsonSchemaGeneratorContext instance with optional custom configuration.
+/// When no options are provided, default settings are used including Inline reference mode and
+/// an empty handler list. This constructor is the recommended entry point for creating contexts
+/// when you need full control over schema generation state.
+/// </remarks>
+/// <param name="options">Optional JsonSchemaGeneratorOptions for customizing generation behavior. If null, default options are used.</param>
+public sealed class JsonSchemaGeneratorContext(JsonSchemaGeneratorOptions? options = default)
 {
     private readonly Dictionary<Type, JsonSchema> _schemasByType = [];
     private readonly Dictionary<string, JsonSchema> _schemasByName = [];
@@ -23,7 +30,7 @@ public sealed class JsonSchemaGeneratorContext
     /// generator used throughout schema creation. The options are initialized from the constructor
     /// parameter or default settings if null is provided.
     /// </summary>
-    public JsonSchemaGeneratorOptions Options { get; }
+    public JsonSchemaGeneratorOptions Options { get; } = options ?? JsonSchemaGeneratorOptions.Default;
 
     /// <summary>
     /// Gets an immutable snapshot of all registered schemas indexed by their type names. This dictionary
@@ -41,18 +48,6 @@ public sealed class JsonSchemaGeneratorContext
     /// generated and registered as the root.
     /// </summary>
     public JsonSchema? RootSchema { get; private set; }
-
-    /// <summary>
-    /// Initializes a new JsonSchemaGeneratorContext instance with optional custom configuration.
-    /// When no options are provided, default settings are used including Inline reference mode and
-    /// an empty handler list. This constructor is the recommended entry point for creating contexts
-    /// when you need full control over schema generation state.
-    /// </summary>
-    /// <param name="options">Optional JsonSchemaGeneratorOptions for customizing generation behavior. If null, default options are used.</param>
-    public JsonSchemaGeneratorContext(JsonSchemaGeneratorOptions? options = default)
-    {
-        Options = options ?? JsonSchemaGeneratorOptions.Default;
-    }
 
     /// <summary>
     /// Registers a schema by its explicit name in the generation context. This method adds the schema
@@ -303,6 +298,6 @@ public sealed class JsonSchemaGeneratorContext
             return handler.GetTypeName(this, type);
         }
 
-        return this.Options.TypeNameGenerator.GenerateName(type);
+        return Options.TypeNameGenerator.GenerateName(type);
     }
 }

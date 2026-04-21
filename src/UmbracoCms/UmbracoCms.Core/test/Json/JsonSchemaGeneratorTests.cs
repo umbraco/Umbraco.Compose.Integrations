@@ -220,7 +220,7 @@ public sealed class JsonSchemaGeneratorTests
         };
         JsonSchemaGeneratorContext context = new(options);
 
-        JsonSchemaGenerator.Generate(typeof(ClassWithNested), context);
+        JsonSchemaGenerator.Generate<ClassWithNested>(context);
 
         return Verify(context.Schemas);
     }

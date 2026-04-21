@@ -122,7 +122,7 @@ dotnet_diagnostic.rcs0054.severity = warning
 dotnet_diagnostic.rcs0055.severity = warning
 
 # A line is too long
-dotnet_diagnostic.rcs0056.severity = warning
+dotnet_diagnostic.rcs0056.severity = suggestion
 
 # Add/remove line after file scoped namespace declaration
 dotnet_diagnostic.rcs0060.severity = warning

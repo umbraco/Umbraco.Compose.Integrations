@@ -26,14 +26,8 @@ public sealed class ComposeEntityPickerPropertySchemaResolver(IDataTypeService d
         ArgumentNullException.ThrowIfNull(context);
 
 #pragma warning disable CS0618 // 'IDataTypeService.GetDataType(int)' is obsolete: 'Please use GetAsync. Will be removed in V15.
-        IDataType? dataType = dataTypeService.GetDataType(propertyType.DataType.Id);
-#pragma warning restore CS0618
-
-        if (dataType is null)
-        {
-            throw new InvalidOperationException($"Could not get data type '{propertyType.DataType.Id}'.");
-        }
-
+        IDataType? dataType = dataTypeService.GetDataType(propertyType.DataType.Id)
+            ?? throw new InvalidOperationException($"Could not get data type '{propertyType.DataType.Id}'.");
         UmbracoComposeContentPickerDataSourceConfiguration configuration = new(dataType);
 
         return context

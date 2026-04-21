@@ -143,7 +143,7 @@ public static class JsonSchemaGenerator
         builder.JsonSchema.TypeName = typeName;
         builder.JsonSchema.ClrType = type;
 
-        if (type == typeof(Object))
+        if (type == typeof(object))
         {
             return;
         }
@@ -211,7 +211,10 @@ public static class JsonSchemaGenerator
 
                 if (propertySchema.Type is JsonPropertyType.Array && path is not null)
                 {
-                    builder.Property(propertyName, builder => builder.Type(JsonPropertyType.Array).Items(builder => builder.Type(JsonPropertyType.Object).Ref(path)));
+                    builder.Property(
+                        propertyName,
+                        builder =>
+                            builder.Type(JsonPropertyType.Array).Items(builder => builder.Type(JsonPropertyType.Object).Ref(path)));
                 }
                 else if (propertySchema.Type is JsonPropertyType.Object && path is not null)
                 {
