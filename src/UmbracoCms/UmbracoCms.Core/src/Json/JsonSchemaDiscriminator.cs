@@ -17,6 +17,7 @@ public sealed class JsonSchemaDiscriminator
     /// applied for validation in oneOf or anyOf compositions.
     /// </summary>
     [JsonPropertyName("propertyName")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? PropertyName { get; set; }
 
     /// <summary>
@@ -26,5 +27,6 @@ public sealed class JsonSchemaDiscriminator
     /// based on discriminator values without manual condition checking.
     /// </summary>
     [JsonPropertyName("mapping")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Dictionary<string, string>? Mapping { get; set; }
 }

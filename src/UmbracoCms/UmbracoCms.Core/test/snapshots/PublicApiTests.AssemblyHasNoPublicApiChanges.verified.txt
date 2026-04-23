@@ -107,6 +107,8 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json
         [System.Text.Json.Serialization.JsonIgnore(Condition=System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
         [System.Text.Json.Serialization.JsonPropertyName("anyOf")]
         public System.Collections.Generic.List<Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema>? AnyOf { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore]
+        public System.Type? ClrType { get; set; }
         [System.Text.Json.Serialization.JsonIgnore(Condition=System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
         [System.Text.Json.Serialization.JsonPropertyName("const")]
         public object? Const { get; set; }
@@ -282,8 +284,10 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json
     public sealed class JsonSchemaDiscriminator
     {
         public JsonSchemaDiscriminator() { }
+        [System.Text.Json.Serialization.JsonIgnore(Condition=System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
         [System.Text.Json.Serialization.JsonPropertyName("mapping")]
         public System.Collections.Generic.Dictionary<string, string>? Mapping { get; set; }
+        [System.Text.Json.Serialization.JsonIgnore(Condition=System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
         [System.Text.Json.Serialization.JsonPropertyName("propertyName")]
         public string? PropertyName { get; set; }
     }

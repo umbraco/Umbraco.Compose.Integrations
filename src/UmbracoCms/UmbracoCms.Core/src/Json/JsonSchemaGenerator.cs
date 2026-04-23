@@ -104,6 +104,7 @@ public static class JsonSchemaGenerator
 
             context.CurrentHandling = type;
             schema = handler.Handle(context, type);
+            schema.ClrType = type;
             schema.TypeName = typeName;
             context.TryRegisterSchema(schema, type, typeName);
             context.CurrentHandling = null;

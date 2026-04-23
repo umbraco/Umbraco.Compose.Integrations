@@ -106,14 +106,34 @@ internal class JsonSchemaExporterService(
                         {
                             builder.Property(
                                 propertyType.Alias,
-                                builder => builder.Type(JsonPropertyType.Object).Ref($"./{schema.TypeName}"));
+                                builder =>
+                                {
+                                    builder.Type(JsonPropertyType.Object).Ref($"./{schema.TypeName}");
+
+                                    if (IsNodeType(schema.ClrType))
+                                    {
+                                        builder.CustomKeyword("$delivery", builder => builder.CustomKeyword("refCollection", true));
+                                    }
+
+                                    return builder;
+                                });
                         }
                         else if (schema.Type is JsonPropertyType.Array && schema.Items?.TypeName is not null)
                         {
                             builder.Property(
                                 propertyType.Alias,
                                 builder => builder.Type(JsonPropertyType.Array)
-                                    .Items(builder => builder.Type(JsonPropertyType.Object).Ref($"./{schema.Items.TypeName}")));
+                                    .Items(builder =>
+                                    {
+                                        builder.Type(JsonPropertyType.Object).Ref($"./{schema.Items.TypeName}");
+
+                                        if (IsNodeType(schema.Items.ClrType))
+                                        {
+                                            builder.CustomKeyword("$delivery", builder => builder.CustomKeyword("refCollection", true));
+                                        }
+
+                                        return builder;
+                                    }));
                         }
                         else
                         {
@@ -135,4 +155,9 @@ internal class JsonSchemaExporterService(
 
     private static JsonSchema GenerateType(JsonSchemaGeneratorContext context, Type type) =>
         context.Generate(type);
+
+    private static bool IsNodeType(Type? type) =>
+        type is not null &&
+            (typeof(IApiContent).IsAssignableFrom(type) ||
+                typeof(IApiMedia).IsAssignableFrom(type));
 }

@@ -12,8 +12,14 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 /// </summary>
 public sealed class JsonSchema
 {
+    /// <summary>
+    /// Gets or sets the actual .NET Type object that this schema represents. This property is used
+    /// internally by the schema generator to track the source type and is not serialized to JSON.
+    /// The ClrType helps correlate generated schemas back to their original .NET types for debugging
+    /// and inspection purposes, but does not affect validation behavior or schema output.
+    /// </summary>
     [JsonIgnore]
-    internal Type? ClrType { get; set; }
+    public Type? ClrType { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the .NET type that this schema represents. This property is used
