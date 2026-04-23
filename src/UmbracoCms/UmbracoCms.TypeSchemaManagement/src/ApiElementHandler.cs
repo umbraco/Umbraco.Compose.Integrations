@@ -12,7 +12,13 @@ internal sealed class ApiElementHandler : JsonSchemaTypeHandler<IApiElement>
     /// <inheritdoc />
     public override JsonSchema Handle(JsonSchemaGeneratorContext context, Type type)
     {
+        const string discriminatorPropertyName = nameof(IApiElement.ContentType);
+
         JsonSchema schema = context.Generate<IApiElement>();
+        schema.Discriminator = new()
+        {
+            PropertyName = context.Options.PropertyNamingPolicy?.ConvertName(discriminatorPropertyName) ?? discriminatorPropertyName
+        };
         schema.Properties?.Remove("properties");
         return schema;
     }
