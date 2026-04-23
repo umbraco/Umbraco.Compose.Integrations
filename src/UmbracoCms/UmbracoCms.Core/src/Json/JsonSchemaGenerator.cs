@@ -234,11 +234,20 @@ public static class JsonSchemaGenerator
         context.TryRegisterSchema(builder.JsonSchema, type, typeName);
     }
 
-    private static JsonSchema HandleEnumInternal(JsonSchemaGeneratorContext context, TypeInfo type) =>
-       context
-           .CreateBuilder(JsonPropertyType.String)
-           .Enum([.. type.GetEnumValues()])
-           .Build();
+    private static JsonSchema HandleEnumInternal(JsonSchemaGeneratorContext context, TypeInfo type)
+    {
+        if (type.GetCustomAttribute<JsonConverterAttribute>() is null)
+        {
+            return context.CreateBuilder(JsonPropertyType.String)
+                .Enum(type.GetEnumNames())
+                .Build();
+        }
+
+        return context
+            .CreateBuilder(JsonPropertyType.String)
+            .Enum([.. type.GetEnumValues()])
+            .Build();
+    }
 
     private static JsonSchema HandleDictionaryInternal(JsonSchemaGeneratorContext context, TypeInfo type) =>
        context
