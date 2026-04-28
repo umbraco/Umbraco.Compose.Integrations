@@ -31,7 +31,6 @@ public static class UmbracoBuilderExtensions
             builder.Services.AddSingleton(Channel.CreateUnbounded<SchemaQueueItem>());
             builder.Services.AddSingleton(static sp => sp.GetRequiredService<Channel<SchemaQueueItem>>().Writer);
 
-            builder.Services.AddScoped<IContentTypeSchemaService, ContentTypeSchemaService>();
             builder.Services.AddScoped<JsonSchemaExporterService>();
 
             builder.Services.AddOptions<JsonOptions>(nameof(SchemaBackgroundService))
