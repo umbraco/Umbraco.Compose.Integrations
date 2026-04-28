@@ -30,7 +30,7 @@ public static partial class UmbracoBuilderExtensions
 
             builder.Services.AddSingleton(static _ => Channel.CreateUnbounded<IngestQueueItem>());
             builder.Services.AddSingleton<IIngestService, IngestService>()
-                .AddScoped<UmbracoContentIngestItemQueueProcessor>();
+                .AddScoped<ContentIngestQueueItemProcessor>();
 
             builder.Services.AddHttpClient<IngestBackgroundService>()
                 .ConfigureHttpClient(static (services, client) =>
@@ -43,10 +43,14 @@ public static partial class UmbracoBuilderExtensions
 
             builder.Services.AddHostedService<IngestBackgroundService>();
 
-            builder.AddComponent<IngestionQueueDrainComponent>();
+            builder.AddComponent<RequeueOnStartupComponent>();
 
             builder
-                .AddNotificationAsyncHandler<ContentTreeChangeNotification, ContentTreeChangeNotificationHandler>();
+                .AddNotificationAsyncHandler<ContentPublishedNotification, ContentNotificationHandler>()
+                .AddNotificationAsyncHandler<ContentUnpublishedNotification, ContentNotificationHandler>()
+                .AddNotificationAsyncHandler<ContentMovedNotification, ContentNotificationHandler>()
+                .AddNotificationAsyncHandler<ContentMovedToRecycleBinNotification, ContentNotificationHandler>()
+                .AddNotificationAsyncHandler<ContentDeletedNotification, ContentNotificationHandler>();
 
             return builder;
         }

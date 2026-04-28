@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Umbraco.Cms.Infrastructure.Scoping;
 using Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Persistence;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
@@ -20,6 +21,7 @@ internal sealed class IngestBackgroundService : BackgroundService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<IngestBackgroundService> _logger;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IScopeProvider _scopeProvider;
 
     private UmbracoComposeIngestionOptions _ingestionOptions;
 
@@ -28,7 +30,8 @@ internal sealed class IngestBackgroundService : BackgroundService
         IHttpClientFactory httpClientFactory,
         IOptionsMonitor<UmbracoComposeIngestionOptions> ingestionOptions,
         ILogger<IngestBackgroundService> logger,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        IScopeProvider scopeProvider)
     {
         ArgumentNullException.ThrowIfNull(channel);
 
@@ -37,6 +40,7 @@ internal sealed class IngestBackgroundService : BackgroundService
         _ingestionOptions = ingestionOptions.CurrentValue;
         _logger = logger;
         _serviceProvider = serviceProvider;
+        _scopeProvider = scopeProvider;
 
         ingestionOptions.OnChange(OnIngestionOptionsChange);
     }
@@ -47,15 +51,13 @@ internal sealed class IngestBackgroundService : BackgroundService
         {
             IngestQueueItem queueItem = await _channel.Reader.ReadAsync(stoppingToken).ConfigureAwait(false);
 
-            await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
-            IIngestQueueRepository queueRepository = scope.ServiceProvider.GetRequiredService<IIngestQueueRepository>();
+            await using AsyncServiceScope serviceScope = _serviceProvider.CreateAsyncScope();
+            IIngestQueueRepository queueRepository = serviceScope.ServiceProvider.GetRequiredService<IIngestQueueRepository>();
 
             try
             {
                 // TODO: the background worker should find a processor for the payloadType and call the ProcessAsync method
                 // which returns one or more entries that should be ingested
-                // when done the db entry should be deleted (or marked as complete)
-
                 if (queueItem is not ContentIngestQueueItem contentIngestQueueItem)
                 {
                     _logger.LogError(
@@ -64,12 +66,14 @@ internal sealed class IngestBackgroundService : BackgroundService
                     continue;
                 }
 
-                UmbracoContentIngestItemQueueProcessor processor = scope.ServiceProvider
-                    .GetRequiredService<UmbracoContentIngestItemQueueProcessor>();
+                ContentIngestQueueItemProcessor processor = serviceScope.ServiceProvider
+                    .GetRequiredService<ContentIngestQueueItemProcessor>();
 
+                using IScope scope = _scopeProvider.CreateScope();
                 List<IngestEntry> items = await processor.ProcessAsync(contentIngestQueueItem, stoppingToken)
                     .ToListAsync(cancellationToken: stoppingToken)
                     .ConfigureAwait(false);
+                scope.Complete();
 
                 if (items.Count is 0)
                 {

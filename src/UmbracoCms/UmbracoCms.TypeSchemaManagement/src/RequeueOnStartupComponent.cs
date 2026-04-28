@@ -8,12 +8,12 @@ using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Persistence;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
-internal sealed class SchemaQueueDrainComponent(
+internal sealed class RequeueOnStartupComponent(
     ISchemaQueueRepository queueRepository,
     Channel<SchemaQueueItem> channel,
     IRuntimeState runtimeState,
     IServerRoleAccessor serverRoleAccessor,
-    ILogger<SchemaQueueDrainComponent> logger) : IAsyncComponent
+    ILogger<RequeueOnStartupComponent> logger) : IAsyncComponent
 {
     public async Task InitializeAsync(bool isRestarting, CancellationToken cancellationToken)
     {

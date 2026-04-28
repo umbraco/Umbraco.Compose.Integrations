@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic;
+using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.DeliveryApi;
+using Umbraco.Cms.Core.Models.DeliveryApi;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Services.Navigation;
 using Umbraco.Cms.Core.Web;
@@ -8,18 +9,18 @@ using Umbraco.Extensions;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 
-internal sealed class UmbracoContentIngestItemQueueProcessor(
+internal sealed class ContentIngestQueueItemProcessor(
     IApiContentBuilder apiContentBuilder,
     IDocumentNavigationQueryService navigationQueryService,
     IPublishedContentStatusFilteringService publishedStatusFilteringService,
     IUmbracoContextAccessor umbracoContextAccessor,
     IUmbracoContextFactory umbracoContextFactory,
     IVariationContextAccessor variationContextAccessor,
-    ILogger<UmbracoContentIngestItemQueueProcessor> logger) : IIngestQueueItemProcessor<ContentIngestQueueItem>
+    ILogger<ContentIngestQueueItemProcessor> logger) : IIngestQueueItemProcessor<ContentIngestQueueItem>
 {
     private readonly IUmbracoContextFactory _umbracoContextFactory = umbracoContextFactory;
     private readonly IVariationContextAccessor _variationContextAccessor = variationContextAccessor;
-    private readonly ILogger<UmbracoContentIngestItemQueueProcessor> _logger = logger;
+    private readonly ILogger<ContentIngestQueueItemProcessor> _logger = logger;
     private readonly IApiContentBuilder _apiContentBuilder = apiContentBuilder;
     private readonly IPublishedContentStatusFilteringService _publishedStatusFilteringService = publishedStatusFilteringService;
     private readonly IUmbracoContextAccessor _umbracoContextAccessor = umbracoContextAccessor;
@@ -56,7 +57,7 @@ internal sealed class UmbracoContentIngestItemQueueProcessor(
                 continue;
             }
 
-            using Cms.Core.UmbracoContextReference context = _umbracoContextFactory.EnsureUmbracoContext();
+            using UmbracoContextReference context = _umbracoContextFactory.EnsureUmbracoContext();
             IPublishedContent? content = await context.UmbracoContext.Content.GetByIdAsync(entity.Id).ConfigureAwait(false);
 
             if (content is null)
@@ -75,9 +76,6 @@ internal sealed class UmbracoContentIngestItemQueueProcessor(
                     continue;
                 }
 
-                _variationContextAccessor.VariationContext = new(culture);
-                _umbracoContextAccessor.Set(context.UmbracoContext);
-
                 foreach (UpsertContentEntry processedItem in ProcessItem(
                     content,
                     culture,
@@ -91,7 +89,12 @@ internal sealed class UmbracoContentIngestItemQueueProcessor(
 
     private IEnumerable<UpsertContentEntry> ProcessItem(IPublishedContent content, string culture, bool includeChildren)
     {
-        Cms.Core.Models.DeliveryApi.IApiContent? apiContent = _apiContentBuilder.Build(content);
+        using UmbracoContextReference context = _umbracoContextFactory.EnsureUmbracoContext();
+
+        _variationContextAccessor.VariationContext = new(culture);
+        _umbracoContextAccessor.Set(context.UmbracoContext);
+
+        IApiContent? apiContent = _apiContentBuilder.Build(content);
 
         if (apiContent is null)
         {
@@ -122,6 +125,7 @@ internal sealed class UmbracoContentIngestItemQueueProcessor(
             yield break;
         }
 
+        // TODO: We should presumably include variant children of invariant items, and vice versa.
         foreach (IPublishedContent child in content.Children<IPublishedContent>(_navigationQueryService, _publishedStatusFilteringService))
         {
             foreach (UpsertContentEntry processedChild in ProcessItem(child, culture, includeChildren))

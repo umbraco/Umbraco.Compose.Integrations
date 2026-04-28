@@ -23,6 +23,18 @@ internal sealed class DeferredActions
             });
     }
 
+    public static ValueTask ExecuteDeferredAsync(ICoreScopeProvider coreScopeProvider, Func<ValueTask> action)
+    {
+        DeferredActions? actions = Get(coreScopeProvider);
+        if (actions is null)
+        {
+            return action();
+        }
+
+        actions.Add(action);
+        return default;
+    }
+
     public void Add(Func<ValueTask> action) =>
         _actions.Add(action);
 

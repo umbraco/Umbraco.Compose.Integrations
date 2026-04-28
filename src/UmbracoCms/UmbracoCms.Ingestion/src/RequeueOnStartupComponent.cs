@@ -9,12 +9,21 @@ using Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Persistence;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 
-internal sealed class IngestionQueueDrainComponent(
+/// <summary>
+/// Responsible for re-queuing ingetion messages onto the in-memory channel from the database, in
+/// the event that the CMS previously shut down before having sent them.
+/// </summary>
+/// <param name="queueRepository">Repository from which to retrieve queue items</param>
+/// <param name="channel">In-memory channel to re-queue on</param>
+/// <param name="runtimeState">CMS runtime state accessor</param>
+/// <param name="serverRoleAccessor">CMS server role accessor</param>
+/// <param name="logger">Log writer</param>
+internal sealed class RequeueOnStartupComponent(
     IIngestQueueRepository queueRepository,
     Channel<IngestQueueItem> channel,
     IRuntimeState runtimeState,
     IServerRoleAccessor serverRoleAccessor,
-    ILogger<IngestionQueueDrainComponent> logger) : IAsyncComponent
+    ILogger<RequeueOnStartupComponent> logger) : IAsyncComponent
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new()
     {
