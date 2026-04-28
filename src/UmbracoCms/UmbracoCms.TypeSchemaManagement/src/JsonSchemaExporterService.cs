@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Options;
+using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.DeliveryApi;
 using Umbraco.Cms.Core.Models.PublishedContent;
-using Umbraco.Cms.Core.PublishedCache;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Compose.Integrations.UmbracoCms.Core;
 using Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
@@ -10,7 +10,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
 internal class JsonSchemaExporterService(
     IContentTypeService contentTypeService,
-    IPublishedContentTypeCache publishedContentTypeCache,
+    IPublishedContentTypeFactory publishedContentTypeFactory,
     PropertySchemaResolverCollection propertySchemaResolvers,
     IOptionsSnapshot<JsonSchemaGeneratorOptions> jsonSchemaGeneratorOptions)
 {
@@ -18,11 +18,8 @@ internal class JsonSchemaExporterService(
     private const string ComposeNodeUrl = "https://umbracocompose.com/v1/node";
 #pragma warning restore S1075 // refactor you code to not use hardcoded absolute paths or URIs.
 
-    private readonly IContentTypeService _contentTypeService = contentTypeService;
-    private readonly IPublishedContentTypeCache _publishedContentTypeCache = publishedContentTypeCache;
-    private readonly PropertySchemaResolverCollection _propertySchemaResolvers = propertySchemaResolvers;
-    private readonly JsonSchemaGeneratorOptions _jsonSchemaGeneratorOptions = jsonSchemaGeneratorOptions.Get(
-        nameof(JsonSchemaExporterService));
+    private readonly JsonSchemaGeneratorOptions _jsonSchemaGeneratorOptions =
+        jsonSchemaGeneratorOptions.Get(nameof(JsonSchemaExporterService));
 
     public IReadOnlyDictionary<string, JsonSchema> GenerateSchemas(string contentTypeAlias)
     {
@@ -40,7 +37,13 @@ internal class JsonSchemaExporterService(
             return;
         }
 
-        IPublishedContentType contentType = _publishedContentTypeCache.Get(PublishedItemType.Content, contentTypeAlias);
+        IContentType? contentType = contentTypeService.Get(contentTypeAlias);
+        if (contentType is null)
+        {
+            return;
+        }
+
+        PublishedContentType publishedContentType = new(contentType, publishedContentTypeFactory);
 
         JsonSchemaBuilder builder = context
             .CreateBuilder(JsonPropertyType.Object)
@@ -48,18 +51,18 @@ internal class JsonSchemaExporterService(
 
         context.RegisterSchema(contentTypeAlias, builder.JsonSchema);
 
-        if (_contentTypeService.GetComposedOf(contentType.Id).Any())
+        if (contentTypeService.GetComposedOf(contentType.Id).Any())
         {
             builder.CustomKeyword("x-abstract", true);
         }
-        else if (contentType.ItemType is PublishedItemType.Content or PublishedItemType.Media or PublishedItemType.Element)
+        else if (publishedContentType.ItemType is PublishedItemType.Content or PublishedItemType.Media or PublishedItemType.Element)
         {
-            if (contentType.ItemType is PublishedItemType.Content or PublishedItemType.Media)
+            if (publishedContentType.ItemType is PublishedItemType.Content or PublishedItemType.Media)
             {
                 builder.AllOf(x => x.Ref(ComposeNodeUrl));
             }
 
-            JsonSchema? schema = contentType.ItemType switch
+            JsonSchema? schema = publishedContentType.ItemType switch
             {
                 PublishedItemType.Element => GenerateType<IApiElement>(context),
                 PublishedItemType.Content => GenerateType<IApiContent>(context),
@@ -74,7 +77,7 @@ internal class JsonSchemaExporterService(
                 builder.AllOf(x => x.Ref(schema.TypeName));
             }
 
-            foreach (string composition in contentType.CompositionAliases)
+            foreach (string composition in publishedContentType.CompositionAliases)
             {
                 builder.AllOf(x => x.Ref(composition));
 
@@ -88,10 +91,10 @@ internal class JsonSchemaExporterService(
             {
                 builder.Type(JsonPropertyType.Object);
 
-                foreach (PublishedPropertyType propertyType in contentType.PropertyTypes.Cast<PublishedPropertyType>())
+                foreach (PublishedPropertyType propertyType in publishedContentType.PropertyTypes.Cast<PublishedPropertyType>())
                 {
                     JsonSchema? schema;
-                    if (_propertySchemaResolvers.FirstOrDefault(x => x.CanHandle(propertyType)) is { } handler)
+                    if (propertySchemaResolvers.FirstOrDefault(x => x.CanHandle(propertyType)) is { } handler)
                     {
                         schema = handler.Process(context, propertyType);
                     }

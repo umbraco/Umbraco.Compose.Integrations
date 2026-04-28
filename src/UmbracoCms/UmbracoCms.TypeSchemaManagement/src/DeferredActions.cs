@@ -11,7 +11,7 @@ internal sealed class DeferredActions
         IScopeContext? scopeContext = scopeProvider.Context;
 
         return scopeContext?.Enlist(
-            "composeDeferredActions",
+            "composeTypeSchemaDeferredActions",
             () => new DeferredActions(),
             async (completed, deferredActions) =>
             {
