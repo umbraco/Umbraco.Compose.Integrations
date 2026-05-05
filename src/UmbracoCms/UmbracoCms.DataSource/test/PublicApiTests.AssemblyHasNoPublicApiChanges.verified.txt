@@ -33,6 +33,18 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.DataSource
         public static Umbraco.Compose.Integrations.UmbracoCms.DataSource.ContentQueryResult Error(string errorMesssaage) { }
         public static Umbraco.Compose.Integrations.UmbracoCms.DataSource.ContentQueryResult Ok(System.Collections.Generic.IEnumerable<object> items, Umbraco.Compose.Integrations.UmbracoCms.DataSource.ContentQueryPaging paging) { }
     }
+    public sealed class EntityDataPickerDeliveryValueConverter : Umbraco.Cms.Core.PropertyEditors.PropertyValueConverterBase, Umbraco.Cms.Core.Composing.IDiscoverable, Umbraco.Cms.Core.PropertyEditors.DeliveryApi.IDeliveryApiPropertyValueConverter, Umbraco.Cms.Core.PropertyEditors.IPropertyValueConverter
+    {
+        public EntityDataPickerDeliveryValueConverter(Umbraco.Cms.Core.PropertyEditors.ValueConverters.EntityDataPickerValueConverter coreConverter) { }
+        public object? ConvertIntermediateToDeliveryApiObject(Umbraco.Cms.Core.Models.PublishedContent.IPublishedElement owner, Umbraco.Cms.Core.Models.PublishedContent.IPublishedPropertyType propertyType, Umbraco.Cms.Core.PropertyEditors.PropertyCacheLevel referenceCacheLevel, object? inter, bool preview, bool expanding) { }
+        public override object? ConvertIntermediateToObject(Umbraco.Cms.Core.Models.PublishedContent.IPublishedElement owner, Umbraco.Cms.Core.Models.PublishedContent.IPublishedPropertyType propertyType, Umbraco.Cms.Core.PropertyEditors.PropertyCacheLevel referenceCacheLevel, object? inter, bool preview) { }
+        public override object? ConvertSourceToIntermediate(Umbraco.Cms.Core.Models.PublishedContent.IPublishedElement owner, Umbraco.Cms.Core.Models.PublishedContent.IPublishedPropertyType propertyType, object? source, bool preview) { }
+        public Umbraco.Cms.Core.PropertyEditors.PropertyCacheLevel GetDeliveryApiPropertyCacheLevel(Umbraco.Cms.Core.Models.PublishedContent.IPublishedPropertyType propertyType) { }
+        public System.Type GetDeliveryApiPropertyValueType(Umbraco.Cms.Core.Models.PublishedContent.IPublishedPropertyType propertyType) { }
+        public override Umbraco.Cms.Core.PropertyEditors.PropertyCacheLevel GetPropertyCacheLevel(Umbraco.Cms.Core.Models.PublishedContent.IPublishedPropertyType propertyType) { }
+        public override System.Type GetPropertyValueType(Umbraco.Cms.Core.Models.PublishedContent.IPublishedPropertyType propertyType) { }
+        public override bool IsConverter(Umbraco.Cms.Core.Models.PublishedContent.IPublishedPropertyType propertyType) { }
+    }
     public interface IGraphQlContentQueryService
     {
         System.Threading.Tasks.Task<Umbraco.Compose.Integrations.UmbracoCms.DataSource.ContentQueryResult> GetContentAsync(Umbraco.Compose.Integrations.UmbracoCms.DataSource.UmbracoComposeContentPickerDataSourceConfiguration composeQueryArguments, Umbraco.Compose.Integrations.UmbracoCms.DataSource.UmbracoComposeContentPickerDataSourcePaging paging, string? searchTerm);
