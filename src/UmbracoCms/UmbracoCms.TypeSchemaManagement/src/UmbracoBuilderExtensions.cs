@@ -34,7 +34,6 @@ public static class UmbracoBuilderExtensions
             _ = builder.Services.AddSingleton(Channel.CreateUnbounded<SchemaQueueItem>());
             _ = builder.Services.AddSingleton(static sp => sp.GetRequiredService<Channel<SchemaQueueItem>>().Writer);
 
-            builder.Services.AddScoped<IContentTypeSchemaService, ContentTypeSchemaService>();
             builder.Services.AddScoped<JsonSchemaExporterService>();
 
             builder.Services.AddOptions<JsonOptions>(nameof(SchemaBackgroundService))
@@ -45,8 +44,13 @@ public static class UmbracoBuilderExtensions
             builder.Services.AddOptions<JsonSchemaGeneratorOptions>(nameof(JsonSchemaExporterService))
                 .Configure(o =>
                 {
-                    o.ReferenceMode = ReferenceMode.External;
+                    o.DefaultSchema = "https://umbracocompose.com/v1/schema";
                     o.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                    o.ReferenceMode = ReferenceMode.External;
+
+                    o.Handlers.Add(new ApiElementHandler());
+                    o.Handlers.Add(new ApiContentRouteHandler());
+                    o.Handlers.Add(new ApiContentStartItemHandler());
                 });
 
             builder.Services.AddHttpClient<SchemaBackgroundService>()

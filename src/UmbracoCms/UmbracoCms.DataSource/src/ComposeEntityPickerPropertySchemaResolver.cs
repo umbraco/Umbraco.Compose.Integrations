@@ -20,25 +20,19 @@ public sealed class ComposeEntityPickerPropertySchemaResolver(IDataTypeService d
             configuration.DataSource.Equals("Umbraco.Compose.PropertyEditorDataSource.Picker");
 
     /// <inheritdoc />
-    public JsonSchema? Process(PublishedPropertyType propertyType, JsonSchemaGenerator generator)
+    public JsonSchema Process(JsonSchemaGeneratorContext context, PublishedPropertyType propertyType)
     {
         ArgumentNullException.ThrowIfNull(propertyType);
-        ArgumentNullException.ThrowIfNull(generator);
+        ArgumentNullException.ThrowIfNull(context);
 
 #pragma warning disable CS0618 // 'IDataTypeService.GetDataType(int)' is obsolete: 'Please use GetAsync. Will be removed in V15.
-        IDataType? dataType = dataTypeService.GetDataType(propertyType.DataType.Id);
-#pragma warning restore CS0618
-        if (dataType is null)
-        {
-            return null;
-        }
-
+        IDataType? dataType = dataTypeService.GetDataType(propertyType.DataType.Id)
+            ?? throw new InvalidOperationException($"Could not get data type '{propertyType.DataType.Id}'.");
         UmbracoComposeContentPickerDataSourceConfiguration configuration = new(dataType);
 
-        return JsonSchemaBuilder
-            .Create()
-            .Type(JsonValueType.Array)
-            .Items(builder => builder.Ref("https://umbracocompose.com/v1/node"))
+        return context
+            .CreateBuilder(JsonPropertyType.Array)
+            .Items(builder => builder.Type(JsonPropertyType.Object).Ref("https://umbracocompose.com/v1/node"))
             .CustomKeyword("$delivery", builder => builder.CustomKeyword("refCollection", configuration.Collection))
             .Build();
     }

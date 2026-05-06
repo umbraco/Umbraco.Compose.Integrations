@@ -7,7 +7,7 @@ public sealed class JsonSchemaBuilderTests
     [Fact]
     public Task Simple_String_Schema()
     {
-        JsonSchema schema = JsonSchemaBuilder.Create().Type(JsonValueType.String).Build();
+        JsonSchema schema = JsonSchemaBuilder.Create().Type(JsonPropertyType.String).Build();
 
         return Verify(schema);
     }
@@ -15,7 +15,7 @@ public sealed class JsonSchemaBuilderTests
     [Fact]
     public Task Simple_Integer_Schema()
     {
-        JsonSchema schema = JsonSchemaBuilder.Create().Type(JsonValueType.Integer).Build();
+        JsonSchema schema = JsonSchemaBuilder.Create().Type(JsonPropertyType.Integer).Build();
 
         return Verify(schema);
     }
@@ -24,13 +24,13 @@ public sealed class JsonSchemaBuilderTests
     public Task Object_With_Properties_Schema()
     {
         JsonSchema schema = JsonSchemaBuilder.Create()
-            .Type(JsonValueType.Object)
+            .Type(JsonPropertyType.Object)
             .Title("User")
             .Description("A user entity")
             .Required("id", "name")
-            .Property("id", _ => _.Type(JsonValueType.Integer).Minimum(1))
-            .Property("name", _ => _.Type(JsonValueType.String).MinLength(1).MaxLength(100))
-            .Property("email", _ => _.Type(JsonValueType.String).Format("email"))
+            .Property("id", _ => _.Type(JsonPropertyType.Integer).Minimum(1))
+            .Property("name", _ => _.Type(JsonPropertyType.String).MinLength(1).MaxLength(100))
+            .Property("email", _ => _.Type(JsonPropertyType.String).Format("email"))
             .AdditionalProperties(false)
             .Build();
 
@@ -41,12 +41,12 @@ public sealed class JsonSchemaBuilderTests
     public Task Array_Of_Items_Schema()
     {
         JsonSchema schema = JsonSchemaBuilder.Create()
-            .Type(JsonValueType.Array)
+            .Type(JsonPropertyType.Array)
             .Title("Item List")
             .MinItems(1)
             .MaxItems(100)
             .UniqueItems(true)
-            .Items(_ => _.Type(JsonValueType.String))
+            .Items(_ => _.Type(JsonPropertyType.String))
             .Build();
 
         return Verify(schema);
@@ -56,12 +56,12 @@ public sealed class JsonSchemaBuilderTests
     public Task Object_With_Nested_Object_Schema()
     {
         JsonSchema schema = JsonSchemaBuilder.Create()
-            .Type(JsonValueType.Object)
+            .Type(JsonPropertyType.Object)
             .Title("Address")
             .Required("street", "city")
-            .Property("street", _ => _.Type(JsonValueType.String))
-            .Property("city", _ => _.Type(JsonValueType.String))
-            .Property("postalCode", _ => _.Type(JsonValueType.String).Pattern(@"^\d{5}$"))
+            .Property("street", _ => _.Type(JsonPropertyType.String))
+            .Property("city", _ => _.Type(JsonPropertyType.String))
+            .Property("postalCode", _ => _.Type(JsonPropertyType.String).Pattern(@"^\d{5}$"))
             .AdditionalProperties(false)
             .Build();
 
@@ -73,8 +73,8 @@ public sealed class JsonSchemaBuilderTests
     {
         JsonSchema schema = JsonSchemaBuilder.Create()
             .OneOf(
-                _ => _.Type(JsonValueType.String),
-                _ => _.Type(JsonValueType.Integer)
+                _ => _.Type(JsonPropertyType.String),
+                _ => _.Type(JsonPropertyType.Integer)
             )
             .Build();
 
@@ -86,9 +86,9 @@ public sealed class JsonSchemaBuilderTests
     {
         JsonSchema schema = JsonSchemaBuilder.Create()
             .AllOf(
-                _ => _.Type(JsonValueType.Object),
+                _ => _.Type(JsonPropertyType.Object),
                 _ => _.Required("name"),
-                _ => _.Property("name", _ => _.Type(JsonValueType.String))
+                _ => _.Property("name", _ => _.Type(JsonPropertyType.String))
             )
             .Build();
 
@@ -101,8 +101,8 @@ public sealed class JsonSchemaBuilderTests
         JsonSchema schema = JsonSchemaBuilder.Create()
             .IfThenElse(
                 ifSchema: _ => _.Property("type", new JsonSchema { Const = "special" }),
-                thenSchema: _ => _.Type(JsonValueType.String),
-                elseSchema: _ => _.Type(JsonValueType.Integer)
+                thenSchema: _ => _.Type(JsonPropertyType.String),
+                elseSchema: _ => _.Type(JsonPropertyType.Integer)
             )
             .Build();
 
@@ -113,9 +113,9 @@ public sealed class JsonSchemaBuilderTests
     public Task Schema_With_Definitions()
     {
         JsonSchema schema = JsonSchemaBuilder.Create()
-            .Type(JsonValueType.Object)
-            .Def("Address", _ => _.Type(JsonValueType.Object).Required("street", "city"))
-            .Def("Name", _ => _.Type(JsonValueType.String).MinLength(1))
+            .Type(JsonPropertyType.Object)
+            .Def("Address", _ => _.Type(JsonPropertyType.Object).Required("street", "city"))
+            .Def("Name", _ => _.Type(JsonPropertyType.String).MinLength(1))
             .Property("address", new JsonSchema { Ref = "#/$defs/Address" })
             .Property("name", new JsonSchema { Ref = "#/$defs/Name" })
             .Build();
@@ -131,15 +131,15 @@ public sealed class JsonSchemaBuilderTests
             .Title("ComplexType")
             .Description("A complex nested type example")
             .Id("https://example.com/schemas/complex-type")
-            .Type(JsonValueType.Object)
+            .Type(JsonPropertyType.Object)
             .Required("id", "name", "tags")
-            .Property("id", _ => _.Type(JsonValueType.Integer).Minimum(1))
-            .Property("name", _ => _.Type(JsonValueType.String).MinLength(1).MaxLength(255))
-            .Property("age", _ => _.Type(JsonValueType.Integer).Minimum(0).Maximum(150))
-            .Property("isActive", _ => _.Type(JsonValueType.Boolean))
-            .Property("tags", _ => _.Type(JsonValueType.Array).MinItems(0).UniqueItems(true).Items(_ => _.Type(JsonValueType.String)))
-            .Property("metadata", _ => _.Type(JsonValueType.Object).AdditionalProperties(true))
-            .Def("Tag", _ => _.Type(JsonValueType.String).MinLength(1))
+            .Property("id", _ => _.Type(JsonPropertyType.Integer).Minimum(1))
+            .Property("name", _ => _.Type(JsonPropertyType.String).MinLength(1).MaxLength(255))
+            .Property("age", _ => _.Type(JsonPropertyType.Integer).Minimum(0).Maximum(150))
+            .Property("isActive", _ => _.Type(JsonPropertyType.Boolean))
+            .Property("tags", _ => _.Type(JsonPropertyType.Array).MinItems(0).UniqueItems(true).Items(_ => _.Type(JsonPropertyType.String)))
+            .Property("metadata", _ => _.Type(JsonPropertyType.Object).AdditionalProperties(true))
+            .Def("Tag", _ => _.Type(JsonPropertyType.String).MinLength(1))
             .CustomKeyword("x-version", "1.0.0")
             .Build();
 
@@ -150,11 +150,11 @@ public sealed class JsonSchemaBuilderTests
     public Task Tuple_Array_Schema()
     {
         JsonSchema schema = JsonSchemaBuilder.Create()
-            .Type(JsonValueType.Array)
+            .Type(JsonPropertyType.Array)
             .PrefixItems(
-                _ => _.Type(JsonValueType.String),
-                _ => _.Type(JsonValueType.Integer),
-                _ => _.Type(JsonValueType.Boolean)
+                _ => _.Type(JsonPropertyType.String),
+                _ => _.Type(JsonPropertyType.Integer),
+                _ => _.Type(JsonPropertyType.Boolean)
             )
             .MinItems(3)
             .MaxItems(3)
@@ -167,10 +167,10 @@ public sealed class JsonSchemaBuilderTests
     public Task Pattern_Properties_Schema()
     {
         JsonSchema schema = JsonSchemaBuilder.Create()
-            .Type(JsonValueType.Object)
+            .Type(JsonPropertyType.Object)
             .Required("name")
-            .Property("name", _ => _.Type(JsonValueType.String))
-            .PatternProperty("^[a-z]+$", _ => _.Type(JsonValueType.Integer))
+            .Property("name", _ => _.Type(JsonPropertyType.String))
+            .PatternProperty("^[a-z]+$", _ => _.Type(JsonPropertyType.Integer))
             .MinProperties(1)
             .Build();
 
@@ -181,7 +181,7 @@ public sealed class JsonSchemaBuilderTests
     public Task Schema_With_Discriminator()
     {
         JsonSchema schema = JsonSchemaBuilder.Create()
-            .Type(JsonValueType.Object)
+            .Type(JsonPropertyType.Object)
             .Required("type")
             .Property("type", _ => _.Enum("special", "regular"))
             .Discriminator(
@@ -200,7 +200,7 @@ public sealed class JsonSchemaBuilderTests
     public Task Numeric_Constraints_Schema()
     {
         JsonSchema schema = JsonSchemaBuilder.Create()
-            .Type(JsonValueType.Number)
+            .Type(JsonPropertyType.Number)
             .MultipleOf(0.01)
             .Minimum(0.0)
             .Maximum(100.0)
@@ -214,7 +214,7 @@ public sealed class JsonSchemaBuilderTests
     public Task String_Constraints_Schema()
     {
         JsonSchema schema = JsonSchemaBuilder.Create()
-            .Type(JsonValueType.String)
+            .Type(JsonPropertyType.String)
             .MinLength(8)
             .MaxLength(128)
             .Pattern("^[a-zA-Z0-9]+$")
@@ -227,9 +227,9 @@ public sealed class JsonSchemaBuilderTests
     public Task Array_Contains_Constraint_Schema()
     {
         JsonSchema schema = JsonSchemaBuilder.Create()
-            .Type(JsonValueType.Array)
+            .Type(JsonPropertyType.Array)
             .MinItems(1)
-            .Contains(_ => _.Type(JsonValueType.String).MinLength(5))
+            .Contains(_ => _.Type(JsonPropertyType.String).MinLength(5))
             .Build();
 
         return Verify(schema);
@@ -239,7 +239,7 @@ public sealed class JsonSchemaBuilderTests
     public Task Not_Constraint_Schema()
     {
         JsonSchema schema = JsonSchemaBuilder.Create()
-            .Type(JsonValueType.String)
+            .Type(JsonPropertyType.String)
             .Not(_ => _.Const("forbidden"))
             .Build();
 
@@ -251,8 +251,8 @@ public sealed class JsonSchemaBuilderTests
     {
         JsonSchema schema = JsonSchemaBuilder.Create()
             .AnyOf(
-                _ => _.Type(JsonValueType.String),
-                _ => _.Type(JsonValueType.Integer),
+                _ => _.Type(JsonPropertyType.String),
+                _ => _.Type(JsonPropertyType.Integer),
                 _ => _.Const(null)
             )
             .Build();
@@ -266,21 +266,21 @@ public sealed class JsonSchemaBuilderTests
         JsonSchema schema = JsonSchemaBuilder.Create()
             .Title("Product")
             .Description("A product in the catalog")
-            .Type(JsonValueType.Object)
+            .Type(JsonPropertyType.Object)
             .Required("id", "name", "price")
             .MinProperties(2)
             .MaxProperties(10)
-            .Property("id", _ => _.Type(JsonValueType.String).MinLength(1))
-            .Property("name", _ => _.Type(JsonValueType.String).MinLength(1).MaxLength(200))
-            .Property("description", _ => _.Type(JsonValueType.String))
-            .Property("price", _ => _.Type(JsonValueType.Number).Minimum(0).MultipleOf(0.01))
-            .Property("inStock", _ => _.Type(JsonValueType.Boolean))
-            .Property("tags", _ => _.Type(JsonValueType.Array).MinItems(0).UniqueItems(true).Items(_ => _.Type(JsonValueType.String)))
-            .Property("metadata", _ => _.AdditionalProperties(_ => _.Type(JsonValueType.Object)))
+            .Property("id", _ => _.Type(JsonPropertyType.String).MinLength(1))
+            .Property("name", _ => _.Type(JsonPropertyType.String).MinLength(1).MaxLength(200))
+            .Property("description", _ => _.Type(JsonPropertyType.String))
+            .Property("price", _ => _.Type(JsonPropertyType.Number).Minimum(0).MultipleOf(0.01))
+            .Property("inStock", _ => _.Type(JsonPropertyType.Boolean))
+            .Property("tags", _ => _.Type(JsonPropertyType.Array).MinItems(0).UniqueItems(true).Items(_ => _.Type(JsonPropertyType.String)))
+            .Property("metadata", _ => _.AdditionalProperties(_ => _.Type(JsonPropertyType.Object)))
             .Def(
                 "PriceRange",
-                _ => _.Type(JsonValueType.Object).Property("min", _ => _.Type(JsonValueType.Number))
-                    .Property("max", _ => _.Type(JsonValueType.Number)))
+                _ => _.Type(JsonPropertyType.Object).Property("min", _ => _.Type(JsonPropertyType.Number))
+                    .Property("max", _ => _.Type(JsonPropertyType.Number)))
             .CustomKeyword("x-internal", false)
             .Build();
 

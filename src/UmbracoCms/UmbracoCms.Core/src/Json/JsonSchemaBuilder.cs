@@ -7,7 +7,14 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 /// </summary>
 public sealed class JsonSchemaBuilder
 {
-    private readonly JsonSchema _schema;
+    /// <summary>
+    /// Gets the JsonSchema instance being built by this builder. This property exposes the schema
+    /// object that accumulates all configuration applied through the builder's methods. The schema
+    /// is initialized as empty and progressively populated as builder methods are called. Use this
+    /// property to access the final schema after calling Build() or to inspect intermediate state
+    /// during fluent configuration.
+    /// </summary>
+    public JsonSchema JsonSchema { get; }
 
     /// <summary>
     /// Initializes a new SchemaBuilder instance with a default schema configured with the
@@ -36,13 +43,13 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder Schema(string? schemaUri)
     {
-        _schema.Schema = schemaUri;
+        JsonSchema.Schema = schemaUri;
         return this;
     }
 
     private JsonSchemaBuilder(JsonSchema schema)
     {
-        _schema = schema;
+        JsonSchema = schema;
     }
 
     /// <summary>
@@ -54,7 +61,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder Title(string title)
     {
-        _schema.Title = title;
+        JsonSchema.Title = title;
         return this;
     }
 
@@ -68,7 +75,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder Description(string description)
     {
-        _schema.Description = description;
+        JsonSchema.Description = description;
         return this;
     }
 
@@ -82,7 +89,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder Id(string id)
     {
-        _schema.Id = id;
+        JsonSchema.Id = id;
         return this;
     }
 
@@ -96,7 +103,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder Anchor(string anchor)
     {
-        _schema.Anchor = anchor;
+        JsonSchema.Anchor = anchor;
         return this;
     }
 
@@ -108,9 +115,9 @@ public sealed class JsonSchemaBuilder
     /// </summary>
     /// <param name="type">The JsonValueType enum value representing the expected JSON type category.</param>
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
-    public JsonSchemaBuilder Type(JsonValueType type)
+    public JsonSchemaBuilder Type(JsonPropertyType type)
     {
-        _schema.Type = type;
+        JsonSchema.Type = type;
         return this;
     }
 
@@ -124,7 +131,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder Format(string format)
     {
-        _schema.Format = format;
+        JsonSchema.Format = format;
         return this;
     }
 
@@ -138,7 +145,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder Enum(params object[] values)
     {
-        _schema.Enum = [.. values];
+        JsonSchema.Enum = [.. values];
         return this;
     }
 
@@ -151,7 +158,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder Const(object? value)
     {
-        _schema.Const = value;
+        JsonSchema.Const = value;
         return this;
     }
 
@@ -163,7 +170,7 @@ public sealed class JsonSchemaBuilder
     /// </summary>
     /// <param name="value">The divisor value, which must be positive (> 0). Values of zero or negative will cause validation errors.</param>
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when value is not a positive finite number (&lt;=0, NaN, or Infinity).</exception>
     public JsonSchemaBuilder MultipleOf(double value)
     {
         if (value <= 0 || double.IsInfinity(value) || double.IsNaN(value))
@@ -171,7 +178,7 @@ public sealed class JsonSchemaBuilder
             throw new ArgumentOutOfRangeException(nameof(value), "MultipleOf must be a positive finite number.");
         }
 
-        _schema.MultipleOf = value;
+        JsonSchema.MultipleOf = value;
         return this;
     }
 
@@ -184,7 +191,7 @@ public sealed class JsonSchemaBuilder
     /// <param name="value">The maximum numeric value. Must be a finite number (not NaN or Infinity).</param>
     /// <param name="exclusive">Whether to use exclusive comparison. False for less than or equal, True for strictly less than.</param>
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when value is not a finite number (NaN or Infinity).</exception>
     public JsonSchemaBuilder Maximum(double value, bool exclusive = false)
     {
         if (double.IsInfinity(value) || double.IsNaN(value))
@@ -194,11 +201,11 @@ public sealed class JsonSchemaBuilder
 
         if (exclusive)
         {
-            _schema.ExclusiveMaximum = value;
+            JsonSchema.ExclusiveMaximum = value;
         }
         else
         {
-            _schema.Maximum = value;
+            JsonSchema.Maximum = value;
         }
 
         return this;
@@ -211,7 +218,7 @@ public sealed class JsonSchemaBuilder
     /// </summary>
     /// <param name="value">The exclusive maximum numeric value. Must be a finite number (not NaN or Infinity).</param>
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when value is not a finite number (NaN or Infinity).</exception>
     public JsonSchemaBuilder ExclusiveMaximum(double value)
     {
         if (double.IsInfinity(value) || double.IsNaN(value))
@@ -219,7 +226,7 @@ public sealed class JsonSchemaBuilder
             throw new ArgumentOutOfRangeException(nameof(value), "ExclusiveMaximum must be a finite number.");
         }
 
-        _schema.ExclusiveMaximum = value;
+        JsonSchema.ExclusiveMaximum = value;
         return this;
     }
 
@@ -232,7 +239,7 @@ public sealed class JsonSchemaBuilder
     /// <param name="value">The minimum numeric value. Must be a finite number (not NaN or Infinity).</param>
     /// <param name="exclusive">Whether to use exclusive comparison. False for >=, True for >.</param>
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when value is not a finite number (NaN or Infinity).</exception>
     public JsonSchemaBuilder Minimum(double value, bool exclusive = false)
     {
         if (double.IsInfinity(value) || double.IsNaN(value))
@@ -242,11 +249,11 @@ public sealed class JsonSchemaBuilder
 
         if (exclusive)
         {
-            _schema.ExclusiveMinimum = value;
+            JsonSchema.ExclusiveMinimum = value;
         }
         else
         {
-            _schema.Minimum = value;
+            JsonSchema.Minimum = value;
         }
 
         return this;
@@ -259,7 +266,7 @@ public sealed class JsonSchemaBuilder
     /// </summary>
     /// <param name="value">The exclusive minimum numeric value. Must be a finite number (not NaN or Infinity).</param>
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
-    /// <exception cref="ArgumentOutOfRangeException"></exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when value is not a finite number (NaN or Infinity).</exception>
     public JsonSchemaBuilder ExclusiveMinimum(double value)
     {
         if (double.IsInfinity(value) || double.IsNaN(value))
@@ -267,7 +274,7 @@ public sealed class JsonSchemaBuilder
             throw new ArgumentOutOfRangeException(nameof(value), "ExclusiveMinimum must be a finite number.");
         }
 
-        _schema.ExclusiveMinimum = value;
+        JsonSchema.ExclusiveMinimum = value;
         return this;
     }
 
@@ -280,7 +287,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder MaxLength(int value)
     {
-        _schema.MaxLength = value;
+        JsonSchema.MaxLength = value;
         return this;
     }
 
@@ -294,7 +301,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder MinLength(int value)
     {
-        _schema.MinLength = value;
+        JsonSchema.MinLength = value;
         return this;
     }
 
@@ -309,8 +316,8 @@ public sealed class JsonSchemaBuilder
     /// </summary>
     /// <param name="pattern">The regular expression pattern string. Must be a valid ECMA-262 regex.</param>
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
-    /// <exception cref="ArgumentNullException"></exception>
-    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="ArgumentNullException">Thrown when pattern is null or empty.</exception>
+    /// <exception cref="ArgumentException">Thrown when pattern is an invalid regular expression.</exception>
     public JsonSchemaBuilder Pattern(string pattern)
     {
         if (string.IsNullOrEmpty(pattern))
@@ -318,7 +325,7 @@ public sealed class JsonSchemaBuilder
             throw new ArgumentNullException(nameof(pattern), "Pattern cannot be null or empty.");
         }
 
-        _schema.Pattern = pattern;
+        JsonSchema.Pattern = pattern;
         return this;
     }
 
@@ -331,7 +338,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder MaxItems(int value)
     {
-        _schema.MaxItems = value;
+        JsonSchema.MaxItems = value;
         return this;
     }
 
@@ -344,7 +351,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder MinItems(int value)
     {
-        _schema.MinItems = value;
+        JsonSchema.MinItems = value;
         return this;
     }
 
@@ -357,7 +364,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder UniqueItems(bool value = true)
     {
-        _schema.UniqueItems = value;
+        JsonSchema.UniqueItems = value;
         return this;
     }
 
@@ -371,7 +378,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder Contains(Func<JsonSchemaBuilder, JsonSchemaBuilder> configure)
     {
-        _schema.Contains = configure(Create()).Build();
+        JsonSchema.Contains = configure(Create()).Build();
         return this;
     }
 
@@ -384,7 +391,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder MaxProperties(int value)
     {
-        _schema.MaxProperties = value;
+        JsonSchema.MaxProperties = value;
         return this;
     }
 
@@ -397,7 +404,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder MinProperties(int value)
     {
-        _schema.MinProperties = value;
+        JsonSchema.MinProperties = value;
         return this;
     }
 
@@ -411,8 +418,8 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder Required(params string[] properties)
     {
-        _schema.Required ??= [];
-        _schema.Required.AddRange(properties);
+        JsonSchema.Required ??= [];
+        JsonSchema.Required.AddRange(properties);
         return this;
     }
 
@@ -427,8 +434,8 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder Property(string name, JsonSchema schema)
     {
-        _schema.Properties ??= [];
-        _schema.Properties[name] = schema;
+        JsonSchema.Properties ??= [];
+        JsonSchema.Properties[name] = schema;
         return this;
     }
 
@@ -443,8 +450,8 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder Property(string name, Func<JsonSchemaBuilder, JsonSchemaBuilder> configure)
     {
-        _schema.Properties ??= [];
-        _schema.Properties[name] = configure(Create()).Build();
+        JsonSchema.Properties ??= [];
+        JsonSchema.Properties[name] = configure(Create()).Build();
         return this;
     }
 
@@ -459,8 +466,8 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder PatternProperty(string pattern, JsonSchema schema)
     {
-        _schema.PatternProperties ??= [];
-        _schema.PatternProperties[pattern] = schema;
+        JsonSchema.PatternProperties ??= [];
+        JsonSchema.PatternProperties[pattern] = schema;
         return this;
     }
 
@@ -475,8 +482,8 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder PatternProperty(string pattern, Func<JsonSchemaBuilder, JsonSchemaBuilder> configure)
     {
-        _schema.PatternProperties ??= [];
-        _schema.PatternProperties[pattern] = configure(Create()).Build();
+        JsonSchema.PatternProperties ??= [];
+        JsonSchema.PatternProperties[pattern] = configure(Create()).Build();
         return this;
     }
 
@@ -490,7 +497,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder AdditionalProperties(bool allowed)
     {
-        _schema.AdditionalProperties = allowed ? null : new JsonSchema();
+        JsonSchema.AdditionalProperties = allowed ? null : new JsonSchema();
         return this;
     }
 
@@ -503,7 +510,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder AdditionalProperties(JsonSchema schema)
     {
-        _schema.AdditionalProperties = schema;
+        JsonSchema.AdditionalProperties = schema;
         return this;
     }
 
@@ -517,7 +524,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder AdditionalProperties(Func<JsonSchemaBuilder, JsonSchemaBuilder> configure)
     {
-        _schema.AdditionalProperties = configure(Create()).Build();
+        JsonSchema.AdditionalProperties = configure(Create()).Build();
         return this;
     }
 
@@ -530,7 +537,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder Items(JsonSchema schema)
     {
-        _schema.Items = schema;
+        JsonSchema.Items = schema;
         return this;
     }
 
@@ -543,7 +550,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder Items(Func<JsonSchemaBuilder, JsonSchemaBuilder> configure)
     {
-        _schema.Items = configure(Create()).Build();
+        JsonSchema.Items = configure(Create()).Build();
         return this;
     }
 
@@ -562,7 +569,7 @@ public sealed class JsonSchemaBuilder
         {
             items.Add(schema(Create()).Build());
         }
-        _schema.PrefixItems = items;
+        JsonSchema.PrefixItems = items;
         return this;
     }
 
@@ -575,7 +582,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder Ref(string reference)
     {
-        _schema.Ref = reference;
+        JsonSchema.Ref = reference;
         return this;
     }
 
@@ -588,10 +595,22 @@ public sealed class JsonSchemaBuilder
     /// <param name="name">The definition name that will be used in fragment references like #/$defs/{name}.</param>
     /// <param name="configure">A lambda function that configures the definition subschema. The function receives a nested builder and returns the configured schema.</param>
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
-    public JsonSchemaBuilder Def(string name, Func<JsonSchemaBuilder, JsonSchemaBuilder> configure)
+    public JsonSchemaBuilder Def(string name, Func<JsonSchemaBuilder, JsonSchemaBuilder> configure) =>
+        Def(name, configure(Create()).Build());
+
+    /// <summary>
+    /// Adds a definition to the $defs dictionary that can be referenced using fragment URIs like
+    /// #/$defs/{name}. Definitions are reusable schema fragments that avoid duplication and organize
+    /// complex schemas. The name parameter becomes part of the reference URI when referencing
+    /// this definition from other parts of the schema.
+    /// </summary>
+    /// <param name="name">The definition name that will be used in fragment references like #/$defs/{name}.</param>
+    /// <param name="schema">The schema to add to defs.</param>
+    /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
+    public JsonSchemaBuilder Def(string name, JsonSchema schema)
     {
-        _schema.Defs ??= [];
-        _schema.Defs[name] = configure(Create()).Build();
+        JsonSchema.Defs ??= [];
+        JsonSchema.Defs[name] = schema;
         return this;
     }
 
@@ -605,8 +624,8 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder AllOf(Func<JsonSchemaBuilder, JsonSchemaBuilder> schema)
     {
-        _schema.AllOf ??= [];
-        _schema.AllOf.Add(schema(Create()).Build());
+        JsonSchema.AllOf ??= [];
+        JsonSchema.AllOf.Add(schema(Create()).Build());
         return this;
     }
 
@@ -624,7 +643,7 @@ public sealed class JsonSchemaBuilder
         {
             items.Add(schema(Create()).Build());
         }
-        _schema.AllOf = items;
+        JsonSchema.AllOf = items;
         return this;
     }
 
@@ -643,7 +662,7 @@ public sealed class JsonSchemaBuilder
         {
             items.Add(schema(Create()).Build());
         }
-        _schema.AnyOf = items;
+        JsonSchema.AnyOf = items;
         return this;
     }
 
@@ -662,7 +681,7 @@ public sealed class JsonSchemaBuilder
         {
             items.Add(schema(Create()).Build());
         }
-        _schema.OneOf = items;
+        JsonSchema.OneOf = items;
         return this;
     }
 
@@ -676,7 +695,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder Not(Func<JsonSchemaBuilder, JsonSchemaBuilder> configure)
     {
-        _schema.Not = configure(Create()).Build();
+        JsonSchema.Not = configure(Create()).Build();
         return this;
     }
 
@@ -695,15 +714,15 @@ public sealed class JsonSchemaBuilder
         Func<JsonSchemaBuilder, JsonSchemaBuilder>? thenSchema = null,
         Func<JsonSchemaBuilder, JsonSchemaBuilder>? elseSchema = null)
     {
-        _schema.If = ifSchema(Create()).Build();
+        JsonSchema.If = ifSchema(Create()).Build();
         if (thenSchema is not null)
         {
-            _schema.Then = thenSchema(Create()).Build();
+            JsonSchema.Then = thenSchema(Create()).Build();
         }
 
         if (elseSchema is not null)
         {
-            _schema.Else = elseSchema(Create()).Build();
+            JsonSchema.Else = elseSchema(Create()).Build();
         }
 
         return this;
@@ -720,7 +739,7 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder CustomKeyword(string key, object? value)
     {
-        _schema.AddExtension(key, value);
+        JsonSchema.AddExtension(key, value);
         return this;
     }
 
@@ -735,12 +754,12 @@ public sealed class JsonSchemaBuilder
     {
         if (configure is null)
         {
-            _schema.Extensions ??= [];
-            _schema.Extensions[key] = null;
+            JsonSchema.Extensions ??= [];
+            JsonSchema.Extensions[key] = null;
         }
         else
         {
-            _schema.AddExtension(key, configure(Create()).Build());
+            JsonSchema.AddExtension(key, configure(Create()).Build());
         }
         return this;
     }
@@ -756,11 +775,24 @@ public sealed class JsonSchemaBuilder
     /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
     public JsonSchemaBuilder Discriminator(string propertyName, Dictionary<string, string>? mapping = null)
     {
-        _schema.Discriminator = new()
+        JsonSchema.Discriminator = new()
         {
             PropertyName = propertyName,
             Mapping = mapping
         };
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the .NET type name for this schema. This property is used internally by the schema generator
+    /// to track the source type and is not serialized to JSON. Setting this manually allows correlating
+    /// generated schemas back to their original .NET types for debugging and inspection purposes.
+    /// </summary>
+    /// <param name="typeName">The .NET type name to assign, or null to clear.</param>
+    /// <returns>This SchemaBuilder instance to enable method chaining for fluent schema construction</returns>
+    public JsonSchemaBuilder TypeName(string? typeName)
+    {
+        JsonSchema.TypeName = typeName;
         return this;
     }
 
@@ -773,6 +805,6 @@ public sealed class JsonSchemaBuilder
     /// <returns>The fully configured JsonSchema instance with all applied validations and constraints</returns>
     public JsonSchema Build()
     {
-        return _schema;
+        return JsonSchema;
     }
 }

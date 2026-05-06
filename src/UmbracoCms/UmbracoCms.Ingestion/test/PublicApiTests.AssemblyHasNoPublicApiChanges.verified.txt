@@ -15,9 +15,8 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion
 {
     public sealed class ComposeApiContent : Umbraco.Cms.Core.Models.DeliveryApi.ApiContent
     {
-        public ComposeApiContent(Umbraco.Cms.Core.Models.DeliveryApi.IApiContent content, string culture, System.Guid? parentId, System.Guid[] ancestors) { }
+        public ComposeApiContent(Umbraco.Cms.Core.Models.DeliveryApi.IApiContent content, System.Guid? parentId, System.Guid[] ancestors) { }
         public System.Guid[] Ancestors { get; }
-        public string Culture { get; }
         public System.Guid? ParentId { get; }
     }
     public sealed class ContentChangePayload : System.IEquatable<Umbraco.Compose.Integrations.UmbracoCms.Ingestion.ContentChangePayload>

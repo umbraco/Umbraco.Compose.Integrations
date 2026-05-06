@@ -1,8 +1,8 @@
 using Umbraco.Cms.Core.Scoping;
 
-namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
+namespace Umbraco.Compose.Integrations.UmbracoCms.Core;
 
-internal sealed class DeferredActions
+public sealed class DeferredActions
 {
     private readonly List<Func<ValueTask>> _actions = [];
 

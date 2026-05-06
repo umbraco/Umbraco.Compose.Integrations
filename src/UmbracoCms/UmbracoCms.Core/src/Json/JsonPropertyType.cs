@@ -8,8 +8,8 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 /// These types form the basis for all schema validation and are mapped to their JSON string
 /// equivalents when serializing schemas.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter<JsonValueType>))]
-public enum JsonValueType
+[JsonConverter(typeof(JsonStringEnumConverter<JsonPropertyType>))]
+public enum JsonPropertyType
 {
     /// <summary>
     /// Represents string values - sequences of Unicode characters. String validation includes

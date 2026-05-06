@@ -1,11 +1,26 @@
 ﻿{
   $defs: {
+    IArea: {
+      title: IArea,
+      type: object,
+      required: [
+        Country
+      ],
+      properties: {
+        Country: {
+          type: string
+        }
+      },
+      csharpType: Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.Json.JsonSchemaGeneratorTests+IArea,
+      x-abstract: true
+    },
     Address: {
       title: Address,
       type: object,
       required: [
         Street,
-        City
+        City,
+        Area
       ],
       properties: {
         Street: {
@@ -13,6 +28,10 @@
         },
         City: {
           type: string
+        },
+        Area: {
+          $ref: #/defs/IArea,
+          type: object
         }
       },
       csharpType: Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit.Json.JsonSchemaGeneratorTests+Address
@@ -29,7 +48,6 @@
     },
     Address: {
       $ref: #/defs/Address,
-      title: Address,
       type: object
     }
   },

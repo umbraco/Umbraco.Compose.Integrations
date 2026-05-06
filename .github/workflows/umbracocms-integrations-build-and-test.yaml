@@ -1,0 +1,33 @@
+name: Build and Test Umbraco CMS Integrations
+
+env:
+  DOTNET_VERSION: '10.0.x'
+  NODE_VERSION: '20.x'
+
+on:
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: src/UmbracoCms/UmbracoCms.DataSource/src/umbraco-compose-integrations-cms-data-source/package-lock.json
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+    - name: Install dependencies
+      run: dotnet restore src/UmbracoCms/Umbraco.Compose.Integrations.UmbracoCms.slnx --locked-mode
+    - name: Test with dotnet
+      run: dotnet test --solution src/UmbracoCms/Umbraco.Compose.Integrations.UmbracoCms.slnx --no-restore

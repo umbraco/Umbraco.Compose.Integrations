@@ -16,7 +16,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.DataSource
     {
         public ComposeEntityPickerPropertySchemaResolver(Umbraco.Cms.Core.Services.IDataTypeService dataTypeService) { }
         public bool CanHandle(Umbraco.Cms.Core.Models.PublishedContent.PublishedPropertyType propertyType) { }
-        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema? Process(Umbraco.Cms.Core.Models.PublishedContent.PublishedPropertyType propertyType, Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGenerator generator) { }
+        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema Process(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorContext context, Umbraco.Cms.Core.Models.PublishedContent.PublishedPropertyType propertyType) { }
     }
     public sealed class ContentQueryPaging
     {
