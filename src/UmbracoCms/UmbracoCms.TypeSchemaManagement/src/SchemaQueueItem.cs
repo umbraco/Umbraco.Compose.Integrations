@@ -1,3 +1,3 @@
 namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
-internal record SchemaQueueItem(string ContentTypeAlias);
+internal record SchemaQueueItem(Guid Id, string ContentTypeAlias);

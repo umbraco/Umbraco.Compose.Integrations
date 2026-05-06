@@ -21,6 +21,14 @@ namespace Umbraco.Cms.Core.DependencyInjection
 }
 namespace Umbraco.Compose.Integrations.UmbracoCms.Core
 {
+    public sealed class DeferredActions
+    {
+        public DeferredActions() { }
+        public void Add(System.Action action) { }
+        public void Add(System.Func<System.Threading.Tasks.ValueTask> action) { }
+        public static System.Threading.Tasks.ValueTask ExecuteDeferredAsync(Umbraco.Cms.Core.Scoping.ICoreScopeProvider coreScopeProvider, System.Func<System.Threading.Tasks.ValueTask> action) { }
+        public static Umbraco.Compose.Integrations.UmbracoCms.Core.DeferredActions? Get(Umbraco.Cms.Core.Scoping.ICoreScopeProvider scopeProvider) { }
+    }
     public interface IPropertySchemaResolver
     {
         bool CanHandle(Umbraco.Cms.Core.Models.PublishedContent.PublishedPropertyType propertyType);

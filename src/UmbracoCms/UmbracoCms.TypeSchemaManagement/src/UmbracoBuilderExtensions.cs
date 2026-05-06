@@ -7,6 +7,7 @@ using Umbraco.Cms.Core.Notifications;
 using Umbraco.Compose.Integrations.UmbracoCms.Core;
 using Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
+using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Persistence;
 
 namespace Umbraco.Cms.Core.DependencyInjection;
 
@@ -28,8 +29,10 @@ public static class UmbracoBuilderExtensions
         {
             ArgumentNullException.ThrowIfNull(builder);
 
-            builder.Services.AddSingleton(Channel.CreateUnbounded<SchemaQueueItem>());
-            builder.Services.AddSingleton(static sp => sp.GetRequiredService<Channel<SchemaQueueItem>>().Writer);
+            _ = builder.Services.AddSingleton<ISchemaQueueRepository, SchemaQueueRepository>();
+
+            _ = builder.Services.AddSingleton(Channel.CreateUnbounded<SchemaQueueItem>());
+            _ = builder.Services.AddSingleton(static sp => sp.GetRequiredService<Channel<SchemaQueueItem>>().Writer);
 
             builder.Services.AddScoped<JsonSchemaExporterService>();
 
@@ -67,7 +70,9 @@ public static class UmbracoBuilderExtensions
                 .AddNotificationAsyncHandler<
                     ContentTypeSavedNotification, ContentTypeNotificationHandler>()
                 .AddNotificationAsyncHandler<
-                    DataTypeSavedNotification, ContentTypeNotificationHandler>();
+                    ContentTypeSavedNotification, ContentTypeNotificationHandler>();
+
+            builder.AddComponent<RequeueOnStartupComponent>();
 
             return builder;
         }

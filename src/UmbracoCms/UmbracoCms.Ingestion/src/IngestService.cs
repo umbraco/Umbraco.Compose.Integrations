@@ -1,24 +1,46 @@
+using System.Text.Json;
 using System.Threading.Channels;
+using Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Persistence;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 
 internal sealed class IngestService : IIngestService
 {
-    private readonly ChannelWriter<IngestQueueItem> _writer;
+    private static readonly JsonSerializerOptions s_jsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
 
-    public IngestService(Channel<IngestQueueItem> channel)
+    private readonly ChannelWriter<IngestQueueItem> _writer;
+    private readonly IIngestQueueRepository _queueRepository;
+
+    public IngestService(
+        Channel<IngestQueueItem> channel,
+        IIngestQueueRepository queueRepository)
     {
         ArgumentNullException.ThrowIfNull(channel);
+        ArgumentNullException.ThrowIfNull(queueRepository);
+        _queueRepository = queueRepository;
 
         _writer = channel.Writer;
     }
 
-    public ValueTask EnqueueAsync(IngestQueueItem item, CancellationToken cancellationToken = default)
+    public async ValueTask EnqueueAsync(IngestQueueItem item, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        // TODO: this should also be persisted in the database along with the concrete type
-        return _writer.WriteAsync(item, cancellationToken);
+        IngestQueueDto dto = new()
+        {
+            Id = item.Id,
+            CreatedAt = item.CreatedAt,
+            ItemType = $"{item.GetType().FullName}, {item.GetType().Assembly.GetName().Name}",
+            Payload = JsonSerializer.Serialize(item, item.GetType(), s_jsonOptions)
+        };
+
+        await _queueRepository.InsertAsync(dto, cancellationToken).ConfigureAwait(false);
+
+        await _writer.WriteAsync(item, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     public async ValueTask EnqueueAsync(IEnumerable<IngestQueueItem> items, CancellationToken cancellationToken = default)
@@ -27,7 +49,7 @@ internal sealed class IngestService : IIngestService
 
         foreach (IngestQueueItem item in items)
         {
-            await _writer.WriteAsync(item, cancellationToken).ConfigureAwait(false);
+            await EnqueueAsync(item, cancellationToken).ConfigureAwait(false);
         }
     }
 }

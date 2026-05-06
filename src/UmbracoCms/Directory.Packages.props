@@ -12,6 +12,7 @@
     <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="2.1.0" />
     <PackageVersion Include="OpenIddict.Client.SystemNetHttp" Version="7.2.0" />
     <PackageVersion Include="Umbraco.Cms" Version="[17.1.0, 18.0.0)" />
+	<PackageVersion Include="Umbraco.Cms.Infrastructure" Version="[17.1.0, 18.0.0)" />
     <PackageVersion Include="Umbraco.Cms.Api.Management" Version="[17.1.0, 18.0.0)" />
     <PackageVersion Include="Umbraco.Cms.Api.Delivery" Version="[17.1.0, 18.0.0)" />
     <PackageVersion Include="Umbraco.Cms.Core" Version="[17.1.0, 18.0.0)" />

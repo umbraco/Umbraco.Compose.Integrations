@@ -5,7 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Umbraco.Cms.Infrastructure.Scoping;
 using Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
+using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Persistence;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
@@ -13,6 +15,7 @@ internal sealed class SchemaBackgroundService(
     Channel<SchemaQueueItem> channel,
     IHttpClientFactory httpClientFactory,
     IServiceProvider serviceProvider,
+    IScopeProvider scopeProvider,
     IOptionsFactory<JsonOptions> jsonOptionsFactory,
     ILogger<SchemaBackgroundService> logger)
     : BackgroundService
@@ -23,13 +26,19 @@ internal sealed class SchemaBackgroundService(
         {
             SchemaQueueItem queueItem = await channel.Reader.ReadAsync(stoppingToken).ConfigureAwait(false);
 
+            await using AsyncServiceScope serviceScope = serviceProvider.CreateAsyncScope();
+
+            ISchemaQueueRepository queueRepository = serviceScope.ServiceProvider
+                .GetRequiredService<ISchemaQueueRepository>();
+
             try
             {
-                await using AsyncServiceScope scope = serviceProvider.CreateAsyncScope();
-
-                JsonSchemaExporterService schemaExporter = scope.ServiceProvider.GetRequiredService<JsonSchemaExporterService>();
-                IReadOnlyDictionary<string, JsonSchema> schemas = schemaExporter.GenerateSchemas(queueItem.ContentTypeAlias);
+                JsonSchemaExporterService schemaExporter = serviceScope.ServiceProvider.GetRequiredService<JsonSchemaExporterService>();
                 JsonOptions jsonOptions = jsonOptionsFactory.Create(nameof(SchemaBackgroundService));
+
+                using IScope scope = scopeProvider.CreateScope();
+                IReadOnlyDictionary<string, JsonSchema> schemas = schemaExporter.GenerateSchemas(queueItem.ContentTypeAlias);
+                scope.Complete();
 
                 HttpClient client = httpClientFactory.CreateClient(nameof(SchemaBackgroundService));
 
@@ -56,7 +65,19 @@ internal sealed class SchemaBackgroundService(
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Failed to create or update type schema '{Alias}'", queueItem.ContentTypeAlias);
+                logger.LogError(ex, "Failed to create or update type schema '{Alias}' in Umbraco Compose", queueItem.ContentTypeAlias);
+            }
+            finally
+            {
+                try
+                {
+                    await queueRepository.DeleteByIdAsync(queueItem.Id, stoppingToken)
+                        .ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex, "Failed to delete schema queue item {QueueItemId} from database", queueItem.Id);
+                }
             }
         }
     }

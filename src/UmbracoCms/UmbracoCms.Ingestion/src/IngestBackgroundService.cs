@@ -5,6 +5,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Umbraco.Cms.Infrastructure.Scoping;
+using Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Persistence;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 
@@ -19,6 +21,7 @@ internal sealed class IngestBackgroundService : BackgroundService
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<IngestBackgroundService> _logger;
     private readonly IServiceProvider _serviceProvider;
+    private readonly IScopeProvider _scopeProvider;
 
     private UmbracoComposeIngestionOptions _ingestionOptions;
 
@@ -27,7 +30,8 @@ internal sealed class IngestBackgroundService : BackgroundService
         IHttpClientFactory httpClientFactory,
         IOptionsMonitor<UmbracoComposeIngestionOptions> ingestionOptions,
         ILogger<IngestBackgroundService> logger,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        IScopeProvider scopeProvider)
     {
         ArgumentNullException.ThrowIfNull(channel);
 
@@ -36,6 +40,7 @@ internal sealed class IngestBackgroundService : BackgroundService
         _ingestionOptions = ingestionOptions.CurrentValue;
         _logger = logger;
         _serviceProvider = serviceProvider;
+        _scopeProvider = scopeProvider;
 
         ingestionOptions.OnChange(OnIngestionOptionsChange);
     }
@@ -46,49 +51,67 @@ internal sealed class IngestBackgroundService : BackgroundService
         {
             IngestQueueItem queueItem = await _channel.Reader.ReadAsync(stoppingToken).ConfigureAwait(false);
 
-            // TODO: the background worker should find a processor for the payloadType and call the ProcessAsync method
-            // which returns one or more entries that should be ingested
-            // when done the db entry should be deleted (or marked as complete)
-
-            if (queueItem is not ContentIngestQueueItem contentIngestQueueItem)
-            {
-                _logger.LogDebug("Don't know how to process {QueueItem}, currently only 'ContentIngestQueueItem' is supported", queueItem);
-                continue;
-            }
-
-            await using AsyncServiceScope scope = _serviceProvider.CreateAsyncScope();
-            UmbracoContentIngestItemQueueProcessor processor = scope.ServiceProvider
-                .GetRequiredService<UmbracoContentIngestItemQueueProcessor>();
-
-            List<IngestEntry> items = await processor.ProcessAsync(contentIngestQueueItem, stoppingToken)
-                .ToListAsync(cancellationToken: stoppingToken)
-                .ConfigureAwait(false);
-
-            if (items.Count is 0)
-            {
-                _logger.LogInformation("No items to ingest");
-                continue;
-            }
+            await using AsyncServiceScope serviceScope = _serviceProvider.CreateAsyncScope();
+            IIngestQueueRepository queueRepository = serviceScope.ServiceProvider.GetRequiredService<IIngestQueueRepository>();
 
             try
             {
-                using HttpClient httpClient = _httpClientFactory.CreateClient(nameof(IngestBackgroundService));
+                // TODO: the background worker should find a processor for the payloadType and call the ProcessAsync method
+                // which returns one or more entries that should be ingested
+                if (queueItem is not ContentIngestQueueItem contentIngestQueueItem)
+                {
+                    _logger.LogError(
+                        "Don't know how to process {QueueItem}, currently only 'ContentIngestQueueItem' is supported",
+                        queueItem);
+                    continue;
+                }
 
-                // TODO: Make collection configurable based on type, either through configuration or maybe through a service
-                // e.g. you might want to send a specific content type to a specific collection, in first iteration we could
-                // just do a configuration option where you set it in configuration for the entity type (content, media)
-                using HttpResponseMessage response = await httpClient
-                    .PutAsJsonAsync(
-                        _ingestionOptions.CollectionAlias,
-                        items,
-                        s_jsonSerializerOptions,
-                        cancellationToken: stoppingToken)
+                ContentIngestQueueItemProcessor processor = serviceScope.ServiceProvider
+                    .GetRequiredService<ContentIngestQueueItemProcessor>();
+
+                using IScope scope = _scopeProvider.CreateScope();
+                List<IngestEntry> items = await processor.ProcessAsync(contentIngestQueueItem, stoppingToken)
+                    .ToListAsync(cancellationToken: stoppingToken)
                     .ConfigureAwait(false);
-                response.EnsureSuccessStatusCode();
+                scope.Complete();
+
+                if (items.Count is 0)
+                {
+                    _logger.LogInformation("No items to ingest");
+                    continue;
+                }
+
+                try
+                {
+                    using HttpClient httpClient = _httpClientFactory.CreateClient(nameof(IngestBackgroundService));
+
+                    // TODO: Make collection configurable based on type, either through configuration or maybe through a service
+                    // e.g. you might want to send a specific content type to a specific collection, in first iteration we could
+                    // just do a configuration option where you set it in configuration for the entity type (content, media)
+                    using HttpResponseMessage response = await httpClient
+                        .PutAsJsonAsync(
+                            _ingestionOptions.CollectionAlias,
+                            items,
+                            s_jsonSerializerOptions,
+                            cancellationToken: stoppingToken)
+                        .ConfigureAwait(false);
+                    response.EnsureSuccessStatusCode();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error ingesting content");
+                }
             }
-            catch (Exception ex)
+            finally
             {
-                _logger.LogError(ex, "Error ingesting content");
+                try
+                {
+                    await queueRepository.DeleteByIdAsync(queueItem.Id, stoppingToken).ConfigureAwait(false);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to delete queue item {QueueItemId} from database", queueItem.Id);
+                }
             }
         }
     }

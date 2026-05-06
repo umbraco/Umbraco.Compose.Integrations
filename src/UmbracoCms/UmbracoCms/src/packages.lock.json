@@ -142,8 +142,8 @@
       },
       "Humanizer.Core": {
         "type": "Transitive",
-        "resolved": "3.0.1",
-        "contentHash": "scB3+KcxNmEjZK5V8rKCW2gIiL8m8KH91w14FuuExyhi9xTyAJ+jr+DDxGdy12mHmioe2uvjxTfMgM7WmSUFlw=="
+        "resolved": "2.14.1",
+        "contentHash": "lQKvtaTDOXnoVJ20ibTuSIOf2i0uO0MPbDhd1jm238I+U/2ZnRENj0cktKZhtchBMtCUSRQ5v4xBCUbKNmyVMw=="
       },
       "J2N": {
         "type": "Transitive",
@@ -152,8 +152,8 @@
       },
       "Json.More.Net": {
         "type": "Transitive",
-        "resolved": "2.2.0",
-        "contentHash": "fiyEZJNgiCzDa7/N9bZ+CnM5qnawyJ54+CkHNZ2svwxWBWNNFzydJ7RlroqMdOjokGBiLcKIxdajNvOklzlYqQ=="
+        "resolved": "2.1.0",
+        "contentHash": "qtwsyAsL55y2vB2/sK4Pjg3ZyVzD5KKSpV3lOAMHlnjFfsjQ/86eHJfQT9aV1YysVXzF4+xyHOZbh7Iu3YQ7Lg=="
       },
       "JsonPatch.Net": {
         "type": "Transitive",
@@ -165,19 +165,11 @@
       },
       "JsonPointer.Net": {
         "type": "Transitive",
-        "resolved": "6.0.0",
-        "contentHash": "OOObaRq33mNkoMFM1JfdW3nD6U6xF0MHHxPFAxSpKHNNTK6Zbt8U9grquJ+m2onZ1M7cruho0fWzHjhpjEXjog==",
+        "resolved": "5.2.0",
+        "contentHash": "qe1F7Tr/p4mgwLPU9P60MbYkp+xnL2uCPnWXGgzfR/AZCunAZIC0RZ32dLGJJEhSuLEfm0YF/1R3u5C7mEVq+w==",
         "dependencies": {
-          "Humanizer.Core": "3.0.1",
-          "Json.More.Net": "2.2.0"
-        }
-      },
-      "JsonSchema.Net": {
-        "type": "Transitive",
-        "resolved": "8.0.0",
-        "contentHash": "YQQo7/ozc7kbmTaCE4p1127z3LyHuWLGfXk/7sTqNVVpUawEIop9mtlyMKSOPZshM777oTjaTHc1f1/S/Gxnjw==",
-        "dependencies": {
-          "JsonPointer.Net": "6.0.0"
+          "Humanizer.Core": "2.14.1",
+          "Json.More.Net": "2.1.0"
         }
       },
       "K4os.Compression.LZ4": {
@@ -1276,39 +1268,6 @@
           "Umbraco.Cms.Infrastructure": "[17.1.0, 18.0.0)"
         }
       },
-      "Umbraco.Cms.Infrastructure": {
-        "type": "Transitive",
-        "resolved": "17.1.0",
-        "contentHash": "JqGoYerbXDxxcwWHaAuR2FBfG4v3L4BfBSsYa9xWxYd71WOAj0sxsm9pjFrr2iB7bu43jIpGxrI55t/pEg3XUA==",
-        "dependencies": {
-          "Examine.Core": "3.7.1",
-          "HtmlAgilityPack": "1.12.4",
-          "MailKit": "4.14.1",
-          "Markdown": "2.2.1",
-          "Microsoft.Extensions.Configuration.Abstractions": "10.0.0",
-          "Microsoft.Extensions.Configuration.Json": "10.0.0",
-          "Microsoft.Extensions.DependencyInjection": "10.0.0",
-          "Microsoft.Extensions.Http": "10.0.0",
-          "Microsoft.Extensions.Identity.Stores": "10.0.0",
-          "MiniProfiler.Shared": "4.5.4",
-          "NPoco": "6.1.0",
-          "OpenIddict.Abstractions": "7.2.0",
-          "Serilog": "4.3.0",
-          "Serilog.Enrichers.Process": "3.0.0",
-          "Serilog.Enrichers.Thread": "4.0.0",
-          "Serilog.Expressions": "5.0.0",
-          "Serilog.Extensions.Hosting": "9.0.0",
-          "Serilog.Formatting.Compact": "3.0.0",
-          "Serilog.Formatting.Compact.Reader": "4.0.0",
-          "Serilog.Settings.Configuration": "9.0.0",
-          "Serilog.Sinks.Async": "2.1.0",
-          "Serilog.Sinks.File": "7.0.0",
-          "Serilog.Sinks.Map": "2.0.0",
-          "System.Linq.Async": "7.0.0",
-          "Umbraco.Cms.Core": "[17.1.0, 18.0.0)",
-          "ncrontab": "3.4.0"
-        }
-      },
       "Umbraco.Cms.PublishedCache.HybridCache": {
         "type": "Transitive",
         "resolved": "17.1.0",
@@ -1353,26 +1312,16 @@
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Http": "[10.0.1, )",
-          "Umbraco.Cms.Core": "[17.1.0, 18.0.0)",
+          "Umbraco.Cms.Infrastructure": "[17.1.0, 18.0.0)",
           "Umbraco.Compose.Integrations.UmbracoCms.Core": "[1.0.0, )"
         }
       },
       "umbraco.compose.integrations.umbracocms.typeschemamanagement": {
         "type": "Project",
         "dependencies": {
-          "JsonSchema.Net.Generation": "[6.0.0, )",
           "Umbraco.Cms.Api.Delivery": "[17.1.0, 18.0.0)",
+          "Umbraco.Cms.Infrastructure": "[17.1.0, 18.0.0)",
           "Umbraco.Compose.Integrations.UmbracoCms.Core": "[1.0.0, )"
-        }
-      },
-      "JsonSchema.Net.Generation": {
-        "type": "CentralTransitive",
-        "requested": "[6.0.0, )",
-        "resolved": "6.0.0",
-        "contentHash": "n9vI/jqJbxqXyO5D/brSCn/qNfYKHxw4t6uEjU12Qhqlc6yzeRhb/UuPUIKN4cP0dIL/WKDTkMK9RUJaRusAAA==",
-        "dependencies": {
-          "Humanizer.Core": "3.0.1",
-          "JsonSchema.Net": "8.0.0"
         }
       },
       "Microsoft.Extensions.Http": {
@@ -1423,6 +1372,40 @@
           "Umbraco.Cms.Api.Common": "[17.1.0, 18.0.0)",
           "Umbraco.Cms.Infrastructure": "[17.1.0, 18.0.0)",
           "Umbraco.Cms.PublishedCache.HybridCache": "[17.1.0, 18.0.0)"
+        }
+      },
+      "Umbraco.Cms.Infrastructure": {
+        "type": "CentralTransitive",
+        "requested": "[17.1.0, 18.0.0)",
+        "resolved": "17.1.0",
+        "contentHash": "JqGoYerbXDxxcwWHaAuR2FBfG4v3L4BfBSsYa9xWxYd71WOAj0sxsm9pjFrr2iB7bu43jIpGxrI55t/pEg3XUA==",
+        "dependencies": {
+          "Examine.Core": "3.7.1",
+          "HtmlAgilityPack": "1.12.4",
+          "MailKit": "4.14.1",
+          "Markdown": "2.2.1",
+          "Microsoft.Extensions.Configuration.Abstractions": "10.0.0",
+          "Microsoft.Extensions.Configuration.Json": "10.0.0",
+          "Microsoft.Extensions.DependencyInjection": "10.0.0",
+          "Microsoft.Extensions.Http": "10.0.0",
+          "Microsoft.Extensions.Identity.Stores": "10.0.0",
+          "MiniProfiler.Shared": "4.5.4",
+          "NPoco": "6.1.0",
+          "OpenIddict.Abstractions": "7.2.0",
+          "Serilog": "4.3.0",
+          "Serilog.Enrichers.Process": "3.0.0",
+          "Serilog.Enrichers.Thread": "4.0.0",
+          "Serilog.Expressions": "5.0.0",
+          "Serilog.Extensions.Hosting": "9.0.0",
+          "Serilog.Formatting.Compact": "3.0.0",
+          "Serilog.Formatting.Compact.Reader": "4.0.0",
+          "Serilog.Settings.Configuration": "9.0.0",
+          "Serilog.Sinks.Async": "2.1.0",
+          "Serilog.Sinks.File": "7.0.0",
+          "Serilog.Sinks.Map": "2.0.0",
+          "System.Linq.Async": "7.0.0",
+          "Umbraco.Cms.Core": "[17.1.0, 18.0.0)",
+          "ncrontab": "3.4.0"
         }
       }
     }

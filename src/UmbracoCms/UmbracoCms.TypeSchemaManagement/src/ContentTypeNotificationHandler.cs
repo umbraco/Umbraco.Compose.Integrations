@@ -7,11 +7,13 @@ using Umbraco.Cms.Core.Notifications;
 using Umbraco.Cms.Core.Scoping;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Compose.Integrations.UmbracoCms.Core;
+using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Persistence;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
-internal class ContentTypeNotificationHandler(
+internal sealed class ContentTypeNotificationHandler(
     ChannelWriter<SchemaQueueItem> writer,
+    ISchemaQueueRepository queueRepository,
     IDataTypeService dataTypeService,
     ICoreScopeProvider coreScopeProvider,
     ILogger<ContentTypeNotificationHandler> logger,
@@ -27,13 +29,22 @@ internal class ContentTypeNotificationHandler(
             return;
         }
 
-        await ExecuteDeferredAsync(async () =>
-        {
-            foreach (IContentType contentType in notification.SavedEntities)
+        await DeferredActions.ExecuteDeferredAsync(
+            coreScopeProvider,
+            async () =>
             {
-                await writer.WriteAsync(new SchemaQueueItem(contentType.Alias), cancellationToken).ConfigureAwait(false);
-            }
-        })
+                foreach (string contentTypeAlias in notification.SavedEntities.Select(contentType => contentType.Alias))
+                {
+                    SchemaQueueDto dto = new()
+                    {
+                        Id = Guid.CreateVersion7(),
+                        CreatedAt = DateTime.UtcNow,
+                        ContentTypeAlias = contentTypeAlias
+                    };
+
+                    await writer.WriteAsync(new SchemaQueueItem(dto.Id, contentTypeAlias), cancellationToken).ConfigureAwait(false);
+                }
+            })
             .ConfigureAwait(false);
     }
 
@@ -45,33 +56,29 @@ internal class ContentTypeNotificationHandler(
             return;
         }
 
-        await ExecuteDeferredAsync(async () =>
-        {
-            foreach (IDataType entity in notification.SavedEntities)
+        await DeferredActions.ExecuteDeferredAsync(
+            coreScopeProvider,
+            async () =>
             {
-                PagedModel<RelationItemModel> relations = await dataTypeService.GetPagedRelationsAsync(entity.Key, 0, 1000)
-                    .ConfigureAwait(false);
-                foreach (string contentTypeAlias in relations.Items.Select(x => x.ContentTypeAlias).OfType<string>())
+                foreach (IDataType entity in notification.SavedEntities)
                 {
-                    await writer.WriteAsync(new SchemaQueueItem(contentTypeAlias), cancellationToken).ConfigureAwait(false);
+                    PagedModel<RelationItemModel> relations = await dataTypeService.GetPagedRelationsAsync(entity.Key, 0, 1000)
+                        .ConfigureAwait(false);
+
+                    foreach (string contentTypeAlias in relations.Items.Select(x => x.ContentTypeAlias).OfType<string>())
+                    {
+                        SchemaQueueDto dto = new()
+                        {
+                            Id = Guid.CreateVersion7(),
+                            CreatedAt = DateTime.UtcNow,
+                            ContentTypeAlias = contentTypeAlias
+                        };
+
+                        await queueRepository.InsertAsync(dto, cancellationToken).ConfigureAwait(false);
+                        await writer.WriteAsync(new SchemaQueueItem(dto.Id, contentTypeAlias), cancellationToken).ConfigureAwait(false);
+                    }
                 }
-            }
-        })
+            })
             .ConfigureAwait(false);
-    }
-
-    private ValueTask ExecuteDeferredAsync(Func<ValueTask> action)
-    {
-        DeferredActions? actions = DeferredActions.Get(coreScopeProvider);
-        if (actions is not null)
-        {
-            actions.Add(action);
-        }
-        else
-        {
-            return action();
-        }
-
-        return default;
     }
 }

@@ -1,4 +1,5 @@
 ﻿[assembly: System.Reflection.AssemblyMetadata("RepositoryUrl", "https://github.com/umbraco/Umbraco.Compose.Integrations")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Tests.Unit")]
 [assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v10.0", FrameworkDisplayName=".NET 10.0")]
 namespace Umbraco.Cms.Core.DependencyInjection
 {
@@ -14,17 +15,22 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion
 {
     public sealed class ComposeApiContent : Umbraco.Cms.Core.Models.DeliveryApi.ApiContent
     {
-        public ComposeApiContent(Umbraco.Cms.Core.Models.DeliveryApi.IApiContent content, string culture, System.Guid? parentId, System.Guid[] ancestors) { }
+        public ComposeApiContent(Umbraco.Cms.Core.Models.DeliveryApi.IApiContent content, System.Guid? parentId, System.Guid[] ancestors) { }
         public System.Guid[] Ancestors { get; }
-        public string Culture { get; }
         public System.Guid? ParentId { get; }
     }
     public sealed class ContentChangePayload : System.IEquatable<Umbraco.Compose.Integrations.UmbracoCms.Ingestion.ContentChangePayload>
     {
-        public ContentChangePayload(System.Guid Id, Umbraco.Cms.Core.Services.Changes.TreeChangeTypes ChangeTypes, System.Collections.Generic.IReadOnlyCollection<string> AffectedCultures) { }
+        public ContentChangePayload(System.Guid Id, Umbraco.Compose.Integrations.UmbracoCms.Ingestion.ContentChangeType ChangeType, System.Collections.Generic.IReadOnlyCollection<string> AffectedCultures) { }
         public System.Collections.Generic.IReadOnlyCollection<string> AffectedCultures { get; init; }
-        public Umbraco.Cms.Core.Services.Changes.TreeChangeTypes ChangeTypes { get; init; }
+        public Umbraco.Compose.Integrations.UmbracoCms.Ingestion.ContentChangeType ChangeType { get; init; }
         public System.Guid Id { get; init; }
+    }
+    public enum ContentChangeType
+    {
+        Update = 0,
+        UpdateWithDescendants = 1,
+        Delete = 2,
     }
     public sealed class ContentIngestQueueItem : Umbraco.Compose.Integrations.UmbracoCms.Ingestion.IngestQueueItem, System.IEquatable<Umbraco.Compose.Integrations.UmbracoCms.Ingestion.ContentIngestQueueItem>
     {
@@ -57,8 +63,8 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion
     public abstract class IngestQueueItem : System.IEquatable<Umbraco.Compose.Integrations.UmbracoCms.Ingestion.IngestQueueItem>
     {
         protected IngestQueueItem() { }
-        public System.DateTime CreatedAt { get; }
-        public System.Guid Id { get; }
+        public System.DateTime CreatedAt { get; init; }
+        public System.Guid Id { get; init; }
     }
     public sealed class UmbracoComposeIngestionOptions
     {
@@ -77,5 +83,13 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion
         public override string Action { get; }
         public required T Data { get; set; }
         public required string Type { get; set; }
+    }
+}
+namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Migrations
+{
+    public sealed class IngestionMigrationPlan : Umbraco.Cms.Core.Packaging.PackageMigrationPlan
+    {
+        public IngestionMigrationPlan() { }
+        protected override void DefinePlan() { }
     }
 }

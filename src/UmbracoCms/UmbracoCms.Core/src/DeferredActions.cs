@@ -1,8 +1,8 @@
 using Umbraco.Cms.Core.Scoping;
 
-namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
+namespace Umbraco.Compose.Integrations.UmbracoCms.Core;
 
-internal sealed class DeferredActions
+public sealed class DeferredActions
 {
     private readonly List<Func<ValueTask>> _actions = [];
 
@@ -11,7 +11,7 @@ internal sealed class DeferredActions
         IScopeContext? scopeContext = scopeProvider.Context;
 
         return scopeContext?.Enlist(
-            "composeTypeSchemaDeferredActions",
+            "composeDeferredActions",
             () => new DeferredActions(),
             async (completed, deferredActions) =>
             {
@@ -21,6 +21,18 @@ internal sealed class DeferredActions
                 }
                 await deferredActions.ExecuteAsync().ConfigureAwait(false);
             });
+    }
+
+    public static ValueTask ExecuteDeferredAsync(ICoreScopeProvider coreScopeProvider, Func<ValueTask> action)
+    {
+        DeferredActions? actions = Get(coreScopeProvider);
+        if (actions is null)
+        {
+            return action();
+        }
+
+        actions.Add(action);
+        return default;
     }
 
     public void Add(Func<ValueTask> action) =>

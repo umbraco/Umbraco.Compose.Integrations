@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Umbraco.Cms.Api.Delivery" />
+    <PackageReference Include="Umbraco.Cms.Infrastructure"/>
   </ItemGroup>
 
   <ItemGroup>
