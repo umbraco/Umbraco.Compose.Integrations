@@ -1,6 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-<ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Umbraco.Compose.Integrations.UmbracoCms.Ingestion" />
+    <InternalsVisibleTo Include="Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement" />
+    <InternalsVisibleTo Include="Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="OpenIddict.Client.SystemNetHttp" />
     <PackageReference Include="Umbraco.Cms.Core" />
   </ItemGroup>
