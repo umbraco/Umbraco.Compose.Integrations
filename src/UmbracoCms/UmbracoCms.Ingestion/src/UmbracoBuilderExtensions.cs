@@ -11,7 +11,7 @@ namespace Umbraco.Cms.Core.DependencyInjection;
 /// <summary>
 /// Extension methods for Umbraco Compose Ingestion services.
 /// </summary>
-public static partial class UmbracoBuilderExtensions
+public static class UmbracoBuilderExtensions
 {
     extension(IUmbracoBuilder builder)
     {
