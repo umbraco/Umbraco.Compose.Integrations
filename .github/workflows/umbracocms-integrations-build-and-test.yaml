@@ -30,4 +30,4 @@ jobs:
     - name: Install dependencies
       run: dotnet restore src/UmbracoCms/Umbraco.Compose.Integrations.UmbracoCms.slnx --locked-mode
     - name: Test with dotnet
-      run: dotnet test --solution src/UmbracoCms/Umbraco.Compose.Integrations.UmbracoCms.slnx --no-restore
+      run: dotnet test --solution src/UmbracoCms/Umbraco.Compose.Integrations.UmbracoCms.slnx --no-restore -c Release
