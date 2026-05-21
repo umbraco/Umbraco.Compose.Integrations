@@ -8,6 +8,7 @@ using Umbraco.Compose.Integrations.UmbracoCms.Core;
 using Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Persistence;
+using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.JsonSchemaTypeHandlers;
 
 namespace Umbraco.Cms.Core.DependencyInjection;
 
@@ -51,6 +52,7 @@ public static class UmbracoBuilderExtensions
                     o.Handlers.Add(new ApiElementHandler());
                     o.Handlers.Add(new ApiContentRouteHandler());
                     o.Handlers.Add(new ApiContentStartItemHandler());
+                    o.Handlers.Add(new ApiMediaWithCropsHandler());
                 });
 
             builder.Services.AddHttpClient<SchemaBackgroundService>()
