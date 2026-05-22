@@ -1,7 +1,7 @@
 using Umbraco.Cms.Core.Models.DeliveryApi;
 using Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 
-namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
+namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.JsonSchemaTypeHandlers;
 
 internal sealed class ApiContentStartItemHandler : JsonSchemaTypeHandler<IApiContentStartItem>
 {
