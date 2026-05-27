@@ -7,7 +7,12 @@
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
   </PropertyGroup>
 
-<PropertyGroup>
+  <PropertyGroup>
+    <Title>Umbraco Compose Data Source for Umbraco CMS</Title>
+    <Description>Provides a Data Source for retrieving content from Compose with the Entity Data Picker in Umbraco CMS.</Description>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <StaticWebAssetBasePath>App_Plugins/UmbracoComposeIntegrationsCmsDataSource</StaticWebAssetBasePath>
   </PropertyGroup>
 

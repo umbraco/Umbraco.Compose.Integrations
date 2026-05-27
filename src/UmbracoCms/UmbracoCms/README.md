@@ -1,10 +1,21 @@
 ## About
 
-`Umbraco.Compose.Integrations.UmbracoCms` provides Umbraco Compose integration for Umbraco CMS.
+`Umbraco.Compose.Integrations.UmbracoCms` provides Umbraco Compose integration for Umbraco CMS. This is a convenience package that installs and registers all other Umbraco Compose CMS integrations:
+- `Umbraco.Compose.Integrations.UmbracoCms.Core`
+- `Umbraco.Compose.Integrations.UmbracoCms.DataSource`
+- `Umbraco.Compose.Integrations.UmbracoCms.Ingestion`
+- `Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement`
 
 ## How to use
 
-To use `Umbraco.Compose.Integrations.UmbracoCms` you'll need an Umbraco Compose project with an API Application created with the `ingestion` scope on the environment.
+To use this package you will need:
+- An Umbraco Compose project.
+- An Environment & Collection configured for your project.
+- An API Application with the following scopes configured for the environment:
+    - `{environment}:ingestion`
+    - `{environment}:graphql`
+    - `{environment}:typeschema:write`
+
 
 ### Installation
 
@@ -27,3 +38,7 @@ To configure the integration, add the following to you preferred configuration s
     "CollectionAlias": "COLLECTION_TO_INGEST_CONTENT_INTO"
   }
 }
+
+## Documentation
+
+For further information about Umbraco Compose, refer to [our documentation](https://docs.umbraco.com/umbraco-compose).

@@ -1,6 +1,6 @@
 ## About
 
-`Umbraco.Compose.Integrations.UmbracoCms.SchemaManagement` provides Umbraco CMS schema management support for Umbraco Compose.
+`Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement` provides Umbraco CMS schema management support for Umbraco Compose.
 
 If you want the full integration, install the `Umbraco.Compose.Integrations.UmbracoCms` package instead.
 
@@ -10,7 +10,11 @@ If you want the full integration, install the `Umbraco.Compose.Integrations.Umbr
 
 ## How to use
 
-To use `Umbraco.Compose.Integrations.UmbracoCms` you'll need an Umbraco Compose project with an API Application created with the `typeschema:write` scope on the environment.
+
+To use this package you will need:
+- An Umbraco Compose project.
+- An Environment & Collection configured for your project.
+- An API Application with the `{environment}:typeschema:write` scope configured for the environment.
 
 ### Installation
 
@@ -28,14 +32,11 @@ To configure the integration, add the following to you preferred configuration s
   "ClientSecret": "YOUR_API_APPLICATION_CLIENT_SECRET",
   "ProjectAlias": "YOUR_PROJECT_ALIAS",
   "EnvironmentAlias": "YOUR_ENVIRONMENT_ALIAS",
-  "Region": "YOUR_PROJECT_REGION",
-  "Ingestion": {
-    "CollectionAlias": "COLLECTION_TO_INGEST_CONTENT_INTO"
-  }
+  "Region": "YOUR_PROJECT_REGION"
 }
 ```
 
-In your `Program.cs`, call `.AddUmbracoComposeIngestion()` on the Umbraco builder:
+In your `Program.cs`, call `.AddUmbracoComposeTypeSchemaManagement()` on the Umbraco builder:
 
 ```csharp
 builder.CreateUmbracoBuilder()
@@ -44,7 +45,11 @@ builder.CreateUmbracoBuilder()
     .AddComposers()
     .AddUmbracoComposeAuthentication()
 
-    .AddUmbracoComposeSchemaManagement()
+    .AddUmbracoComposeTypeSchemaManagement()
 
     .Build();
 ```
+
+## Documentation
+
+For further information about Umbraco Compose, refer to [our documentation](https://docs.umbraco.com/umbraco-compose).

@@ -1,16 +1,20 @@
 ## About
 
-`Umbraco.Compose.Integrations.UmbracoCms.DataSource` provides Umbraco Compose Data Source support for Umbraco CMS, which provides the `Umbraco Compose` data source to be selected as a data source for an `Entity Data Picker`
+`Umbraco.Compose.Integrations.UmbracoCms.DataSource` provides Umbraco Compose Data Source support for the Umbraco CMS Entity Data Picker.
 
 If you want the full Umbraco Compose integration, install the `Umbraco.Compose.Integrations.UmbracoCms` package instead.
 
 ## Key Features
 
-- The ability to create an `Entity Data Picker` with the `Umbraco Compose` data source.
+- Create an Entity Data Picker to pick content from Umbraco Compose.
+- Combines with `Umbraco.Compose.Integrations.UmbracoCms.Ingestion` to send selected Entity Data Picker entries to Compose as content references.
 
 ## How to use
 
-To use the `Umbraco.Compose.Integrations.UmbracoCms.DataSource` you'll need an Umbraco Compose project with an API Application created with the `graphql` scope on the environment or project. The compose project will need a `TypeSchema` configured with content ingested that conforms to the schema
+To use this package you will need:
+- An Umbraco Compose project.
+- An Environment & Collection configured for your project.
+- An API Application with `{environment}:graphql` scope configured for the environment.
 
 ### Installation
 
@@ -47,3 +51,11 @@ builder.CreateUmbracoBuilder()
 
     .Build();
 ```
+
+### Creating an API Application
+
+To authorize the integration you will need an API application with the `ingestion` scope. API Applications can be created from the [Umbraco Cloud portal](https://www.s1.umbraco.io/).
+
+## Documentation
+
+For further information about Umbraco Compose, refer to [our documentation](https://docs.umbraco.com/umbraco-compose).
