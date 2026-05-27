@@ -69,11 +69,15 @@ internal sealed class IngestBackgroundService : BackgroundService
                 ContentIngestQueueItemProcessor processor = serviceScope.ServiceProvider
                     .GetRequiredService<ContentIngestQueueItemProcessor>();
 
-                using IScope scope = _scopeProvider.CreateScope();
-                List<IngestEntry> items = await processor.ProcessAsync(contentIngestQueueItem, stoppingToken)
-                    .ToListAsync(cancellationToken: stoppingToken)
-                    .ConfigureAwait(false);
-                scope.Complete();
+                List<IngestEntry> items;
+                using (IScope scope = _scopeProvider.CreateScope())
+                {
+                    items = await processor.ProcessAsync(contentIngestQueueItem, stoppingToken)
+                        .ToListAsync(cancellationToken: stoppingToken)
+                        .ConfigureAwait(false);
+
+                    scope.Complete();
+                }
 
                 if (items.Count is 0)
                 {
@@ -85,9 +89,9 @@ internal sealed class IngestBackgroundService : BackgroundService
                 {
                     using HttpClient httpClient = _httpClientFactory.CreateClient(nameof(IngestBackgroundService));
 
-                    // TODO: Make collection configurable based on type, either through configuration or maybe through a service
-                    // e.g. you might want to send a specific content type to a specific collection, in first iteration we could
-                    // just do a configuration option where you set it in configuration for the entity type (content, media)
+                    // TODO: Make collection configurable based on entity type, either through configuration or maybe through a service
+                    // e.g. when we add support for media one probably want that to go into another collection.
+
                     using HttpResponseMessage response = await httpClient
                         .PutAsJsonAsync(
                             _ingestionOptions.CollectionAlias,

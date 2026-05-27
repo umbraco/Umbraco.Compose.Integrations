@@ -42,6 +42,12 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion
         public DeleteEntry() { }
         public override string Action { get; }
     }
+    public sealed class DeleteWhereEntry : Umbraco.Compose.Integrations.UmbracoCms.Ingestion.IngestEntry
+    {
+        public DeleteWhereEntry() { }
+        public override string Action { get; }
+        public required System.Collections.Generic.Dictionary<string, object?> Where { get; init; }
+    }
     public interface IIngestQueueItemProcessor<T>
         where T : Umbraco.Compose.Integrations.UmbracoCms.Ingestion.IngestQueueItem
     {
@@ -52,12 +58,12 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion
         System.Threading.Tasks.ValueTask EnqueueAsync(System.Collections.Generic.IEnumerable<Umbraco.Compose.Integrations.UmbracoCms.Ingestion.IngestQueueItem> items, System.Threading.CancellationToken cancellationToken = default);
         System.Threading.Tasks.ValueTask EnqueueAsync(Umbraco.Compose.Integrations.UmbracoCms.Ingestion.IngestQueueItem item, System.Threading.CancellationToken cancellationToken = default);
     }
-    [System.Text.Json.Serialization.JsonConverter(typeof(Umbraco.Compose.Integrations.UmbracoCms.Ingestion.IngestEntryJsonConverter))]
+    [System.Text.Json.Serialization.JsonConverter(typeof(Umbraco.Compose.Integrations.UmbracoCms.Ingestion.IngestEntryJsonConverter?))]
     public abstract class IngestEntry
     {
         protected IngestEntry() { }
         public abstract string Action { get; }
-        public required string Id { get; set; }
+        public virtual string? Id { get; set; }
         public string? Variant { get; set; }
     }
     public abstract class IngestQueueItem : System.IEquatable<Umbraco.Compose.Integrations.UmbracoCms.Ingestion.IngestQueueItem>

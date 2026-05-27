@@ -1,8 +1,10 @@
 using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.DeliveryApi;
+using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.DeliveryApi;
 using Umbraco.Cms.Core.Models.PublishedContent;
+using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Services.Navigation;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Extensions;
@@ -12,20 +14,13 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 internal sealed class ContentIngestQueueItemProcessor(
     IApiContentBuilder apiContentBuilder,
     IDocumentNavigationQueryService navigationQueryService,
+    ILanguageService languageService,
     IPublishedContentStatusFilteringService publishedStatusFilteringService,
     IUmbracoContextAccessor umbracoContextAccessor,
     IUmbracoContextFactory umbracoContextFactory,
     IVariationContextAccessor variationContextAccessor,
     ILogger<ContentIngestQueueItemProcessor> logger) : IIngestQueueItemProcessor<ContentIngestQueueItem>
 {
-    private readonly IUmbracoContextFactory _umbracoContextFactory = umbracoContextFactory;
-    private readonly IVariationContextAccessor _variationContextAccessor = variationContextAccessor;
-    private readonly ILogger<ContentIngestQueueItemProcessor> _logger = logger;
-    private readonly IApiContentBuilder _apiContentBuilder = apiContentBuilder;
-    private readonly IPublishedContentStatusFilteringService _publishedStatusFilteringService = publishedStatusFilteringService;
-    private readonly IUmbracoContextAccessor _umbracoContextAccessor = umbracoContextAccessor;
-    private readonly IDocumentNavigationQueryService _navigationQueryService = navigationQueryService;
-
     public IAsyncEnumerable<IngestEntry> ProcessAsync(ContentIngestQueueItem item, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -35,51 +30,126 @@ internal sealed class ContentIngestQueueItemProcessor(
 
     private async IAsyncEnumerable<IngestEntry> ProcessAsyncCoreAsync(ContentIngestQueueItem item)
     {
+        HashSet<string> updated = [];
+        HashSet<string> deleted = [];
+
         foreach (ContentChangePayload entity in item.Entities)
         {
-            _logger.LogDebug("Processing entry {Entity}", entity);
+            logger.LogDebug("Processing entry {Entity}", entity);
 
             if (entity is { ChangeType: ContentChangeType.Delete })
             {
+                string entityId = entity.Id.ToString();
+
                 if (entity.AffectedCultures is { Count: > 0 })
                 {
                     foreach (string culture in entity.AffectedCultures)
                     {
-                        yield return new DeleteEntry { Id = entity.Id.ToString(), Variant = culture };
+                        if (culture == "*")
+                        {
+                            if (deleted.Contains(entityId))
+                            {
+                                continue;
+                            }
+
+                            deleted.Add(entityId);
+
+                            yield return new DeleteEntry { Id = entityId };
+                            yield return new DeleteWhereEntry
+                            {
+                                Where = new()
+                                {
+                                    { "ancestors_some", new string[] { entityId } },
+                                    { "variant", null }
+                                }
+                            };
+                        }
+                        else
+                        {
+                            if (deleted.Contains($"{entityId}_{culture}"))
+                            {
+                                continue;
+                            }
+
+                            deleted.Add($"{entityId}_{culture}");
+
+                            yield return new DeleteEntry { Id = entityId, Variant = culture };
+                            yield return new DeleteWhereEntry
+                            {
+                                Where = new()
+                                {
+                                    { "ancestors_some", new string[] { entityId } },
+                                    { "variant", culture }
+                                }
+                            };
+                        }
                     }
                 }
                 else
                 {
-                    // hmm... we somehow need to delete all items with the specified id both for all cultures, and invariant
-                    // maybe JsonPath stuff wil help us
-                    yield return new DeleteEntry { Id = entity.Id.ToString() };
+                    if (deleted.Contains(entityId))
+                    {
+                        continue;
+                    }
+
+                    deleted.Add(entityId);
+
+                    yield return new DeleteEntry { Id = entityId };
+                    yield return new DeleteWhereEntry
+                    {
+                        Where = new()
+                            {
+                                { "ancestors_some", new string[] { entityId } },
+                                { "variant", null }
+                            }
+                    };
+
+                    foreach (ILanguage language in await languageService.GetAllAsync().ConfigureAwait(false))
+                    {
+                        string? culture = language.CultureInfo?.Name;
+                        if (culture is null || deleted.Contains($"{entityId}_{culture}"))
+                        {
+                            continue;
+                        }
+
+                        deleted.Add($"{entityId}_{culture}");
+
+                        yield return new DeleteWhereEntry
+                        {
+                            Where = new()
+                                {
+                                    { "ancestors_some", new string[] { entityId } },
+                                    { "variant", culture }
+                                }
+                        };
+                    }
                 }
                 continue;
             }
 
-            using UmbracoContextReference context = _umbracoContextFactory.EnsureUmbracoContext();
+            using UmbracoContextReference context = umbracoContextFactory.EnsureUmbracoContext();
             IPublishedContent? content = await context.UmbracoContext.Content.GetByIdAsync(entity.Id).ConfigureAwait(false);
 
             if (content is null)
             {
-                _logger.LogWarning("Could not get content with id {Id} from the Published Content Cache", entity.Id);
+                logger.LogWarning("Could not get content with id {Id} from the Published Content Cache", entity.Id);
                 continue;
             }
 
-            foreach (string culture in entity.AffectedCultures is { Count: > 0 }
+            string[] cultures = [.. entity.AffectedCultures is { Count: > 0 }
                 ? entity.AffectedCultures
-                : content.Cultures.Select(static x => x.Value.Culture))
+                : content.Cultures.Select(static x => x.Value.Culture)];
+
+            foreach (string culture in cultures)
             {
                 if (!content.IsPublished(culture))
                 {
-                    _logger.LogWarning("Got unpublished content from cache");
+                    logger.LogWarning("Got unpublished content from cache");
                     continue;
                 }
 
-                foreach (UpsertContentEntry processedItem in ProcessItem(
-                    content,
-                    culture,
-                    entity.ChangeType is ContentChangeType.UpdateWithDescendants))
+                bool includeChildren = entity.ChangeType is ContentChangeType.UpdateWithDescendants;
+                foreach (UpsertContentEntry processedItem in ProcessItem(updated, content, culture, includeChildren))
                 {
                     yield return processedItem;
                 }
@@ -87,37 +157,45 @@ internal sealed class ContentIngestQueueItemProcessor(
         }
     }
 
-    private IEnumerable<UpsertContentEntry> ProcessItem(IPublishedContent content, string culture, bool includeChildren)
+    private IEnumerable<UpsertContentEntry> ProcessItem(
+        HashSet<string> updated,
+        IPublishedContent content,
+        string culture,
+        bool includeChildren)
     {
-        using UmbracoContextReference context = _umbracoContextFactory.EnsureUmbracoContext();
+        if (updated.Contains($"{content.Key}_{culture}"))
+        {
+            yield break;
+        }
 
-        _variationContextAccessor.VariationContext = new(culture);
-        _umbracoContextAccessor.Set(context.UmbracoContext);
+        updated.Add($"{content.Key}_{culture}");
 
-        IApiContent? apiContent = _apiContentBuilder.Build(content);
+        using UmbracoContextReference context = umbracoContextFactory.EnsureUmbracoContext();
+
+        variationContextAccessor.VariationContext = new(culture);
+        umbracoContextAccessor.Set(context.UmbracoContext);
+
+        IApiContent? apiContent = apiContentBuilder.Build(content);
 
         if (apiContent is null)
         {
-            _logger.LogWarning(
+            logger.LogWarning(
                 "No API Content was built for item '{Name}', '{Culture}', '{Id}'",
-                content.Name(_variationContextAccessor, culture),
+                content.Name(variationContextAccessor, culture),
                 culture,
                 content.Key);
             yield break;
         }
-        Guid[] ancestors =
-            [.. content.Ancestors<IPublishedContent>(_navigationQueryService, _publishedStatusFilteringService)
-                .Select(static x => x.Key)];
+
+        navigationQueryService.TryGetParentKey(content.Key, out Guid? parentId);
+        navigationQueryService.TryGetAncestorsKeys(content.Key, out IEnumerable<Guid> ancestors);
 
         yield return new()
         {
-            Data = new(
-                apiContent,
-                content.Parent<IPublishedContent>(_navigationQueryService, _publishedStatusFilteringService)?.Key,
-                ancestors),
+            Data = new(apiContent, parentId, [.. ancestors]),
             Id = content.Key.ToString(),
             Type = content.ContentType.Alias,
-            Variant = string.IsNullOrEmpty(culture) || culture == "*" ? null : culture
+            Variant = !content.ContentType.VariesByCulture() || string.IsNullOrEmpty(culture) || culture == "*" ? null : culture
         };
 
         if (!includeChildren)
@@ -125,10 +203,19 @@ internal sealed class ContentIngestQueueItemProcessor(
             yield break;
         }
 
-        // TODO: We should presumably include variant children of invariant items, and vice versa.
-        foreach (IPublishedContent child in content.Children<IPublishedContent>(_navigationQueryService, _publishedStatusFilteringService))
+        IEnumerable<IPublishedContent> children = content.Children<IPublishedContent>(
+            navigationQueryService,
+            publishedStatusFilteringService,
+            culture);
+
+        foreach (IPublishedContent child in children)
         {
-            foreach (UpsertContentEntry processedChild in ProcessItem(child, culture, includeChildren))
+            if (!child.IsPublished(culture))
+            {
+                continue;
+            }
+
+            foreach (UpsertContentEntry processedChild in ProcessItem(updated, child, culture, true))
             {
                 yield return processedChild;
             }

@@ -16,7 +16,7 @@ public abstract class IngestEntry
     /// <summary>
     /// The id of the entry.
     /// </summary>
-    public required string Id { get; set; }
+    public virtual string? Id { get; set; }
 
     ///<summary>
     /// The variant of the entry.
