@@ -1,9 +1,11 @@
+using System.Globalization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Cms.Core.Scoping;
+using Umbraco.Cms.Core.Services;
 using Umbraco.Compose.Integrations.UmbracoCms.Core;
 using Umbraco.Extensions;
 
@@ -12,6 +14,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 internal class ContentNotificationHandler(
     ICoreScopeProvider coreScopeProvider,
     IIngestService ingestService,
+    ILanguageService languageService,
     IOptions<UmbracoComposeOptions> composeOptions,
     IOptions<UmbracoComposeIngestionOptions> ingestionOptions,
     ILogger<ContentNotificationHandler> logger
@@ -44,8 +47,16 @@ internal class ContentNotificationHandler(
             return;
         }
 
-        ContentChangePayload[] payloads = [..
-            publishedEntities.Select(entity =>
+        IEnumerable<ILanguage> languages = await languageService.GetAllAsync().ConfigureAwait(false);
+        IEnumerable<string> allCultures = languages.Select(x => x.CultureInfo)
+            .OfType<CultureInfo>()
+            .Select(x => x.Name);
+
+        List<ContentChangePayload> payloads = [];
+
+        foreach (IContent entity in publishedEntities)
+        {
+            if (entity.ContentType.VariesByCulture())
             {
                 string[] publishedCultures = [.. entity.AvailableCultures
                     .Where(culture => notification.HasPublishedCulture(entity, culture))];
@@ -55,91 +66,99 @@ internal class ContentNotificationHandler(
                 string[] unpublishedCultures = [.. entity.AvailableCultures
                     .Where(culture => notification.HasUnpublishedCulture(entity, culture))];
 
-                // We currently assume that a notification generates only one type of change per
-                // content item - i.e. a given content item will only have publishedCultures or
-                // unpublishedCultures. It does look like there are probably ways to generate
-                // changes that contain both. However, such cases would seem to require manually
-                // intervening and setting the publish state directly on content items rather than
-                // using available methods on an IContentService.
-                //
-                // If this proves to happen more frequently than anticipated, we'll want to change
-                // the internal channel message to use a dictionary of culture => change type
-                // instead of a single change type.
-                string[] affectedCultures = [.. publishedCultures.Union(unpublishedCultures) ];
+                if (publishedCultures.Length > 0)
+                {
+                    foreach (string culture in publishedCultures)
+                    {
+                        // Content that was not previously published should also cause descendants to be updated.
+                        bool cultureWasPreviouslyUnpublished = entity.WasPropertyDirty(
+                            Content.ChangeTrackingPrefix.PublishedCulture + culture);
 
-                // Invariant content that was not previously published should also cause
-                // descendants to be updated.
-                bool contentWasPreviouslyUnpublished = entity.WasPropertyDirty(nameof(IContent.Published));
+                        // Publishes of variants should also update descendants. The only
+                        // thing that shouldn't is re-publishes.
+                        //
+                        // TODO: There are some cases in which we want to send UpdateWithDescendants where
+                        // we presently only send an Update. For example, if changed properties affected
+                        // the route.
+                        bool includeDescendants = notification.IncludeDescendants || cultureWasPreviouslyUnpublished;
 
-                // Publishes and unpublishes of variants should also update descendants. The only
-                // thing that shouldn't is re-publishes.
-                //
-                // TODO: There are some cases in which we want to send UpdateWithDescendants where
-                // we presently only send an Update. For example, if changed properties affected
-                // the route.
-                ContentChangeType changeType = contentWasPreviouslyUnpublished || affectedCultures.Length > 0 ?
-                    ContentChangeType.UpdateWithDescendants :
-                    ContentChangeType.Update;
+                        ContentChangeType changeType = includeDescendants ?
+                                            ContentChangeType.UpdateWithDescendants :
+                                            ContentChangeType.Update;
 
-                return new ContentChangePayload(
-                    entity.Key,
-                    changeType,
-                    affectedCultures);
-            })
-        ];
+                        // only include invariant if the whole content item wasn't published before
+                        string[] cultures = includeDescendants && entity.WasPropertyDirty(nameof(IContent.Published))
+                            ? [culture, "*"]
+                            : [culture];
+
+                        payloads.Add(new(entity.Key, changeType, cultures));
+                    }
+                }
+
+                // unpublish should delete from Compose
+                if (unpublishedCultures.Length > 0)
+                {
+                    payloads.Add(new(entity.Key, ContentChangeType.Delete, unpublishedCultures));
+                }
+            }
+            else
+            {
+                bool includeDescendants = notification.IncludeDescendants || entity.WasPropertyDirty(nameof(IContent.Published));
+
+                ContentChangeType changeType = includeDescendants
+                    ? ContentChangeType.UpdateWithDescendants
+                    : ContentChangeType.Update;
+
+                string[] cultures = includeDescendants ? ["*", .. allCultures] : ["*"];
+
+                payloads.Add(new(entity.Key, changeType, cultures));
+            }
+        }
 
         await EnqueueAsync(payloads, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task HandleAsync(ContentUnpublishedNotification notification, CancellationToken cancellationToken)
     {
-        // TODO: We currently implicitly send a payload representing all cultures by using an empty
-        // set. If there exists in Compose some variant of an item not sourced from the CMS, then
-        // it will be deleted. This isn't really a supported scenario, but it would be nice to send
-        // only the cultures that were unpublished. However, there is no elegant way to retrieve
-        // those from only this notification.
-        ContentChangePayload[] payloads = [..
-            notification.UnpublishedEntities.Select(static entity =>
-                new ContentChangePayload(entity.Key, ContentChangeType.Delete, []))
-            ];
+        ContentChangePayload[] payloads = await GetDeletePayloadAsync(notification.UnpublishedEntities).ConfigureAwait(false);
 
         await EnqueueAsync(payloads, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task HandleAsync(ContentDeletedNotification notification, CancellationToken cancellationToken)
     {
-        ContentChangePayload[] payloads = [..
-            notification.DeletedEntities.Select(static entity =>
-                new ContentChangePayload(entity.Key, ContentChangeType.Delete, []))
-            ];
+        ContentChangePayload[] payloads = await GetDeletePayloadAsync(notification.DeletedEntities).ConfigureAwait(false);
 
         await EnqueueAsync(payloads, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task HandleAsync(ContentMovedNotification notification, CancellationToken cancellationToken)
     {
-        await HandleMoveAsync(notification.MoveInfoCollection, ContentChangeType.UpdateWithDescendants, cancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    public async Task HandleAsync(ContentMovedToRecycleBinNotification notification, CancellationToken cancellationToken)
-    {
-        await HandleMoveAsync(notification.MoveInfoCollection, ContentChangeType.Delete, cancellationToken)
-            .ConfigureAwait(false);
-    }
-
-    private async Task HandleMoveAsync(
-        IEnumerable<MoveEventInfoBase<IContent>> moveEventInfo,
-        ContentChangeType changeType,
-        CancellationToken cancellationToken)
-    {
-        ContentChangePayload[] payloads = [.. moveEventInfo.Select(move =>
-            new ContentChangePayload(move.Entity.Key, changeType, []))];
+        ContentChangePayload[] payloads = [.. notification.MoveInfoCollection.Select(move =>
+            new ContentChangePayload(move.Entity.Key, ContentChangeType.UpdateWithDescendants, []))];
 
         await EnqueueAsync(payloads, cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task EnqueueAsync(ContentChangePayload[] payloads, CancellationToken cancellationToken)
+    public async Task HandleAsync(ContentMovedToRecycleBinNotification notification, CancellationToken cancellationToken)
+    {
+        ContentChangePayload[] payloads = await GetDeletePayloadAsync(notification.MoveInfoCollection.Select(x => x.Entity))
+            .ConfigureAwait(false);
+
+        await EnqueueAsync(payloads, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<ContentChangePayload[]> GetDeletePayloadAsync(IEnumerable<IContent> contents)
+    {
+        IEnumerable<ILanguage> languages = await languageService.GetAllAsync().ConfigureAwait(false);
+        List<string> cultures = ["*", ..languages.Select(x => x.CultureInfo)
+            .OfType<CultureInfo>()
+            .Select(x => x.Name)];
+
+        return [.. contents.Select(content => new ContentChangePayload(content.Key, ContentChangeType.Delete, cultures))];
+    }
+
+    private async Task EnqueueAsync(IReadOnlyCollection<ContentChangePayload> payloads, CancellationToken cancellationToken)
     {
         await DeferredActions.ExecuteDeferredAsync(
             coreScopeProvider,

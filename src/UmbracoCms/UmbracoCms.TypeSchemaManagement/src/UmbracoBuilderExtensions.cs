@@ -7,8 +7,8 @@ using Umbraco.Cms.Core.Notifications;
 using Umbraco.Compose.Integrations.UmbracoCms.Core;
 using Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
-using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Persistence;
 using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.JsonSchemaTypeHandlers;
+using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Persistence;
 
 namespace Umbraco.Cms.Core.DependencyInjection;
 
