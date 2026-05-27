@@ -11,7 +11,10 @@ If you want the full integration, install the `Umbraco.Compose.Integrations.Umbr
 
 ## How to use
 
-To use `Umbraco.Compose.Integrations.UmbracoCms.Ingestion` you'll need an Umbraco Compose project with an API Application created with the `ingestion` scope on the environment.
+To use this package you will need:
+- An Umbraco Compose project.
+- An Environment & Collection configured for your project.
+- An API Application with the `{environment}:ingestion` scope configured for the environment. API Applications can be created from the [Umbraco Cloud portal](https://www.s1.umbraco.io/).
 
 ### Installation
 
@@ -49,3 +52,7 @@ builder.CreateUmbracoBuilder()
 
     .Build();
 ```
+
+## Documentation
+
+For further information about Umbraco Compose, refer to [our documentation](https://docs.umbraco.com/umbraco-compose).

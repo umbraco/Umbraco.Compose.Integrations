@@ -14,7 +14,7 @@ If you want the full Umbraco Compose integration, install the `Umbraco.Compose.I
 To use this package you will need:
 - An Umbraco Compose project.
 - An Environment & Collection configured for your project.
-- An API Application with `{environment}:graphql` scope configured for the environment.
+- An API Application with `{environment}:graphql` scope configured for the environment. API Applications can be created from the [Umbraco Cloud portal](https://www.s1.umbraco.io/).
 
 ### Installation
 
@@ -51,10 +51,6 @@ builder.CreateUmbracoBuilder()
 
     .Build();
 ```
-
-### Creating an API Application
-
-To authorize the integration you will need an API application with the `ingestion` scope. API Applications can be created from the [Umbraco Cloud portal](https://www.s1.umbraco.io/).
 
 ## Documentation
 

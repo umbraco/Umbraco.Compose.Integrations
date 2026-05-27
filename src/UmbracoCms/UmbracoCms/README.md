@@ -16,6 +16,7 @@ To use this package you will need:
     - `{environment}:graphql`
     - `{environment}:typeschema:write`
 
+API Applications can be created from the [Umbraco Cloud portal](https://www.s1.umbraco.io/).
 
 ### Installation
 
