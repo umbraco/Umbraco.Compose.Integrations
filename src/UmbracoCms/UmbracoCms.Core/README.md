@@ -40,3 +40,7 @@ builder.CreateUmbracoBuilder()
 
     .Build();
 ```
+
+## Documentation
+
+For further information about Umbraco Compose, refer to [our documentation](https://docs.umbraco.com/umbraco-compose).

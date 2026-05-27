@@ -1,4 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>Umbraco Compose core utils</Title>
+    <Description>Shared dependencies for other Umbraco Compose packages.</Description>
+  </PropertyGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Umbraco.Compose.Integrations.UmbracoCms.Ingestion" />
