@@ -23,7 +23,7 @@ dotnet add package Umbraco.Compose.Integrations.UmbracoCms
 
 ### Configuration
 
-To configure the integration, add the following to you preferred configuration source (e.g. `appsettings.json` or Azure KeyVault):
+To configure the integration, add the following to your preferred configuration source (e.g. `appsettings.json` or Azure KeyVault):
 
 ```json
 "Umbraco:Compose": {

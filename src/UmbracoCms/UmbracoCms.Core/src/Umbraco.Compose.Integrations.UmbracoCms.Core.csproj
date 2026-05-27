@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Title>Umbraco Compose core utils</Title>
+    <Title>Umbraco Compose Core Utils</Title>
     <Description>Shared dependencies for other Umbraco Compose packages.</Description>
   </PropertyGroup>
 
