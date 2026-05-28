@@ -51,8 +51,11 @@ internal sealed class SpectreConsole : IConsole
             textPrompt = textPrompt.Secret();
         }
 
-        return await AnsiConsole.PromptAsync(textPrompt, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return await _out.PromptAsync(textPrompt, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
+
+    public Task<bool> ConfirmAsync(string prompt, bool defaultAnswer = false, CancellationToken cancellationToken = default) =>
+        _out.ConfirmAsync(prompt, defaultAnswer, cancellationToken: cancellationToken);
 
     private static void WriteMessage(IAnsiConsole console, Emoji emoji, string message)
     {

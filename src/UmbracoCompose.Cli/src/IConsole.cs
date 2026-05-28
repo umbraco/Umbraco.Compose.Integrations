@@ -11,6 +11,7 @@ internal interface IConsole
     void DisplayRawText(string value, ConsoleOutput? consoleOverwrite = null);
     void DisplayRenderable(IRenderable content, ConsoleOutput? consoleOverwrite = null);
     Task<string?> ReadLineAsync(string prompt, bool masked = false, CancellationToken cancellationToken = default);
+    Task<bool> ConfirmAsync(string prompt, bool defaultAnswer = false, CancellationToken cancellationToken = default);
 }
 
 internal enum ConsoleOutput
