@@ -39,6 +39,7 @@ To configure the integration, add the following to your preferred configuration 
     "CollectionAlias": "COLLECTION_TO_INGEST_CONTENT_INTO"
   }
 }
+```
 
 ## Documentation
 
