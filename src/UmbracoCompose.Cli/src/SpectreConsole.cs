@@ -41,7 +41,6 @@ internal sealed class SpectreConsole : IConsole
     public void DisplayRenderable(IRenderable content, ConsoleOutput? consoleOverwrite = null) =>
         GetConsole(consoleOverwrite).Write(content);
 
-
     public async Task<string?> ReadLineAsync(string prompt, bool masked = false, CancellationToken cancellationToken = default)
     {
         TextPrompt<string> textPrompt = new (prompt);
