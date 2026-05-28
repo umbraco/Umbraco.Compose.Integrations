@@ -152,7 +152,26 @@ internal sealed class GraphQlIntrospectCommand : BaseCommand
         try
         {
             // Get bearer token
-            TokenResponse token = await _oAuthService.AuthenticateAsync(profile.ClientId, profile.ClientSecret, cancellationToken);
+            TokenResponse token;
+            try
+            {
+                token = await _oAuthService.AuthenticateAsync(profile.ClientId, profile.ClientSecret, cancellationToken);
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+            {
+                _logger.LogError(ex, "Authentication failed for GraphQL endpoint");
+                return CommandResult.Failure(ExitCodes.ValidationError, "Authentication failed. Check your profile credentials.");
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Failed to obtain authentication token");
+                return CommandResult.Failure(ExitCodes.ValidationError, "Failed to obtain authentication token. Check your network connection.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to obtain authentication token");
+                return CommandResult.Failure(ExitCodes.ValidationError, "Failed to obtain authentication token.");
+            }
 
             // POST to GraphQL endpoint with per-request auth header
             var requestContent = new StringContent(introspectionQuery, Encoding.UTF8, "application/graphql");

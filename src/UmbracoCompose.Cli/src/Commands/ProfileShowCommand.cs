@@ -33,11 +33,13 @@ internal sealed class ProfileShowCommand : BaseCommand
     };
 
     private readonly ProfileConfigService _profileConfigService;
+    private readonly IConsole _console;
 
     public ProfileShowCommand(IConsole console, ProfileConfigService profileConfigService)
         : base("show", "Show a profile by name", console)
     {
         _profileConfigService = profileConfigService;
+        _console = console;
 
         Arguments.Add(s_nameArgument);
         Options.Add(s_formatOption);
@@ -50,7 +52,7 @@ internal sealed class ProfileShowCommand : BaseCommand
     {
         string name = parseResult.GetValue(s_nameArgument)!;
         OutputFormat format = parseResult.GetValue(s_formatOption);
-        bool showSecrets = parseResult.GetValue(s_showSecretsOption);
+        bool showSecrets = parseResult.GetValue(s_showSecretsOption) && !_console.IsOutputRedirected;
 
         ProfileConfig? config = _profileConfigService.Load();
 
@@ -91,13 +93,12 @@ internal sealed class ProfileShowCommand : BaseCommand
         table.AddRow("[cyan]Environment Alias[/]", $"[yellow]{profile.EnvironmentAlias.EscapeMarkup()}[/]");
         table.AddRow("[cyan]Client ID[/]", $"[yellow]{profile.ClientId.EscapeMarkup()}[/]");
 
-        // TODO: Find a better way to do this (i.e. not include secrets if output is redirected)
-        if (showSecrets && !System.Console.IsOutputRedirected)
+        if (showSecrets)
         {
             table.AddRow("[cyan]Client Secret[/]", $"[yellow]{profile.ClientSecret.EscapeMarkup()}[/]");
         }
 
-        string isDefault = name == config.Default ? "*" : " ";
+        string isDefault = name == config.Default ? "Yes" : "No";
         table.AddRow("[cyan]Default[/]", $"[yellow]{isDefault.EscapeMarkup()}[/]");
 
 
@@ -116,7 +117,7 @@ internal sealed class ProfileShowCommand : BaseCommand
             ["isDefault"] = name == config.Default,
         };
 
-        if (showSecrets && !System.Console.IsOutputRedirected)
+        if (showSecrets)
         {
             obj["clientSecret"] = profile.ClientSecret;
         }

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Microsoft.Extensions.Logging;
 
 using UmbracoCompose.Cli.Models;
 
@@ -8,9 +9,11 @@ internal sealed class ProfileConfigService
 {
     private readonly string _configPath;
     private readonly object _lock = new();
+    private readonly ILogger<ProfileConfigService> _logger;
 
-    public ProfileConfigService()
+    public ProfileConfigService(ILogger<ProfileConfigService> logger)
     {
+        _logger = logger;
         _configPath = Path.Combine(GetConfigDirectory(), "profiles.json");
     }
 
@@ -85,7 +88,7 @@ internal sealed class ProfileConfigService
                 File.Move(tempPath, _configPath, overwrite: true);
                 return true;
             }
-            catch (IOException)
+            catch (IOException ex)
             {
                 // Clean up temp file if it exists
                 try
@@ -96,6 +99,7 @@ internal sealed class ProfileConfigService
                 {
                     // Ignore cleanup failures
                 }
+                _logger.LogWarning(ex, "Failed to save profile config");
                 return false;
             }
         }
@@ -128,11 +132,12 @@ internal sealed class ProfileConfigService
                 File.Move(tempPath, _configPath, overwrite: true);
                 return true;
             }
-            catch (JsonException)
+            catch (JsonException ex)
             {
+                _logger.LogWarning(ex, "Failed to save profile config");
                 return false;
             }
-            catch (IOException)
+            catch (IOException ex)
             {
                 try
                 {
@@ -142,11 +147,13 @@ internal sealed class ProfileConfigService
                 {
                     // Ignore cleanup failures
                 }
+                _logger.LogWarning(ex, "Failed to save profile config");
                 return false;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 // Callback threw (e.g., duplicate profile) — don't save
+                _logger.LogWarning(ex, "Failed to save profile config");
                 return false;
             }
         }

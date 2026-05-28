@@ -5,6 +5,7 @@ namespace UmbracoCompose.Cli;
 internal interface IConsole
 {
     ConsoleOutput Output { get; set; }
+    bool IsOutputRedirected { get; }
 
     void DisplayError(string errorMessage);
     void DisplayMessage(Emoji emoji, string message, ConsoleOutput? consoleOverwrite = null);

@@ -40,10 +40,10 @@ internal sealed class ProfileAddCommand : BaseCommand
 
     protected override async Task<CommandResult> ExecuteAsync(ParseResult parseResult, CancellationToken cancellationToken)
     {
-        string name = parseResult.GetValue(s_nameArgument)!;
-        string region = parseResult.GetValue(s_regionArgument)!;
-        string projectAlias = parseResult.GetValue(s_projectAliasArgument)!;
-        string environmentAlias = parseResult.GetValue(s_environmentAliasArgument)!;
+        string? name = parseResult.GetValue(s_nameArgument);
+        string? region = parseResult.GetValue(s_regionArgument);
+        string? projectAlias = parseResult.GetValue(s_projectAliasArgument);
+        string? environmentAlias = parseResult.GetValue(s_environmentAliasArgument);
 
         // Validate all required arguments
         if (string.IsNullOrWhiteSpace(name))

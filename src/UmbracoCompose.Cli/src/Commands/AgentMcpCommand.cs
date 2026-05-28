@@ -9,9 +9,9 @@ namespace UmbracoCompose.Cli.Commands;
 
 internal sealed class AgentMcpCommand : BaseCommand
 {
-    private ILoggerFactory _loggerFactory;
+    private readonly ILoggerFactory _loggerFactory;
 
-    private Dictionary<string, McpTool> _tools = new();
+    private readonly Dictionary<string, McpTool> _tools = new();
 
     public AgentMcpCommand(IConsole console, ILoggerFactory loggerFactory) : base("mcp", "Start the MCP (Model Context Protocol) server", console)
     {
@@ -57,10 +57,8 @@ internal sealed class AgentMcpCommand : BaseCommand
         return ValueTask.FromResult(new CallToolResult
         {
             IsError = true,
-            Content = [new TextContentBlock { Text = "" }]
+            Content = [new TextContentBlock { Text = $"Unknown tool: '{toolName}'" }]
         });
-
-        throw new McpProtocolException($"Unknown tool: '{toolName}'", McpErrorCode.MethodNotFound);
     }
 
     private ValueTask<ListToolsResult> ListToolsHandlerAsync(RequestContext<ListToolsRequestParams> request, CancellationToken cancellationToken)

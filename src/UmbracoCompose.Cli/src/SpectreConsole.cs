@@ -10,6 +10,8 @@ internal sealed class SpectreConsole : IConsole
 
     public ConsoleOutput Output { get; set; } = ConsoleOutput.Standard;
 
+    public bool IsOutputRedirected => Console.IsOutputRedirected;
+
     public SpectreConsole()
     {
         _error = AnsiConsole.Create(new()

@@ -1,4 +1,4 @@
-uing System.CommandLine;
+using System.CommandLine;
 using System.Globalization;
 using System.Net;
 using System.Net.Http.Headers;
@@ -11,8 +11,11 @@ using UmbracoCompose.Cli.Services;
 
 namespace UmbracoCompose.Cli.Commands;
 
-internal sealed class GraphQlQueryCommand : BaseCommand
+  internal sealed class GraphQlQueryCommand : BaseCommand
 {
+    private const string FileReadPrefix = "@";
+    private const string RequirePreflightHeader = "GraphQL-Require-Preflight";
+
     private static readonly Argument<string> s_queryArgument = new("query")
     {
         Description = "GraphQL query string or file path (prefix with @ to read from file)",
@@ -123,11 +126,11 @@ internal sealed class GraphQlQueryCommand : BaseCommand
         }
 
         // Build GraphQL URL
-        string graphQLUrl = $"https://graphql.{profile.Region}.umbracocompose.com/{profile.ProjectAlias}/{profile.EnvironmentAlias}/";
+        string graphQLUrl = BuildGraphQLUrl(profile);
 
         // Read query from file or use as string
         string queryText;
-        if (query.StartsWith("@", StringComparison.Ordinal))
+        if (query.StartsWith(FileReadPrefix, StringComparison.Ordinal))
         {
             string filePath = query[1..];
             try
@@ -176,7 +179,7 @@ internal sealed class GraphQlQueryCommand : BaseCommand
             foreach (string variablesEntry in variablesStrings)
             {
                 string jsonContent;
-                if (variablesEntry.StartsWith("@", StringComparison.Ordinal))
+                if (variablesEntry.StartsWith(FileReadPrefix, StringComparison.Ordinal))
                 {
                     string filePath = variablesEntry[1..];
                     try
@@ -268,7 +271,7 @@ internal sealed class GraphQlQueryCommand : BaseCommand
             };
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/graphql-response+json"));
-            request.Headers.Add("GraphQL-Require-Preflight", "true");
+            request.Headers.Add(RequirePreflightHeader, "true");
 
             response = await _httpClient.SendAsync(request, cancellationToken);
 
@@ -471,12 +474,12 @@ internal sealed class GraphQlQueryCommand : BaseCommand
         }
     }
 
-    private void FindAndDisplayFirstArray(string path, JsonElement element)
+    private bool FindAndDisplayFirstArray(string path, JsonElement element)
     {
         if (element.ValueKind == JsonValueKind.Array && element.GetArrayLength() > 0)
         {
             DisplayArrayAsTable(path, element);
-            return;
+            return true;
         }
 
         if (element.ValueKind == JsonValueKind.Object)
@@ -484,13 +487,16 @@ internal sealed class GraphQlQueryCommand : BaseCommand
             foreach (var prop in element.EnumerateObject())
             {
                 var childPath = string.IsNullOrEmpty(path) ? prop.Name : $"{path}.{prop.Name}";
-                FindAndDisplayFirstArray(childPath, prop.Value);
-                return; // Found and displayed — stop searching
+                if (FindAndDisplayFirstArray(childPath, prop.Value))
+                {
+                    return true; // Array found and displayed in a child — stop searching
+                }
             }
         }
 
         // No array found at any depth — show scalar
         Console.DisplayRawText($"{path}: {GetPreview(element)}");
+        return false;
     }
 
     private void DisplayArrayAsTable(string name, JsonElement array)
@@ -545,10 +551,8 @@ internal sealed class GraphQlQueryCommand : BaseCommand
         }
     }
 
-    private void DisplayScalar(string name, JsonElement value)
-    {
-        Console.DisplayRawText($"{name.EscapeMarkup()}: {GetPreview(value)}");
-    }
+    private static string BuildGraphQLUrl(Models.Profile profile) =>
+        $"https://graphql.{profile.Region}.umbracocompose.com/{profile.ProjectAlias}/{profile.EnvironmentAlias}/";
 
     private static string GetPreview(JsonElement element)
     {
