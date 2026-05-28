@@ -68,7 +68,6 @@ internal sealed class ProfileListCommand : BaseCommand
         table.AddColumn("[bold]Region[/]");
         table.AddColumn("[bold]Project Alias[/]");
         table.AddColumn("[bold]Environment Alias[/]");
-        table.AddColumn("[bold]Client ID[/]");
         table.AddColumn("[bold]Default[/]");
 
         foreach (KeyValuePair<string, Profile> pair in config.Profiles)
@@ -77,7 +76,12 @@ internal sealed class ProfileListCommand : BaseCommand
             Profile profile = pair.Value;
             string isDefault = pair.Key == config.Default ? "*" : " ";
 
-            table.AddRow($"[cyan]{profileName.EscapeMarkup()}[/]", profile.Region, profile.ProjectAlias, profile.EnvironmentAlias, profile.ClientId, isDefault);
+            table.AddRow(
+                $"[yellow]{profileName.EscapeMarkup()}[/]",
+                $"[yellow]{profile.Region.EscapeMarkup()}[/]",
+                $"[yellow]{profile.ProjectAlias.EscapeMarkup()}[/]",
+                $"[yellow]{profile.EnvironmentAlias.EscapeMarkup()}[/]",
+                $"[yellow]{isDefault.EscapeMarkup()}[/]");
         }
 
         Console.DisplayRenderable(table);
@@ -95,7 +99,6 @@ internal sealed class ProfileListCommand : BaseCommand
                 ["region"] = pair.Value.Region,
                 ["projectAlias"] = pair.Value.ProjectAlias,
                 ["environmentAlias"] = pair.Value.EnvironmentAlias,
-                ["clientID"] = pair.Value.ClientId,
                 ["isDefault"] = pair.Key == config.Default,
             });
         }
