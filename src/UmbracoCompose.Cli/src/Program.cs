@@ -26,6 +26,7 @@ builder.Services.AddTransient<AgentCommand>();
 builder.Services.AddTransient<AgentMcpCommand>();
 builder.Services.AddTransient<DiagnosticsCommand>();
 builder.Services.AddTransient<GraphQLCommand>();
+builder.Services.AddTransient<GraphQlIntrospectCommand>();
 builder.Services.AddTransient<IngestCommand>();
 builder.Services.AddTransient<ManagementCommand>();
 builder.Services.AddTransient<ProfilesCommand>();

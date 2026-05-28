@@ -28,7 +28,7 @@ internal sealed class RootCommand : BaseRootCommand
         // Subcommands.Add(managementCommand);
         // Subcommands.Add(diagnosticsCommand);
         // Subcommands.Add(ingestCommand);
-        // Subcommands.Add(graphQLCommand);
+        Subcommands.Add(graphQLCommand);
         Subcommands.Add(profilesCommand);
 
         Options.Add(s_logLevel);

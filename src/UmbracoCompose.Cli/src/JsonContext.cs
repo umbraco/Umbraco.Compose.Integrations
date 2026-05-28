@@ -4,9 +4,9 @@ using UmbracoCompose.Cli.Models;
 
 namespace UmbracoCompose.Cli;
 
-[JsonSerializable(typeof(Profile))]
 [JsonSerializable(typeof(ProfileConfig))]
 [JsonSerializable(typeof(TokenResponse))]
+[JsonSerializable(typeof(GraphQLIntrospectionResponse))]
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, WriteIndented = true)]
 internal sealed partial class AppJsonContext : JsonSerializerContext
 {
