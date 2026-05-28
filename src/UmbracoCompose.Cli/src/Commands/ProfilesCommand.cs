@@ -10,6 +10,7 @@ internal class ProfilesCommand : BaseCommand
         ProfileRemoveCommand removeCommand,
         ProfileShowCommand showCommand,
         ProfileSetDefaultCommand setDefaultCommand,
+        ProfileValidateCommand validateCommand,
         IConsole console
     ) : base("profiles", "Manage profiles", console)
     {
@@ -18,6 +19,7 @@ internal class ProfilesCommand : BaseCommand
         Subcommands.Add(removeCommand);
         Subcommands.Add(showCommand);
         Subcommands.Add(setDefaultCommand);
+        Subcommands.Add(validateCommand);
     }
 
     protected override Task<CommandResult> ExecuteAsync(ParseResult parseResult, CancellationToken cancellationToken)

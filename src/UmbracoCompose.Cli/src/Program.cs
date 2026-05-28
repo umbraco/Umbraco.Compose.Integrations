@@ -1,7 +1,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
+using System.Net.Http.Headers;
 using UmbracoCompose.Cli;
 using UmbracoCompose.Cli.Commands;
 using UmbracoCompose.Cli.Services;
@@ -33,6 +35,16 @@ builder.Services.AddTransient<ProfileRemoveCommand>();
 builder.Services.AddTransient<ProfileSetDefaultCommand>();
 builder.Services.AddTransient<ProfileShowCommand>();
 builder.Services.AddTransient<RootCommand>();
+builder.Services.ConfigureHttpClientDefaults(httpClientBuilder =>
+{
+    httpClientBuilder.AddStandardResilienceHandler();
+    httpClientBuilder.ConfigureHttpClient(client =>
+    {
+        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("umbraco-compose-cli", "1.0.0"));
+    });
+});
+builder.Services.AddTransient<IOAuthService, OAuthService>();
+builder.Services.AddTransient<ProfileValidateCommand>();
 
 builder.Services.AddSingleton<IConsole, SpectreConsole>();
 builder.Services.AddSingleton<ProfileConfigService>();
