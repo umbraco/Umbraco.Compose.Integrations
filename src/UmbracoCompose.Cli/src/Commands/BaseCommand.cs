@@ -13,6 +13,11 @@ internal abstract class BaseCommand : Command
 
         SetAction((Func<ParseResult, CancellationToken, Task<int>>)(async (parseResult, cancellationToken) =>
         {
+            if (IsJsonOutput(parseResult))
+            {
+                Console.Output = ConsoleOutput.Error;
+            }
+
             CommandResult result = await ExecuteAsync(parseResult, cancellationToken);
 
             if (result.ErrorMessage is not null)
@@ -28,6 +33,18 @@ internal abstract class BaseCommand : Command
 
             return result.ExitCode;
         }));
+    }
+
+    private bool IsJsonOutput(ParseResult parseResult)
+    {
+        foreach (Option option in Options)
+        {
+            if (option.Name == "--format" && option is Option<OutputFormat> formatOption)
+            {
+                return parseResult.GetValue(formatOption) == OutputFormat.Json;
+            }
+        }
+        return false;
     }
 
     protected abstract Task<CommandResult> ExecuteAsync(ParseResult parseResult, CancellationToken cancellationToken);

@@ -1,6 +1,5 @@
-using System.Threading;
-using System.Threading.Tasks;
 using Spectre.Console;
+using Spectre.Console.Rendering;
 
 namespace UmbracoCompose.Cli;
 
@@ -8,6 +7,8 @@ internal sealed class SpectreConsole : IConsole
 {
     private readonly IAnsiConsole _error;
     private readonly IAnsiConsole _out;
+
+    public ConsoleOutput Output { get; set; } = ConsoleOutput.Standard;
 
     public SpectreConsole()
     {
@@ -31,16 +32,25 @@ internal sealed class SpectreConsole : IConsole
     public void DisplayError(string errorMessage) =>
         WriteMessage(_error, Emojis.CrossMark, $"[red bold]{errorMessage}[/]");
 
-    public void DisplayMessage(Emoji emoji, string message) =>
-        WriteMessage(_out, emoji, message);
+    public void DisplayMessage(Emoji emoji, string message, ConsoleOutput? consoleOverwrite = null) =>
+        WriteMessage(GetConsole(consoleOverwrite), emoji, message);
+
+    public void DisplayRawText(string value, ConsoleOutput? consoleOverwrite = null) =>
+        GetConsole(consoleOverwrite).WriteLine(value);
+
+    public void DisplayRenderable(IRenderable content, ConsoleOutput? consoleOverwrite = null) =>
+        GetConsole(consoleOverwrite).Write(content);
+
 
     public async Task<string?> ReadLineAsync(string prompt, bool masked = false, CancellationToken cancellationToken = default)
     {
-        var textPrompt = new TextPrompt<string>(prompt);
+        TextPrompt<string> textPrompt = new (prompt);
+
         if (masked)
         {
             textPrompt = textPrompt.Secret();
         }
+
         return await AnsiConsole.PromptAsync(textPrompt, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
@@ -60,4 +70,10 @@ internal sealed class SpectreConsole : IConsole
 
         console.Write(grid);
     }
+
+    private IAnsiConsole GetConsole(ConsoleOutput? consoleOverwrite) => (consoleOverwrite ?? Output) switch
+    {
+        ConsoleOutput.Error => _error,
+        _ => _out
+    };
 }
