@@ -7,7 +7,7 @@ namespace UmbracoCompose.Cli.Commands;
 
 internal sealed class RootCommand : BaseRootCommand
 {
-    private static readonly Option<LogLevel?> s_logLevel = new("--log-level", "l-")
+    private static readonly Option<LogLevel?> s_logLevel = new("--log-level", "-l")
     {
         Description = "Set the minimum log level for console output",
         Recursive = true,

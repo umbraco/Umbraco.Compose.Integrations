@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using UmbracoCompose.Cli;
 using UmbracoCompose.Cli.Commands;
+using UmbracoCompose.Cli.Services;
 using RootCommand = UmbracoCompose.Cli.Commands.RootCommand;
 
 HostApplicationBuilderSettings settings = new()
@@ -34,6 +35,7 @@ builder.Services.AddTransient<ProfileShowCommand>();
 builder.Services.AddTransient<RootCommand>();
 
 builder.Services.AddSingleton<IConsole, SpectreConsole>();
+builder.Services.AddSingleton<ProfileConfigService>();
 
 using IHost app = builder.Build();
 await app.StartAsync().ConfigureAwait(false);

@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using Spectre.Console;
 
 namespace UmbracoCompose.Cli;
@@ -31,6 +33,16 @@ internal sealed class SpectreConsole : IConsole
 
     public void DisplayMessage(Emoji emoji, string message) =>
         WriteMessage(_out, emoji, message);
+
+    public async Task<string?> ReadLineAsync(string prompt, bool masked = false, CancellationToken cancellationToken = default)
+    {
+        var textPrompt = new TextPrompt<string>(prompt);
+        if (masked)
+        {
+            textPrompt = textPrompt.Secret();
+        }
+        return await AnsiConsole.PromptAsync(textPrompt, cancellationToken: cancellationToken).ConfigureAwait(false);
+    }
 
     private static void WriteMessage(IAnsiConsole console, Emoji emoji, string message)
     {
