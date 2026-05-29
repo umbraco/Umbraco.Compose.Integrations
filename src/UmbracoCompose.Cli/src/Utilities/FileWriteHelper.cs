@@ -3,9 +3,9 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace UmbracoCompose.Cli.Utilities;
 
-internal static class FileWriteHelper
+internal sealed class FileWriteHelper
 {
-    public static void WriteAtomic<T>(string targetPath, T value, JsonTypeInfo<T> jsonTypeInfo)
+    public void WriteAtomic<T>(string targetPath, T value, JsonTypeInfo<T> jsonTypeInfo)
     {
         var directory = Path.GetDirectoryName(targetPath);
         if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
@@ -23,6 +23,38 @@ internal static class FileWriteHelper
             if (File.Exists(tempPath))
                 File.Delete(tempPath);
             throw;
+        }
+    }
+
+    public async Task<bool> WriteAtomicAsync(string filePath, string content, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            string? directory = Path.GetDirectoryName(filePath);
+            if (directory is not null && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
+
+            string tempPath = filePath + ".tmp";
+            await File.WriteAllTextAsync(tempPath, content, cancellationToken).ConfigureAwait(false);
+            File.Move(tempPath, filePath, overwrite: true);
+            return true;
+        }
+        catch
+        {
+            // Clean up temp file if it exists
+            try
+            {
+                string tempPath = filePath + ".tmp";
+                if (File.Exists(tempPath))
+                {
+                    File.Delete(tempPath);
+                }
+            }
+            catch { /* Ignore cleanup failures */ }
+
+            return false;
         }
     }
 }

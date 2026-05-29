@@ -10,11 +10,13 @@ internal sealed class ProfileConfigService
 {
     private readonly string _configPath;
     private readonly ILogger<ProfileConfigService> _logger;
+    private readonly FileWriteHelper _fileWriteHelper;
 
-    public ProfileConfigService(ILogger<ProfileConfigService> logger)
+    public ProfileConfigService(ILogger<ProfileConfigService> logger, FileWriteHelper fileWriteHelper)
     {
         _logger = logger;
         _configPath = Path.Combine(GetConfigDirectory(), "profiles.json");
+        _fileWriteHelper = fileWriteHelper;
     }
 
     private static string GetConfigDirectory()
@@ -82,7 +84,7 @@ internal sealed class ProfileConfigService
             }
 
             ProfileConfig updated = updateFn(config);
-            FileWriteHelper.WriteAtomic(_configPath, updated, AppJsonContext.Default.ProfileConfig);
+            _fileWriteHelper.WriteAtomic(_configPath, updated, AppJsonContext.Default.ProfileConfig);
             return true;
         }
         catch (JsonException ex)

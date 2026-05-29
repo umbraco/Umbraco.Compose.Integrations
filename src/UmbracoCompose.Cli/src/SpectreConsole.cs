@@ -58,6 +58,12 @@ internal sealed class SpectreConsole : IConsole
     public Task<bool> ConfirmAsync(string prompt, bool defaultAnswer = false, CancellationToken cancellationToken = default) =>
         _out.ConfirmAsync(prompt, defaultAnswer, cancellationToken: cancellationToken);
 
+    public async Task<T[]> MultiSelectPromptAsync<T>(MultiSelectionPrompt<T> prompt, CancellationToken cancellationToken = default) where T : notnull
+    {
+        var result = await _out.PromptAsync(prompt, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return result.ToArray();
+    }
+
     private static void WriteMessage(IAnsiConsole console, Emoji emoji, string message)
     {
         Grid grid = new();

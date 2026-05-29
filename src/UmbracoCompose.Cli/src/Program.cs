@@ -7,6 +7,7 @@ using UmbracoCompose.Cli;
 using UmbracoCompose.Cli.Clients;
 using UmbracoCompose.Cli.Commands;
 using UmbracoCompose.Cli.Services;
+using UmbracoCompose.Cli.Utilities;
 using RootCommand = UmbracoCompose.Cli.Commands.RootCommand;
 
 HostApplicationBuilderSettings settings = new()
@@ -25,7 +26,9 @@ builder.Services.AddSingleton(loggingOptions);
 builder.Services.AddSingleton(loggerFactory);
 
 builder.Services.AddTransient<AgentCommand>();
+builder.Services.AddTransient<AgentInitCommand>();
 builder.Services.AddTransient<AgentMcpCommand>();
+builder.Services.AddTransient<FileWriteHelper>();
 builder.Services.AddTransient<DiagnosticsCommand>();
 builder.Services.AddTransient<GraphQLCommand>();
 builder.Services.AddTransient<GraphQlIntrospectCommand>();
