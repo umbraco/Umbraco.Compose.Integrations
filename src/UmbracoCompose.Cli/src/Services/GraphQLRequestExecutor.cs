@@ -98,7 +98,10 @@ internal sealed class GraphQLRequestExecutor
                 {
                     _logger.LogError("Authentication failed for GraphQL endpoint.");
                 }
-                return GraphQLExecutionResult.CreateFailure(CommandResult.Failure(ExitCodes.ValidationError, "Authentication failed. Check your profile credentials."));
+                return GraphQLExecutionResult.CreateFailure(CommandResult.Failure(
+                    ExitCodes.ValidationError,
+                    "Authentication failed. Check your profile credentials.",
+                    errorBody));
             }
 
             if (_loggingOptions.Debug)
@@ -109,7 +112,10 @@ internal sealed class GraphQLRequestExecutor
             {
                 _logger.LogError("GraphQL request failed with status {StatusCode}", response.StatusCode);
             }
-            return GraphQLExecutionResult.CreateFailure(CommandResult.Failure(ExitCodes.RuntimeError, $"GraphQL request failed ({response.StatusCode})."));
+            return GraphQLExecutionResult.CreateFailure(CommandResult.Failure(
+                ExitCodes.RuntimeError,
+                $"GraphQL request failed ({response.StatusCode}).",
+                errorBody));
         }
 
         // 5. Return success — caller handles response parsing
