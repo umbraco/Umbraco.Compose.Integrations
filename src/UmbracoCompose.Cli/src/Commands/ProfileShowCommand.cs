@@ -4,9 +4,9 @@ using Spectre.Console;
 using UmbracoCompose.Cli.Models;
 using Profile = UmbracoCompose.Cli.Models.Profile;
 using UmbracoCompose.Cli.Services;
+using UmbracoCompose.Cli.Utilities;
 using System.Text.Json.Nodes;
 using System.Text.Json;
-using System.Text.Encodings.Web;
 
 namespace UmbracoCompose.Cli.Commands;
 
@@ -26,20 +26,12 @@ internal sealed class ProfileShowCommand : BaseCommand
         Description = "Show sensitive values (client secret)",
     };
 
-    private static readonly JsonSerializerOptions s_jsonOptions = new()
-    {
-        WriteIndented = true,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-    };
-
     private readonly ProfileConfigService _profileConfigService;
-    private readonly IConsole _console;
 
     public ProfileShowCommand(IConsole console, ProfileConfigService profileConfigService)
         : base("show", "Show a profile by name", console)
     {
         _profileConfigService = profileConfigService;
-        _console = console;
 
         Arguments.Add(s_nameArgument);
         Options.Add(s_formatOption);
@@ -52,17 +44,16 @@ internal sealed class ProfileShowCommand : BaseCommand
     {
         string name = parseResult.GetValue(s_nameArgument)!;
         OutputFormat format = parseResult.GetValue(s_formatOption);
-        bool showSecrets = parseResult.GetValue(s_showSecretsOption) && !_console.IsOutputRedirected;
+        bool showSecrets = parseResult.GetValue(s_showSecretsOption) && !Console.IsOutputRedirected;
 
-        ProfileConfig? config = _profileConfigService.Load();
+        ProfileConfig? config = await _profileConfigService.LoadAsync(cancellationToken).ConfigureAwait(false);
 
-        if (config is null || config.Profiles.Count == 0)
+        if (!ProfileGuard.HasProfiles(config, Console))
         {
-            Console.DisplayMessage(Emojis.Information, "No profiles configured.");
             return CommandResult.Success();
         }
 
-        if (!config.Profiles.TryGetValue(name, out Profile? profile))
+        if (!config!.Profiles.TryGetValue(name, out Profile? profile))
         {
             return CommandResult.Failure(ExitCodes.ValidationError, $"Profile '{name}' not found.");
         }
@@ -83,46 +74,33 @@ internal sealed class ProfileShowCommand : BaseCommand
 
     private void DisplayTable(string name, Profile profile, ProfileConfig config, bool showSecrets)
     {
-        Table table = new();
-        table.AddColumn("[bold]Property[/]");
-        table.AddColumn("[bold]Value[/]");
-
-        table.AddRow("[cyan]Name[/]", $"[yellow]{name.EscapeMarkup()}[/]");
-        table.AddRow("[cyan]Region[/]", $"[yellow]{profile.Region.EscapeMarkup()}[/]");
-        table.AddRow("[cyan]Project Alias[/]", $"[yellow]{profile.ProjectAlias.EscapeMarkup()}[/]");
-        table.AddRow("[cyan]Environment Alias[/]", $"[yellow]{profile.EnvironmentAlias.EscapeMarkup()}[/]");
-        table.AddRow("[cyan]Client ID[/]", $"[yellow]{profile.ClientId.EscapeMarkup()}[/]");
+        var table = ProfileTableBuilder.CreatePropertyTable();
+        ProfileTableBuilder.AddPropertyRow(table, "Name", name);
+        ProfileTableBuilder.AddPropertyRow(table, "Region", profile.Region);
+        ProfileTableBuilder.AddPropertyRow(table, "Project Alias", profile.ProjectAlias);
+        ProfileTableBuilder.AddPropertyRow(table, "Environment Alias", profile.EnvironmentAlias);
+        ProfileTableBuilder.AddPropertyRow(table, "Client ID", profile.ClientId);
 
         if (showSecrets)
         {
-            table.AddRow("[cyan]Client Secret[/]", $"[yellow]{profile.ClientSecret.EscapeMarkup()}[/]");
+            ProfileTableBuilder.AddPropertyRow(table, "Client Secret", profile.ClientSecret);
         }
 
         string isDefault = name == config.Default ? "Yes" : "No";
-        table.AddRow("[cyan]Default[/]", $"[yellow]{isDefault.EscapeMarkup()}[/]");
-
+        ProfileTableBuilder.AddPropertyRow(table, "Default", isDefault);
 
         Console.DisplayRenderable(table);
     }
 
     private void DisplayJson(string name, Profile profile, ProfileConfig config, bool showSecrets)
     {
-        JsonObject obj = new()
-        {
-            ["name"] = name,
-            ["region"] = profile.Region,
-            ["projectAlias"] = profile.ProjectAlias,
-            ["environmentAlias"] = profile.EnvironmentAlias,
-            ["clientId"] = profile.ClientId,
-            ["isDefault"] = name == config.Default,
-        };
-
+        var obj = ProfileJsonBuilder.ToJsonObject(name, profile, showSecrets);
+        obj["clientId"] = profile.ClientId;
+        obj["isDefault"] = name == config.Default;
         if (showSecrets)
         {
             obj["clientSecret"] = profile.ClientSecret;
         }
-
-        string json = obj.ToJsonString(s_jsonOptions);
-        Console.DisplayRawText(json, ConsoleOutput.Standard);
+        Console.DisplayRawText(ProfileJsonBuilder.ToJsonString(obj), ConsoleOutput.Standard);
     }
 }

@@ -1,29 +1,20 @@
 using System.CommandLine;
+using System.CommandLine.Parsing;
+using UmbracoCompose.Cli.Models;
 using UmbracoCompose.Cli.Services;
+using UmbracoCompose.Cli.Utilities;
 
 namespace UmbracoCompose.Cli.Commands;
 
 internal sealed class ProfileAddCommand : BaseCommand
 {
-    private static readonly Argument<string> s_nameArgument = new("name")
-    {
-        Description = "Name of the profile"
-    };
+    private static readonly Argument<string> s_nameArgument = new Argument<string>("name") { Description = "Name of the profile" }.AcceptValidProfileName();
 
-    private static readonly Argument<string> s_regionArgument = new("region")
-    {
-        Description = "Region"
-    };
+    private static readonly Argument<string> s_regionArgument = new Argument<string>("region") { Description = "Region" }.AcceptNonEmptyField("Region");
 
-    private static readonly Argument<string> s_projectAliasArgument = new("project-alias")
-    {
-        Description = "Project alias"
-    };
+    private static readonly Argument<string> s_projectAliasArgument = new Argument<string>("project-alias") { Description = "Project alias" }.AcceptNonEmptyField("Project alias");
 
-    private static readonly Argument<string> s_environmentAliasArgument = new("environment-alias")
-    {
-        Description = "Environment alias"
-    };
+    private static readonly Argument<string> s_environmentAliasArgument = new Argument<string>("environment-alias") { Description = "Environment alias" }.AcceptNonEmptyField("Environment alias");
 
     private readonly ProfileConfigService _profileConfigService;
 
@@ -40,39 +31,13 @@ internal sealed class ProfileAddCommand : BaseCommand
 
     protected override async Task<CommandResult> ExecuteAsync(ParseResult parseResult, CancellationToken cancellationToken)
     {
-        string? name = parseResult.GetValue(s_nameArgument);
-        string? region = parseResult.GetValue(s_regionArgument);
-        string? projectAlias = parseResult.GetValue(s_projectAliasArgument);
-        string? environmentAlias = parseResult.GetValue(s_environmentAliasArgument);
-
-        // Validate all required arguments
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            return CommandResult.Failure(ExitCodes.ValidationError, "Profile name cannot be empty.");
-        }
-
-        if (string.IsNullOrWhiteSpace(region))
-        {
-            return CommandResult.Failure(ExitCodes.ValidationError, "Region cannot be empty.");
-        }
-
-        if (string.IsNullOrWhiteSpace(projectAlias))
-        {
-            return CommandResult.Failure(ExitCodes.ValidationError, "Project alias cannot be empty.");
-        }
-
-        if (string.IsNullOrWhiteSpace(environmentAlias))
-        {
-            return CommandResult.Failure(ExitCodes.ValidationError, "Environment alias cannot be empty.");
-        }
-
-        if (name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
-        {
-            return CommandResult.Failure(ExitCodes.ValidationError, $"Profile name '{name}' contains invalid characters.");
-        }
+        string name = parseResult.GetValue(s_nameArgument)!;
+        string region = parseResult.GetValue(s_regionArgument)!;
+        string projectAlias = parseResult.GetValue(s_projectAliasArgument)!;
+        string environmentAlias = parseResult.GetValue(s_environmentAliasArgument)!;
 
         // Check for duplicate before prompting for credentials
-        var existingConfig = _profileConfigService.Load();
+        ProfileConfig? existingConfig = await _profileConfigService.LoadAsync(cancellationToken).ConfigureAwait(false);
         if (existingConfig?.Profiles.ContainsKey(name) == true)
         {
             return CommandResult.Failure(ExitCodes.RuntimeError, $"A profile with the name '{name}' already exists.");
@@ -92,7 +57,7 @@ internal sealed class ProfileAddCommand : BaseCommand
             return CommandResult.Failure(ExitCodes.ValidationError, "Client Secret cannot be empty.");
         }
 
-        bool success = _profileConfigService.Update(config =>
+        bool success = await _profileConfigService.UpdateAsync(config =>
         {
             config.Profiles[name] = new(region, projectAlias, environmentAlias, clientId, clientSecret);
 
@@ -102,7 +67,7 @@ internal sealed class ProfileAddCommand : BaseCommand
             }
 
             return config;
-        });
+        }, cancellationToken).ConfigureAwait(false);
 
         if (!success)
         {

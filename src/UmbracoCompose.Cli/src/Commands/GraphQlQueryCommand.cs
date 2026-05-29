@@ -1,21 +1,13 @@
 using System.CommandLine;
-using System.Globalization;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Spectre.Console;
-using UmbracoCompose.Cli.Models;
 using UmbracoCompose.Cli.Services;
+using UmbracoCompose.Cli.Utilities;
 
 namespace UmbracoCompose.Cli.Commands;
 
-  internal sealed class GraphQlQueryCommand : BaseCommand
+internal sealed class GraphQlQueryCommand : BaseCommand
 {
-    private const string FileReadPrefix = "@";
-    private const string RequirePreflightHeader = "GraphQL-Require-Preflight";
-
     private static readonly Argument<string> s_queryArgument = new("query")
     {
         Description = "GraphQL query string or file path (prefix with @ to read from file)",
@@ -48,22 +40,25 @@ namespace UmbracoCompose.Cli.Commands;
         AllowMultipleArgumentsPerToken = true,
     };
 
-    private readonly ProfileConfigService _profileConfigService;
-    private readonly IOAuthService _oAuthService;
-    private readonly HttpClient _httpClient;
+    private readonly ProfileResolver _profileResolver;
+    private readonly GraphQLRequestExecutor _graphQLRequestExecutor;
+    private readonly VariableParser _variableParser;
+    private readonly ResponseFormatter _responseFormatter;
     private readonly ILogger<GraphQlQueryCommand> _logger;
 
     public GraphQlQueryCommand(
         IConsole console,
-        ProfileConfigService profileConfigService,
-        IOAuthService oAuthService,
-        HttpClient httpClient,
+        ProfileResolver profileResolver,
+        GraphQLRequestExecutor graphQLRequestExecutor,
+        VariableParser variableParser,
+        ResponseFormatter responseFormatter,
         ILogger<GraphQlQueryCommand> logger)
         : base("query", "Execute a GraphQL query against the Compose GraphQL endpoint", console)
     {
-        _profileConfigService = profileConfigService;
-        _oAuthService = oAuthService;
-        _httpClient = httpClient;
+        _profileResolver = profileResolver;
+        _graphQLRequestExecutor = graphQLRequestExecutor;
+        _variableParser = variableParser;
+        _responseFormatter = responseFormatter;
         _logger = logger;
 
         Arguments.Add(s_queryArgument);
@@ -83,73 +78,16 @@ namespace UmbracoCompose.Cli.Commands;
         IList<string>? variablesStrings = parseResult.GetValue(s_variablesOption);
 
         // Resolve profile
-        ProfileConfig? config = _profileConfigService.Load();
-
-        if (config is null || config.Profiles.Count == 0)
-        {
-            return CommandResult.Failure(ExitCodes.ValidationError, "No profiles configured. Add a profile first with 'profiles add'.");
-        }
-
-        string? resolvedName = profileName;
-
-        if (string.IsNullOrWhiteSpace(resolvedName))
-        {
-            if (!string.IsNullOrWhiteSpace(config.Default) && config.Profiles.ContainsKey(config.Default))
-            {
-                resolvedName = config.Default;
-            }
-
-            if (resolvedName is null)
-            {
-                return CommandResult.Failure(ExitCodes.ValidationError, "Default profile is not configured.");
-            }
-        }
-
-        if (!config.Profiles.TryGetValue(resolvedName, out var profile))
-        {
-            return CommandResult.Failure(ExitCodes.ValidationError, $"Profile '{resolvedName}' not found.");
-        }
-
-        if (string.IsNullOrWhiteSpace(profile.Region))
-        {
-            return CommandResult.Failure(ExitCodes.ValidationError, "Profile is missing 'Region'.");
-        }
-
-        if (string.IsNullOrWhiteSpace(profile.ProjectAlias))
-        {
-            return CommandResult.Failure(ExitCodes.ValidationError, "Profile is missing 'ProjectAlias'.");
-        }
-
-        if (string.IsNullOrWhiteSpace(profile.EnvironmentAlias))
-        {
-            return CommandResult.Failure(ExitCodes.ValidationError, "Profile is missing 'EnvironmentAlias'.");
-        }
-
-        // Build GraphQL URL
-        string graphQLUrl = BuildGraphQLUrl(profile);
+        var (resolvedName, profile, profileResult) = await _profileResolver.ResolveAsync(profileName, cancellationToken).ConfigureAwait(false);
+        if (profileResult != null)
+            return profileResult;
 
         // Read query from file or use as string
         string queryText;
-        if (query.StartsWith(FileReadPrefix, StringComparison.Ordinal))
-        {
-            string filePath = query[1..];
-            try
-            {
-                queryText = await File.ReadAllTextAsync(filePath, cancellationToken).ConfigureAwait(false);
-            }
-            catch (FileNotFoundException)
-            {
-                return CommandResult.Failure(ExitCodes.ValidationError, $"Query file not found: {filePath}");
-            }
-            catch (IOException ex)
-            {
-                return CommandResult.Failure(ExitCodes.ValidationError, $"Failed to read query file: {ex.Message}");
-            }
-        }
-        else
-        {
-            queryText = query;
-        }
+        var (queryContent, queryError) = await FileReadHelper.ReadFromFileOrReturnAsync(query, cancellationToken);
+        if (queryError != null)
+            return queryError;
+        queryText = queryContent!;
 
         // Validate query is not empty
         if (string.IsNullOrWhiteSpace(queryText))
@@ -158,65 +96,10 @@ namespace UmbracoCompose.Cli.Commands;
         }
 
         // Parse variables
-        Dictionary<string, object?> variables = new();
-
-        // First, parse individual --variable flags
-        if (variableStrings is not null)
-        {
-            foreach (string variable in variableStrings)
-            {
-                CommandResult? result = ParseVariable(variable, variables);
-                if (result is not null)
-                {
-                    return result;
-                }
-            }
-        }
-
-        // Then, parse --variables JSON (overrides individual variables for same keys)
-        if (variablesStrings is not null)
-        {
-            foreach (string variablesEntry in variablesStrings)
-            {
-                string jsonContent;
-                if (variablesEntry.StartsWith(FileReadPrefix, StringComparison.Ordinal))
-                {
-                    string filePath = variablesEntry[1..];
-                    try
-                    {
-                        jsonContent = await File.ReadAllTextAsync(filePath, cancellationToken).ConfigureAwait(false);
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        return CommandResult.Failure(ExitCodes.ValidationError, $"Variables file not found: {filePath}");
-                    }
-                    catch (IOException ex)
-                    {
-                        return CommandResult.Failure(ExitCodes.ValidationError, $"Failed to read variables file: {ex.Message}");
-                    }
-                }
-                else
-                {
-                    jsonContent = variablesEntry;
-                }
-
-                try
-                {
-                    var parsed = JsonSerializer.Deserialize<Dictionary<string, object?>>(jsonContent, AppJsonContext.Default.DictionaryStringObject);
-                    if (parsed is not null)
-                    {
-                        foreach (var kvp in parsed)
-                        {
-                            variables[kvp.Key] = kvp.Value;
-                        }
-                    }
-                }
-                catch (JsonException ex)
-                {
-                    return CommandResult.Failure(ExitCodes.ValidationError, $"Failed to parse variables JSON: {ex.Message}");
-                }
-            }
-        }
+        var variables = new Dictionary<string, object?>();
+        CommandResult? variableError = await _variableParser.ParseAsync(variableStrings, variablesStrings, cancellationToken, variables);
+        if (variableError is not null)
+            return variableError;
 
         // Build request payload
         var payload = new Dictionary<string, object?>
@@ -234,373 +117,61 @@ namespace UmbracoCompose.Cli.Commands;
             payload["operationName"] = operationName;
         }
 
-        HttpResponseMessage? response = null;
+        // Serialize payload to JSON
+        string payloadJson = JsonSerializer.Serialize(payload, AppJsonContext.Default.DictionaryStringObject);
 
-        try
+        // Execute GraphQL request via shared executor
+        var execResult = await _graphQLRequestExecutor.ExecuteAsync(profile!, payloadJson, "application/json", cancellationToken);
+        if (execResult.Failure != null)
+            return execResult.Failure;
+
+        string responseBody = execResult.Body!;
+
+        // Output based on format
+        OutputFormat format = parseResult.GetValue(s_formatOption);
+
+        if (format == OutputFormat.Json)
         {
-            // Get bearer token
-            TokenResponse token;
-            try
-            {
-                token = await _oAuthService.AuthenticateAsync(profile.ClientId, profile.ClientSecret, cancellationToken);
-            }
-            catch (HttpRequestException ex) when (ex.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
-            {
-                _logger.LogError(ex, "Authentication failed for GraphQL endpoint");
-                return CommandResult.Failure(ExitCodes.ValidationError, "Authentication failed. Check your profile credentials.");
-            }
-            catch (HttpRequestException ex)
-            {
-                _logger.LogError(ex, "Failed to obtain authentication token");
-                return CommandResult.Failure(ExitCodes.ValidationError, "Failed to obtain authentication token. Check your network connection.");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to obtain authentication token");
-                return CommandResult.Failure(ExitCodes.ValidationError, "Failed to obtain authentication token.");
-            }
-
-            // Serialize payload
-            string payloadJson = JsonSerializer.Serialize(payload, AppJsonContext.Default.DictionaryStringObject);
-
-            // POST to GraphQL endpoint
-            var requestContent = new StringContent(payloadJson, Encoding.UTF8, "application/json");
-            using var request = new HttpRequestMessage(HttpMethod.Post, graphQLUrl)
-            {
-                Content = requestContent,
-            };
-            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
-            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/graphql-response+json"));
-            request.Headers.Add(RequirePreflightHeader, "true");
-
-            response = await _httpClient.SendAsync(request, cancellationToken);
-
-            if (!response.IsSuccessStatusCode)
-            {
-                string? errorBody = null;
-                try
-                {
-                    errorBody = (await response.Content.ReadAsStringAsync(cancellationToken)).Trim();
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error while reading body");
-                }
-
-                if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
-                {
-                    _logger.LogError("Authentication failed for GraphQL endpoint. Response: {ResponseBody}", errorBody);
-                    return CommandResult.Failure(ExitCodes.ValidationError, "Authentication failed. Check your profile credentials.");
-                }
-
-                _logger.LogError("GraphQL request failed with status {StatusCode}. Response: {ResponseBody}", response.StatusCode, errorBody);
-                return CommandResult.Failure(ExitCodes.RuntimeError, $"GraphQL request failed ({response.StatusCode}).");
-            }
-
-            string responseBody = await response.Content.ReadAsStringAsync(cancellationToken);
-
-            // Output based on format
-            OutputFormat format = parseResult.GetValue(s_formatOption);
-
-            if (format == OutputFormat.Json)
-            {
-                // Return raw response from server, exactly as-is
-                Console.DisplayRawText(responseBody);
-            }
-            else
-            {
-                // Parse response to check for errors and display table summary
-                using var jsonDocument = JsonDocument.Parse(responseBody);
-                var root = jsonDocument.RootElement;
-
-                // Check for GraphQL errors
-                if (root.TryGetProperty("errors", out JsonElement errorsElement) && errorsElement.ValueKind == JsonValueKind.Array)
-                {
-                    var errorMessages = new List<string>();
-                    foreach (var error in errorsElement.EnumerateArray())
-                    {
-                        if (error.TryGetProperty("message", out JsonElement messageElement))
-                        {
-                            errorMessages.Add(messageElement.GetString() ?? "Unknown error");
-                        }
-                    }
-
-                    if (errorMessages.Count > 0)
-                    {
-                        var errorText = string.Join("; ", errorMessages);
-                        _logger.LogError("GraphQL errors: {Errors}", errorText);
-                        return CommandResult.Failure(ExitCodes.RuntimeError, $"GraphQL errors: {errorText}");
-                    }
-                }
-
-                // Get data element
-                if (!root.TryGetProperty("data", out JsonElement dataElement) || dataElement.ValueKind == JsonValueKind.Null)
-                {
-                    _logger.LogError("GraphQL request returned no data. Response: {ResponseBody}", responseBody);
-                    return CommandResult.Failure(ExitCodes.RuntimeError, "GraphQL request returned no data.");
-                }
-
-                // Display data as table
-                DisplayDataTable(dataElement);
-            }
-
-            return CommandResult.Success();
-        }
-        catch (HttpRequestException ex)
-        {
-            string? responseBody = null;
-            if (response is not null)
-            {
-                try
-                {
-                    responseBody = (await response.Content.ReadAsStringAsync(cancellationToken)).Trim();
-                }
-                catch (Exception readEx)
-                {
-                    _logger.LogDebug(readEx, "Could not read error response body");
-                }
-            }
-
-            if (ex.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
-            {
-                _logger.LogError("Authentication failed for GraphQL endpoint. Response: {ResponseBody}", responseBody);
-                return CommandResult.Failure(ExitCodes.ValidationError, "Authentication failed. Check your profile credentials.");
-            }
-
-            _logger.LogError("GraphQL request failed with status {StatusCode}. Response: {ResponseBody}", ex.StatusCode, responseBody);
-            return CommandResult.Failure(ExitCodes.RuntimeError, $"GraphQL request failed ({ex.StatusCode}).");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to execute GraphQL query");
-            return CommandResult.Failure(ExitCodes.RuntimeError, "Failed to execute GraphQL query.");
-        }
-    }
-
-    private static CommandResult? ParseVariable(string variable, Dictionary<string, object?> variables)
-    {
-        int equalsIndex = variable.IndexOf('=');
-        if (equalsIndex <= 0)
-        {
-            return CommandResult.Failure(ExitCodes.ValidationError, $"Invalid variable format '{variable}'. Expected name=value or name:type=value.");
-        }
-
-        string keyWithType = variable[..equalsIndex];
-        string value = variable[(equalsIndex + 1)..];
-
-        string name;
-        string type;
-
-        int colonIndex = keyWithType.IndexOf(':');
-        if (colonIndex > 0)
-        {
-            name = keyWithType[..colonIndex];
-            type = keyWithType[(colonIndex + 1)..].ToLowerInvariant();
-            if (string.IsNullOrEmpty(type))
-            {
-                return CommandResult.Failure(ExitCodes.ValidationError, $"Invalid variable '{variable}'. Type specifier is empty. Valid types: string, int, float, bool, json.");
-            }
-        }
-        else if (colonIndex == 0)
-        {
-            return CommandResult.Failure(ExitCodes.ValidationError, $"Invalid variable '{variable}'. Variable name is empty.");
+            // Return raw response from server, exactly as-is
+            Console.DisplayRawText(responseBody);
         }
         else
         {
-            name = keyWithType;
-            type = "string";
-        }
+            // Parse response to check for errors and display table summary
+            using var jsonDocument = JsonDocument.Parse(responseBody);
+            JsonElement root = jsonDocument.RootElement;
 
-        object? typedValue;
-        try
-        {
-            typedValue = type switch
+            // Check for GraphQL errors
+            if (root.TryGetProperty("errors", out JsonElement errorsElement) && errorsElement.ValueKind == JsonValueKind.Array)
             {
-                "int" => int.Parse(value, CultureInfo.InvariantCulture),
-                "float" => double.Parse(value, CultureInfo.InvariantCulture),
-                "bool" => bool.Parse(value),
-                "json" => JsonSerializer.Deserialize<object?>(value, AppJsonContext.Default.Object) ?? throw new JsonException("JSON value deserialized to null. Ensure the JSON is a valid object or array."),
-                _ => value, // string
-            };
-        }
-        catch (FormatException ex) when (type is "int" or "float" or "bool")
-        {
-            return CommandResult.Failure(ExitCodes.ValidationError, $"Invalid {type} value '{value}' for variable '{name}': {ex.Message}");
-        }
-        catch (JsonException ex) when (type == "json")
-        {
-            return CommandResult.Failure(ExitCodes.ValidationError, $"Invalid JSON value for variable '{name}': {ex.Message}");
-        }
-
-        variables[name] = typedValue;
-        return null;
-    }
-
-    private void DisplayDataTable(JsonElement data)
-    {
-        if (data.ValueKind != JsonValueKind.Object)
-        {
-            Console.DisplayRawText(data.GetRawText());
-            return;
-        }
-
-        var rootProperties = data.EnumerateObject().ToList();
-
-        if (rootProperties.Count == 1)
-        {
-            // Single root field — recursively search for arrays
-            var field = rootProperties[0];
-            FindAndDisplayFirstArray(field.Name, field.Value);
-        }
-        else
-        {
-            // Multiple root fields — show table
-            Table table = new();
-            table.AddColumn("Field");
-            table.AddColumn("Type");
-            table.AddColumn("Preview");
-            table.Border(TableBorder.Rounded);
-
-            foreach (var field in rootProperties)
-            {
-                table.AddRow(
-                    field.Name.EscapeMarkup(),
-                    GetValueKind(field.Value),
-                    GetPreview(field.Value)
-                );
-            }
-
-            Console.DisplayRenderable(table);
-        }
-    }
-
-    private bool FindAndDisplayFirstArray(string path, JsonElement element)
-    {
-        if (element.ValueKind == JsonValueKind.Array && element.GetArrayLength() > 0)
-        {
-            DisplayArrayAsTable(path, element);
-            return true;
-        }
-
-        if (element.ValueKind == JsonValueKind.Object)
-        {
-            foreach (var prop in element.EnumerateObject())
-            {
-                var childPath = string.IsNullOrEmpty(path) ? prop.Name : $"{path}.{prop.Name}";
-                if (FindAndDisplayFirstArray(childPath, prop.Value))
+                List<string> errorMessages = new List<string>();
+                foreach (JsonElement error in errorsElement.EnumerateArray())
                 {
-                    return true; // Array found and displayed in a child — stop searching
-                }
-            }
-        }
-
-        // No array found at any depth — show scalar
-        Console.DisplayRawText($"{path}: {GetPreview(element)}");
-        return false;
-    }
-
-    private void DisplayArrayAsTable(string name, JsonElement array)
-    {
-        int count = array.GetArrayLength();
-
-        if (count == 0)
-        {
-            Console.DisplayRawText($"{name}: [] (empty array)");
-            return;
-        }
-
-        // Check if items are objects to build a proper table
-        var firstItem = array.EnumerateArray().FirstOrDefault();
-
-        if (firstItem.ValueKind == JsonValueKind.Object)
-        {
-            // Always show objects as a table
-            var sampleProps = firstItem.EnumerateObject().Take(8).ToList();
-
-            Table table = new();
-            table.AddColumn("#");
-            foreach (var prop in sampleProps)
-            {
-                table.AddColumn(prop.Name.EscapeMarkup());
-            }
-            table.Border(TableBorder.Rounded);
-
-            foreach (var item in array.EnumerateArray())
-            {
-                var rowValues = new List<string> { "#" + (table.Rows.Count + 1) };
-                foreach (var prop in sampleProps)
-                {
-                    if (item.TryGetProperty(prop.Name, out var v))
+                    if (error.TryGetProperty("message", out JsonElement messageElement))
                     {
-                        rowValues.Add(GetPreview(v));
-                    }
-                    else
-                    {
-                        rowValues.Add("?");
+                        errorMessages.Add(messageElement.GetString() ?? "Unknown error");
                     }
                 }
-                table.AddRow(rowValues.ToArray());
+
+                if (errorMessages.Count > 0)
+                {
+                    string errorText = string.Join("; ", errorMessages);
+                    _logger.LogError("GraphQL errors: {Errors}", errorText);
+                    return CommandResult.Failure(ExitCodes.RuntimeError, $"GraphQL errors: {errorText}");
+                }
             }
 
-            Console.DisplayRenderable(table);
-        }
-        else
-        {
-            // Simple array — show values
-            Console.DisplayRawText($"{name}: [{string.Join(", ", array.EnumerateArray().Select(GetPreview))}]");
-        }
-    }
-
-    private static string BuildGraphQLUrl(Models.Profile profile) =>
-        $"https://graphql.{profile.Region}.umbracocompose.com/{profile.ProjectAlias}/{profile.EnvironmentAlias}/";
-
-    private static string GetPreview(JsonElement element)
-    {
-        return element.ValueKind switch
-        {
-            JsonValueKind.String => EscapeJsonString(element.GetString()),
-            JsonValueKind.Number => element.GetRawText(),
-            JsonValueKind.True => "true",
-            JsonValueKind.False => "false",
-            JsonValueKind.Null => "null",
-            JsonValueKind.Object => $"{{...{element.GetPropertyCount()} props...}}",
-            JsonValueKind.Array => $"[{element.GetArrayLength()} items]",
-            _ => element.GetRawText(),
-        };
-    }
-
-    private static string EscapeJsonString(string? value)
-    {
-        if (value is null) return "null";
-        var sb = new StringBuilder(value.Length + 2);
-        sb.Append('"');
-        foreach (var c in value)
-        {
-            sb.Append(c switch
+            // Get data element
+            if (!root.TryGetProperty("data", out JsonElement dataElement) || dataElement.ValueKind == JsonValueKind.Null)
             {
-                '\\' => "\\\\",
-                '"' => "\\\"",
-                '\n' => "\\n",
-                '\r' => "\\r",
-                '\t' => "\\t",
-                _ => c,
-            });
-        }
-        sb.Append('"');
-        return sb.ToString();
-    }
+                _logger.LogError("GraphQL request returned no data. Response: {ResponseBody}", responseBody);
+                return CommandResult.Failure(ExitCodes.RuntimeError, "GraphQL request returned no data.");
+            }
 
-    private static string GetValueKind(JsonElement element)
-    {
-        return element.ValueKind switch
-        {
-            JsonValueKind.String => "String",
-            JsonValueKind.Number => "Number",
-            JsonValueKind.True or JsonValueKind.False => "Boolean",
-            JsonValueKind.Null => "Null",
-            JsonValueKind.Object => "Object",
-            JsonValueKind.Array => "Array",
-            _ => "Unknown",
-        };
+            // Display data as table
+            _responseFormatter.DisplayDataTable(dataElement);
+        }
+
+        return CommandResult.Success();
     }
 }

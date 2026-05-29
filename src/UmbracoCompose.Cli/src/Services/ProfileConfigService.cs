@@ -2,13 +2,13 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 
 using UmbracoCompose.Cli.Models;
+using UmbracoCompose.Cli.Utilities;
 
 namespace UmbracoCompose.Cli.Services;
 
 internal sealed class ProfileConfigService
 {
     private readonly string _configPath;
-    private readonly object _lock = new();
     private readonly ILogger<ProfileConfigService> _logger;
 
     public ProfileConfigService(ILogger<ProfileConfigService> logger)
@@ -40,122 +40,66 @@ internal sealed class ProfileConfigService
         );
     }
 
-    private static void EnsureDirectoryExists(string path)
+    public async Task<ProfileConfig?> LoadAsync(CancellationToken cancellationToken = default)
     {
-        string? dir = Path.GetDirectoryName(path);
-        if (!string.IsNullOrEmpty(dir))
+        try
         {
-            Directory.CreateDirectory(dir);
-        }
-    }
-
-    public ProfileConfig? Load()
-    {
-        lock (_lock)
-        {
-            try
-            {
-                if (!File.Exists(_configPath))
-                {
-                    return null;
-                }
-
-                string json = File.ReadAllText(_configPath);
-                ProfileConfig? config = JsonSerializer.Deserialize(json, AppJsonContext.Default.ProfileConfig);
-                return config;
-            }
-            catch (JsonException)
+            if (!File.Exists(_configPath))
             {
                 return null;
             }
-            catch (IOException)
-            {
-                return null;
-            }
+
+            string json = await File.ReadAllTextAsync(_configPath, cancellationToken).ConfigureAwait(false);
+            ProfileConfig? config = JsonSerializer.Deserialize(json, AppJsonContext.Default.ProfileConfig);
+            return config;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "Failed to parse profile config — file may be corrupted");
+            return null;
+        }
+        catch (IOException ex)
+        {
+            _logger.LogWarning(ex, "Failed to read profile config");
+            return null;
         }
     }
 
-    public bool Save(ProfileConfig config)
+    public async Task<bool> UpdateAsync(Func<ProfileConfig, ProfileConfig> updateFn, CancellationToken cancellationToken = default)
     {
-        lock (_lock)
+        try
         {
-            try
+            ProfileConfig config;
+            if (File.Exists(_configPath))
             {
-                EnsureDirectoryExists(_configPath);
-                string tempPath = _configPath + ".tmp";
-                string json = JsonSerializer.Serialize(config, AppJsonContext.Default.ProfileConfig);
-                File.WriteAllText(tempPath, json);
-                File.Move(tempPath, _configPath, overwrite: true);
-                return true;
+                string json = await File.ReadAllTextAsync(_configPath, cancellationToken).ConfigureAwait(false);
+                config = JsonSerializer.Deserialize(json, AppJsonContext.Default.ProfileConfig)
+                    ?? new();
             }
-            catch (IOException ex)
+            else
             {
-                // Clean up temp file if it exists
-                try
-                {
-                    File.Delete(_configPath + ".tmp");
-                }
-                catch
-                {
-                    // Ignore cleanup failures
-                }
-                _logger.LogWarning(ex, "Failed to save profile config");
-                return false;
+                config = new();
             }
+
+            ProfileConfig updated = updateFn(config);
+            FileWriteHelper.WriteAtomic(_configPath, updated, AppJsonContext.Default.ProfileConfig);
+            return true;
         }
-    }
-
-    public bool Update(Func<ProfileConfig, ProfileConfig> updateFn)
-    {
-        lock (_lock)
+        catch (JsonException ex)
         {
-            try
-            {
-                EnsureDirectoryExists(_configPath);
-
-                ProfileConfig config;
-                if (File.Exists(_configPath))
-                {
-                    string json = File.ReadAllText(_configPath);
-                    config = JsonSerializer.Deserialize(json, AppJsonContext.Default.ProfileConfig)
-                        ?? new();
-                }
-                else
-                {
-                    config = new();
-                }
-
-                ProfileConfig updated = updateFn(config);
-                string tempPath = _configPath + ".tmp";
-                string serialized = JsonSerializer.Serialize(updated, AppJsonContext.Default.ProfileConfig);
-                File.WriteAllText(tempPath, serialized);
-                File.Move(tempPath, _configPath, overwrite: true);
-                return true;
-            }
-            catch (JsonException ex)
-            {
-                _logger.LogWarning(ex, "Failed to save profile config");
-                return false;
-            }
-            catch (IOException ex)
-            {
-                try
-                {
-                    File.Delete(_configPath + ".tmp");
-                }
-                catch
-                {
-                    // Ignore cleanup failures
-                }
-                _logger.LogWarning(ex, "Failed to save profile config");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                // Callback threw (e.g., duplicate profile) — don't save
-                _logger.LogWarning(ex, "Failed to save profile config");
-                return false;
-            }
+            _logger.LogWarning(ex, "Failed to save profile config");
+            return false;
+        }
+        catch (IOException ex)
+        {
+            _logger.LogWarning(ex, "Failed to save profile config");
+            return false;
+        }
+        catch (Exception ex)
+        {
+            // Callback threw (e.g., duplicate profile) — don't save
+            _logger.LogWarning(ex, "Failed to save profile config");
+            return false;
         }
     }
 }

@@ -1,12 +1,13 @@
 using System.CommandLine;
 using UmbracoCompose.Cli.Models;
 using UmbracoCompose.Cli.Services;
+using UmbracoCompose.Cli.Utilities;
 
 namespace UmbracoCompose.Cli.Commands;
 
 internal sealed class ProfileSetDefaultCommand : BaseCommand
 {
-    private static readonly Argument<string> s_nameArgument = new("name") { Description = "Name of the profile to set as default" };
+    private static readonly Argument<string> s_nameArgument = new Argument<string>("name") { Description = "Name of the profile to set as default" }.AcceptValidProfileName();
     private readonly ProfileConfigService _profileConfigService;
 
     public ProfileSetDefaultCommand(IConsole console, ProfileConfigService profileConfigService)
@@ -20,22 +21,16 @@ internal sealed class ProfileSetDefaultCommand : BaseCommand
     {
         string name = parseResult.GetValue(s_nameArgument)!;
 
-        if (string.IsNullOrWhiteSpace(name))
-            return CommandResult.Failure(ExitCodes.ValidationError, "Profile name cannot be empty.");
-
-        if (name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
-            return CommandResult.Failure(ExitCodes.ValidationError, $"Profile name '{name}' contains invalid characters.");
-
-        ProfileConfig? config = _profileConfigService.Load();
+        ProfileConfig? config = await _profileConfigService.LoadAsync(cancellationToken).ConfigureAwait(false);
 
         if (config is null || !config.Profiles.ContainsKey(name))
             return CommandResult.Failure(ExitCodes.ValidationError, $"Profile '{name}' not found.");
 
-        bool success = _profileConfigService.Update(config =>
+        bool success = await _profileConfigService.UpdateAsync(config =>
         {
             config.Default = name;
             return config;
-        });
+        }, cancellationToken).ConfigureAwait(false);
 
         if (!success)
             return CommandResult.Failure(ExitCodes.RuntimeError, "Failed to save profile configuration. The configuration file may be locked or unreadable.");

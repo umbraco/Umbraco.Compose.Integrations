@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
 using UmbracoCompose.Cli;
@@ -15,11 +14,13 @@ HostApplicationBuilderSettings settings = new()
 };
 settings.Configuration.AddEnvironmentVariables();
 
-ILoggerFactory loggerFactory = CreateLoggerFactory(args);
+LoggingOptions loggingOptions = ParseLoggingOptions(args);
+ILoggerFactory loggerFactory = CreateLoggerFactory(loggingOptions);
 ILogger rootLogger = loggerFactory.CreateLogger("UmbracoCompose.Cli");
 
 HostApplicationBuilder builder = Host.CreateEmptyApplicationBuilder(settings);
 
+builder.Services.AddSingleton(loggingOptions);
 builder.Services.AddSingleton(loggerFactory);
 
 builder.Services.AddTransient<AgentCommand>();
@@ -48,8 +49,12 @@ builder.Services.ConfigureHttpClientDefaults(httpClientBuilder =>
 builder.Services.AddTransient<IOAuthService, OAuthService>();
 builder.Services.AddTransient<ProfileValidateCommand>();
 
+builder.Services.AddSingleton<GraphQLRequestExecutor>();
 builder.Services.AddSingleton<IConsole, SpectreConsole>();
 builder.Services.AddSingleton<ProfileConfigService>();
+builder.Services.AddTransient<ProfileResolver>();
+builder.Services.AddScoped<VariableParser>();
+builder.Services.AddScoped<ResponseFormatter>();
 
 using IHost app = builder.Build();
 await app.StartAsync().ConfigureAwait(false);
@@ -63,18 +68,48 @@ rootLogger.LogInformation("Exit Code {ExitCode}", exitCode);
 
 return exitCode;
 
-ILoggerFactory CreateLoggerFactory(string[] args)
+ILoggerFactory CreateLoggerFactory(LoggingOptions loggingOptions)
 {
     bool isMcpStartCommand = args.Length >= 2 &&
         args[0] == "agent" && args[1] == "mcp";
 
+    return LoggerFactory.Create(builder =>
+    {
+        if (loggingOptions.LogLevel.HasValue)
+        {
+            builder.AddFilter("UmbracoCompose.Cli", loggingOptions.LogLevel.Value);
+            builder.AddFilter("Microsoft.Hosting.Lifetime", LogLevel.Warning);
+        }
+        if (isMcpStartCommand)
+        {
+            builder.AddConsole(options =>
+            {
+                options.LogToStandardErrorThreshold = LogLevel.Trace;
+            });
+        }
+        else if (loggingOptions.LogLevel.HasValue)
+        {
+            builder.AddConsole(options =>
+            {
+                options.LogToStandardErrorThreshold = loggingOptions.LogLevel.Value;
+            });
+        }
+    });
+}
+
+LoggingOptions ParseLoggingOptions(string[] args)
+{
     LogLevel? logLevel = null;
+
+    bool debugMode = false;
 
     if (args is not null && args.Length > 0)
     {
+        debugMode = args.Any(x => x == "--debug");
+
         for (var i = 0; i < args.Length; ++i)
         {
-            if ((args[i] == "--log-level" || args[i] == "-l") && args.Length >= i+1)
+            if ((args[i] == "--log-level" || args[i] == "-l") && i + 1 < args.Length)
             {
                 if (Enum.TryParse<LogLevel>(args[i + 1], ignoreCase: true, out var level))
                 {
@@ -83,23 +118,14 @@ ILoggerFactory CreateLoggerFactory(string[] args)
                 break;
             }
         }
+
+        if (debugMode && logLevel is null)
+        {
+            logLevel = LogLevel.Debug;
+        }
     }
 
-    return LoggerFactory.Create(builder =>
-    {
-        if (isMcpStartCommand)
-        {
-            builder.AddConsole(options =>
-            {
-                options.LogToStandardErrorThreshold = LogLevel.Trace;
-            });
-        }
-        else if (logLevel.HasValue)
-        {
-            builder.AddConsole(options =>
-            {
-                options.LogToStandardErrorThreshold = logLevel.Value;
-            });
-        }
-    });
+    return new(logLevel, debugMode);
 }
+
+internal sealed record LoggingOptions(LogLevel? LogLevel, bool Debug);

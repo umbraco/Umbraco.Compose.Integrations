@@ -1,15 +1,16 @@
 using System.CommandLine;
 using UmbracoCompose.Cli.Models;
 using UmbracoCompose.Cli.Services;
+using UmbracoCompose.Cli.Utilities;
 
 namespace UmbracoCompose.Cli.Commands;
 
 internal sealed class ProfileRemoveCommand : BaseCommand
 {
-    private static readonly Argument<string> s_nameArgument = new("name")
+    private static readonly Argument<string> s_nameArgument = new Argument<string>("name")
     {
         Description = "Name of the profile to remove"
-    };
+    }.AcceptValidProfileName();
 
     private static readonly Option<bool> s_forceOption = new("--force")
     {
@@ -32,19 +33,8 @@ internal sealed class ProfileRemoveCommand : BaseCommand
         string name = parseResult.GetValue(s_nameArgument)!;
         bool force = parseResult.GetValue(s_forceOption);
 
-        // Validate name
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            return CommandResult.Failure(ExitCodes.ValidationError, "Profile name cannot be empty.");
-        }
-
-        if (name.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
-        {
-            return CommandResult.Failure(ExitCodes.ValidationError, $"Profile name '{name}' contains invalid characters.");
-        }
-
         // Load config
-        ProfileConfig? config = _profileConfigService.Load();
+        ProfileConfig? config = await _profileConfigService.LoadAsync(cancellationToken).ConfigureAwait(false);
 
         // Check if profile exists
         if (config is null || !config.Profiles.ContainsKey(name))
@@ -67,7 +57,7 @@ internal sealed class ProfileRemoveCommand : BaseCommand
         }
 
         // Remove the profile
-        bool success = _profileConfigService.Update(config =>
+        bool success = await _profileConfigService.UpdateAsync(config =>
         {
             config.Profiles.Remove(name);
 
@@ -77,7 +67,7 @@ internal sealed class ProfileRemoveCommand : BaseCommand
             }
 
             return config;
-        });
+        }, cancellationToken).ConfigureAwait(false);
 
         if (!success)
         {

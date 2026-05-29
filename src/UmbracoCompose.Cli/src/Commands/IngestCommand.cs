@@ -14,7 +14,7 @@ internal sealed class IngestCommand : BaseCommand
         Description = "Collection alias"
     };
 
-    private static readonly Argument<string?> s_functionOptionALias= new("function-alias")
+    private static readonly Argument<string?> s_functionAliasArgument = new("function-alias")
     {
         Description = "Function alias",
         Arity = ArgumentArity.ZeroOrOne,
@@ -40,7 +40,7 @@ internal sealed class IngestCommand : BaseCommand
     {
         Arguments.Add(s_environmentAliasArgument);
         Arguments.Add(s_collectionAliasArgument);
-        Arguments.Add(s_functionOptionALias);
+        Arguments.Add(s_functionAliasArgument);
         Arguments.Add(s_dataArgument);
 
         Options.Add(s_formatOption);

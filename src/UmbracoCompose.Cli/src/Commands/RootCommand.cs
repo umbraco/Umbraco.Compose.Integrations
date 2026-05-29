@@ -13,6 +13,12 @@ internal sealed class RootCommand : BaseRootCommand
         Recursive = true,
     };
 
+    private static readonly Option<bool> s_debugOption = new("--debug")
+    {
+        Description = "Enable debug logging (includes response bodies)",
+        Recursive = true,
+    };
+
     public RootCommand(
         AgentCommand agentCommand,
         DiagnosticsCommand diagnosticsCommand,
@@ -32,5 +38,6 @@ internal sealed class RootCommand : BaseRootCommand
         Subcommands.Add(profilesCommand);
 
         Options.Add(s_logLevel);
+        Options.Add(s_debugOption);
     }
 }
