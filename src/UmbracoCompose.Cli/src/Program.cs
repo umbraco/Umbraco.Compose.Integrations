@@ -4,6 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Headers;
 using UmbracoCompose.Cli;
+using UmbracoCompose.Cli.Clients;
 using UmbracoCompose.Cli.Commands;
 using UmbracoCompose.Cli.Services;
 using RootCommand = UmbracoCompose.Cli.Commands.RootCommand;
@@ -55,6 +56,8 @@ builder.Services.AddSingleton<ProfileConfigService>();
 builder.Services.AddTransient<ProfileResolver>();
 builder.Services.AddScoped<VariableParser>();
 builder.Services.AddScoped<ResponseFormatter>();
+builder.Services.AddSingleton<IngestionService>();
+builder.Services.AddSingleton<IngestionApiClientFactory>();
 
 using IHost app = builder.Build();
 await app.StartAsync().ConfigureAwait(false);

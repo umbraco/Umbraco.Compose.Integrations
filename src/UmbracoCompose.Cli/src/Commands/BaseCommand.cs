@@ -23,7 +23,7 @@ internal abstract class BaseCommand : Command
 
             CommandResult result = await ExecuteAsync(parseResult, cancellationToken);
 
-            if (result.ErrorMessage is not null)
+            if (result.ExitCode is not ExitCodes.Success)
             {
                 if (isJsonOutput)
                 {
@@ -31,7 +31,7 @@ internal abstract class BaseCommand : Command
                 }
                 else
                 {
-                    Console.DisplayError(result.ErrorMessage);
+                    Console.DisplayError(result.ErrorMessage ?? "Unknown error");
                 }
             }
 
