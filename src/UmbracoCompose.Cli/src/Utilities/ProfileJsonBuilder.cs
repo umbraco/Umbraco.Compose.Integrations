@@ -5,11 +5,10 @@ namespace UmbracoCompose.Cli.Utilities;
 
 internal static class ProfileJsonBuilder
 {
-    public static JsonObject ToJsonObject(string name, UmbracoCompose.Cli.Models.Profile profile, bool includeSecrets)
+    public static JsonObject ToJsonObject(UmbracoCompose.Cli.Models.Profile profile, bool includeSecrets)
     {
         var obj = new JsonObject
         {
-            ["name"] = name,
             ["region"] = profile.Region,
             ["projectAlias"] = profile.ProjectAlias,
             ["environmentAlias"] = profile.EnvironmentAlias,
@@ -22,18 +21,18 @@ internal static class ProfileJsonBuilder
         return obj;
     }
 
-    public static JsonArray ToJsonArray(IDictionary<string, UmbracoCompose.Cli.Models.Profile> profiles, bool includeSecrets)
+    public static JsonObject ToJsonObject(IDictionary<string, UmbracoCompose.Cli.Models.Profile> profiles, bool includeSecrets)
     {
-        var arr = new JsonArray();
+        var obj = new JsonObject();
         foreach (var pair in profiles)
         {
-            arr.Add((JsonNode)ToJsonObject(pair.Key, pair.Value, includeSecrets));
+            obj[pair.Key] = ToJsonObject(pair.Value, includeSecrets);
         }
-        return arr;
+        return obj;
     }
 
     public static string ToJsonString(JsonNode node)
     {
-        return node.ToJsonString(JsonOutputHelper.Indented);
+        return node.ToJsonString(JsonOutputHelper.Compact);
     }
 }

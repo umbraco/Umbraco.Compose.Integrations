@@ -94,13 +94,8 @@ internal sealed class ProfileShowCommand : BaseCommand
 
     private void DisplayJson(string name, Profile profile, ProfileConfig config, bool showSecrets)
     {
-        var obj = ProfileJsonBuilder.ToJsonObject(name, profile, showSecrets);
-        obj["clientId"] = profile.ClientId;
+        var obj = ProfileJsonBuilder.ToJsonObject(profile, showSecrets);
         obj["isDefault"] = name == config.Default;
-        if (showSecrets)
-        {
-            obj["clientSecret"] = profile.ClientSecret;
-        }
         Console.DisplayRawText(ProfileJsonBuilder.ToJsonString(obj), ConsoleOutput.Standard);
     }
 }

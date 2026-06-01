@@ -67,12 +67,11 @@ internal sealed class ProfileListCommand : BaseCommand
 
     private void DisplayJson(ProfileConfig config)
     {
-        var arr = ProfileJsonBuilder.ToJsonArray(config.Profiles, includeSecrets: false);
+        var obj = ProfileJsonBuilder.ToJsonObject(config.Profiles, includeSecrets: false);
         foreach (var pair in config.Profiles)
         {
-            var obj = (JsonObject)arr[pair.Key]!;
-            obj["isDefault"] = pair.Key == config.Default;
+            obj[pair.Key]!["isDefault"] = pair.Key == config.Default;
         }
-        Console.DisplayRawText(ProfileJsonBuilder.ToJsonString(arr), ConsoleOutput.Standard);
+        Console.DisplayRawText(ProfileJsonBuilder.ToJsonString(obj), ConsoleOutput.Standard);
     }
 }
