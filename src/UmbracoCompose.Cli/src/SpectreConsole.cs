@@ -37,8 +37,12 @@ internal sealed class SpectreConsole : IConsole
     public void DisplayMessage(Emoji emoji, string message, ConsoleOutput? consoleOverwrite = null) =>
         WriteMessage(GetConsole(consoleOverwrite), emoji, message);
 
-    public void DisplayRawText(string value, ConsoleOutput? consoleOverwrite = null) =>
-        GetConsole(consoleOverwrite).WriteLine(value);
+    public void DisplayRawText(string value, ConsoleOutput? consoleOverwrite = null)
+    {
+        IAnsiConsole console = consoleOverwrite is ConsoleOutput.Error ? _error : _out;
+
+        console.Profile.Out.Writer.WriteLine(value);
+    }
 
     public void DisplayRenderable(IRenderable content, ConsoleOutput? consoleOverwrite = null) =>
         GetConsole(consoleOverwrite).Write(content);
