@@ -31,7 +31,7 @@ internal sealed class AgentInitCommand : BaseCommand
     [
         (".agents/skills", "Standard (.agents/skills) - Supported by  VS Code, GitHub Copilot and OpenCode"),
         (".claude/skills", "Claude Code (.claude/skills)"),
-        (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".agent/skills"), "Global (~/.agents/skills) - Same as Standard but globally"),
+        (Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".agents/skills"), "Global (~/.agents/skills) - Same as Standard but globally"),
     ];
 
     public AgentInitCommand(IConsole console, FileWriteHelper fileWriteHelper)
