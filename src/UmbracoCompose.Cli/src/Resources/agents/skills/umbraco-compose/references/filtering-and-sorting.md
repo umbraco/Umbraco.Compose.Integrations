@@ -80,6 +80,56 @@ The `where` argument wraps type-specific filters under the **type name** (lowerc
 }
 ```
 
+### Example — Filtering by Type in Polymorphic Collections
+
+When a collection contains entries of multiple types, you can filter to return only specific types using the type name (lowercased) as a filter key with an empty object `{}`.
+
+```graphql
+{
+  content(first: 20, where: {
+    OR: [
+      { textPage: {} }
+      { product: {} }
+    ]
+  }) {
+    edges {
+      node {
+        id
+        ...on TextPage { title body }
+        ...on Product { title price }
+      }
+    }
+  }
+}
+```
+
+This query returns only `TextPage` and `Product` entries from the `content` collection. Each entry in the `OR` array is combined as a logical OR — so this matches entries that are either `TextPage` **or** `Product`.
+
+Type filtering can be combined with type-specific filters:
+
+```graphql
+{
+  content(first: 20, where: {
+    OR: [
+      { textPage: { title_contains: "Welcome" } }
+      { product: { price_gte: 10 } }
+    ]
+  }) {
+    edges {
+      node {
+        id
+        ...on TextPage { title body }
+        ...on Product { title price }
+      }
+    }
+  }
+}
+```
+
+This returns `TextPage` entries with "Welcome" in the title or `Product` entries with a price of 10 or more.
+
+```
+
 ### Example — Filtering by ID
 
 ```graphql

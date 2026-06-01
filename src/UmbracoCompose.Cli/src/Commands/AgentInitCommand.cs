@@ -17,12 +17,13 @@ internal sealed class AgentInitCommand : BaseCommand
     private static readonly (string RelativePath, string ResourceName)[] s_skillFiles =
     [
         ("SKILL.md", "UmbracoCompose.Cli.Resources.agents.skills.umbraco_compose.SKILL.md"),
-        ("references/exit_codes.md", "UmbracoCompose.Cli.Resources.agents.skills.umbraco_compose.references.exit-codes.md"),
-        ("references/filtering_and_sorting.md", "UmbracoCompose.Cli.Resources.agents.skills.umbraco_compose.references.filtering-and-sorting.md"),
+        ("references/cli-reference.md", "UmbracoCompose.Cli.Resources.agents.skills.umbraco_compose.references.cli-reference.md"),
+        ("references/exit-codes.md", "UmbracoCompose.Cli.Resources.agents.skills.umbraco_compose.references.exit-codes.md"),
+        ("references/filtering-and-sorting.md", "UmbracoCompose.Cli.Resources.agents.skills.umbraco_compose.references.filtering-and-sorting.md"),
         ("references/ingestion.md", "UmbracoCompose.Cli.Resources.agents.skills.umbraco_compose.references.ingestion.md"),
-        ("references/quick_reference.md", "UmbracoCompose.Cli.Resources.agents.skills.umbraco_compose.references.quick-reference.md"),
-        ("references/relay_connections.md", "UmbracoCompose.Cli.Resources.agents.skills.umbraco_compose.references.relay-connections.md"),
-        ("references/schema_mappings.md", "UmbracoCompose.Cli.Resources.agents.skills.umbraco_compose.references.schema-mappings.md"),
+        ("references/quick-reference.md", "UmbracoCompose.Cli.Resources.agents.skills.umbraco_compose.references.quick-reference.md"),
+        ("references/relay-connections.md", "UmbracoCompose.Cli.Resources.agents.skills.umbraco_compose.references.relay-connections.md"),
+        ("references/schema-mappings.md", "UmbracoCompose.Cli.Resources.agents.skills.umbraco_compose.references.schema-mappings.md"),
     ];
 
     // Install locations with their display labels
