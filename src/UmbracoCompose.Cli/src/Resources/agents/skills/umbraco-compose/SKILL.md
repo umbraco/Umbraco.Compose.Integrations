@@ -198,8 +198,28 @@ umbraco-compose graphql introspect [options]
 |--------|-------------|
 | `--profile <name>` / `-p <name>` | Profile to use (uses default if not specified) |
 | `--format <format>` | Output format: `Table` (default) or `Json` |
+| `--type <name>` / `-t <name>` | Filter output to only show the specified type(s). Can be specified multiple times. |
 
 > **Note:** Introspection requires a separate API key scope (`graphql-introspection`). The CLI uses a dedicated `/{project}/{environment}/__schema` endpoint. If introspection fails with an authentication error, the user needs an API key with the `graphql:introspection` scope.
+
+#### Filtering by Type
+
+Use `--type` (or `-t`) to narrow introspection output to specific types. This is useful when you only need to inspect a handful of types instead of the entire schema.
+
+- Specify multiple types by repeating the flag: `--type Product --type BlogPost`
+- Query fields are filtered to only those whose return type matches a requested type
+- Types table shows only the requested types with their full field details
+- Works with both `--format Table` and `--format Json`
+- With `--format Json`, returns only the filtered schema (compact, non-indented)
+
+```bash
+# Filter to a single type
+umbraco-compose graphql introspect --type Product --format Json
+
+# Filter to multiple types
+umbraco-compose graphql introspect --type Product --type BlogPost --format Json
+umbraco-compose graphql introspect -t Product -t BlogPost --format Json
+```
 
 ## Profile Resolution
 

@@ -1,10 +1,10 @@
-using Spectre.Console;
+using System.Diagnostics.CodeAnalysis;
 
 namespace UmbracoCompose.Cli.Utilities;
 
 internal static class ProfileGuard
 {
-    public static bool HasProfiles(UmbracoCompose.Cli.Models.ProfileConfig? config, IConsole console)
+    public static bool HasProfiles([NotNullWhen(true)]UmbracoCompose.Cli.Models.ProfileConfig? config, IConsole console)
     {
         if (config is null || config.Profiles.Count == 0)
         {

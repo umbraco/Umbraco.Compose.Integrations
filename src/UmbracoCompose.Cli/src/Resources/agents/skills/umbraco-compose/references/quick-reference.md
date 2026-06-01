@@ -8,6 +8,7 @@
 | "query the `products` collection" | Query the `products` Relay connection | `umbraco-compose graphql query '{ products(first: 20) { edges { node { id variant ...on Product { ... } } } } }' --format Json` |
 | "get all products" | Paginate through the `products` connection | Use `first`/`after` with cursors from `pageInfo` |
 | "what fields does the `products` type have?" | Inspect the JSON Schema for the products type | `umbraco-compose graphql introspect --format Json` or query `__schema.types` |
+| "what fields does the `products` type have?" | Inspect the JSON Schema for the products type | `umbraco-compose graphql introspect --type Product --format Json` |
 | "what collections are available?" | List available Relay connection fields | `umbraco-compose graphql introspect --format Json` |
 | "get a single entry by ID" | Query the Node interface | `umbraco-compose graphql query '{ node(id: "...") { ...on Product { id variant ... } } }' --format Json` |
 | "create a new product" | Upsert a content entry | `umbraco-compose ingest products '[{"id":"new-id","type":"product","data":{"name":"Widget"},"action":"upsert"}]' --format Json` |

@@ -37,6 +37,7 @@ internal sealed record GraphQLSchemaType(
 
 internal sealed record GraphQLSchemaTypeRef(
     string? kind,
+    string? name,
     GraphQLSchemaTypeRef? ofType);
 
 internal sealed record GraphQLSchemaField(

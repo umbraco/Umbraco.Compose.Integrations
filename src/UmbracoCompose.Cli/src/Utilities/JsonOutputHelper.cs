@@ -5,21 +5,24 @@ namespace UmbracoCompose.Cli.Utilities;
 
 internal static class JsonOutputHelper
 {
-    public static readonly JsonSerializerOptions Default = new(JsonSerializerDefaults.Web)
+    public static readonly JsonSerializerOptions Default = new(AppJsonContext.Default.Options)
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        TypeInfoResolver = AppJsonContext.Default,
         WriteIndented = true
     };
 
-    public static readonly JsonSerializerOptions Indented = new(JsonSerializerDefaults.Web)
+    public static readonly JsonSerializerOptions Indented = new(AppJsonContext.Default.Options)
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        TypeInfoResolver = AppJsonContext.Default,
         WriteIndented = true
     };
 
-    public static readonly JsonSerializerOptions Compact = new(JsonSerializerDefaults.Web)
+    public static readonly JsonSerializerOptions Compact = new(AppJsonContext.Default.Options)
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        TypeInfoResolver = AppJsonContext.Default,
         WriteIndented = false
     };
 }

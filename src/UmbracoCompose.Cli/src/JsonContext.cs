@@ -15,6 +15,4 @@ namespace UmbracoCompose.Cli;
 [JsonSerializable(typeof(List<ProblemDetails_Error>))]
 [JsonSerializable(typeof(JsonElement))]
 [JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase, WriteIndented = true)]
-internal sealed partial class AppJsonContext : JsonSerializerContext
-{
-}
+internal sealed partial class AppJsonContext : JsonSerializerContext;

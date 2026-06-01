@@ -1,12 +1,9 @@
 using System.CommandLine;
+using System.Text.Json.Nodes;
 using Spectre.Console;
-
 using UmbracoCompose.Cli.Models;
-using Profile = UmbracoCompose.Cli.Models.Profile;
 using UmbracoCompose.Cli.Services;
 using UmbracoCompose.Cli.Utilities;
-using System.Text.Json.Nodes;
-using System.Text.Json;
 
 namespace UmbracoCompose.Cli.Commands;
 
@@ -43,11 +40,11 @@ internal sealed class ProfileListCommand : BaseCommand
         switch (format)
         {
             case OutputFormat.Table:
-                DisplayTable(config!);
+                DisplayTable(config);
                 break;
 
             case OutputFormat.Json:
-                DisplayJson(config!);
+                DisplayJson(config);
                 break;
         }
 
