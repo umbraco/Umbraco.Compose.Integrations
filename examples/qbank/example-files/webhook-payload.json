@@ -1,0 +1,68 @@
+{
+    "deploymentSiteId": 34,
+    "event": "deploy",
+    "media": [
+        {
+            "filename": "mountains.jpg",
+            "mediaId": 166,
+            "title": "mountains.jpg",
+            "version": 1,
+            "categoryName": "Images",
+            "objectId": 202,
+            "categoryId": 1,
+            "properties": {
+                "description": "Mountains"
+            },
+            "deployedFiles": [
+                {
+                    "metadata": {
+                        "size": 28220,
+                        "width": 1164,
+                        "height": 800
+                    },
+                    "remotePath": "umbraco.qbank.se\/umbraco\/cdp\/mountains_Desktop - Blog image.webp",
+                    "mimeType": "image\/webp",
+                    "templateId": 9,
+                    "classification": "image",
+                    "url": "https:\/\/powered-by.qbank.se\/umbraco.qbank.se\/umbraco\/cdp\/mountains_Desktop - Blog image.webp"
+                },
+                {
+                    "metadata": {
+                        "size": 1232,
+                        "width": 145,
+                        "height": 100
+                    },
+                    "remotePath": "umbraco.qbank.se\/umbraco\/cdp\/mountains_Desktop - Logo (rectangle).webp",
+                    "mimeType": "image\/webp",
+                    "templateId": 8,
+                    "classification": "image",
+                    "url": "https:\/\/powered-by.qbank.se\/umbraco.qbank.se\/umbraco\/cdp\/mountains_Desktop - Logo (rectangle).webp"
+                },
+                {
+                    "metadata": {
+                        "size": 23686,
+                        "width": 1047,
+                        "height": 720
+                    },
+                    "remotePath": "umbraco.qbank.se\/umbraco\/cdp\/mountains_Desktop - Hero image.webp",
+                    "mimeType": "image\/webp",
+                    "templateId": 7,
+                    "classification": "image",
+                    "url": "https:\/\/powered-by.qbank.se\/umbraco.qbank.se\/umbraco\/cdp\/mountains_Desktop - Hero image.webp"
+                },
+                {
+                    "metadata": {
+                        "size": 70840,
+                        "width": 2036,
+                        "height": 1400
+                    },
+                    "remotePath": "umbraco.qbank.se\/umbraco\/cdp\/mountains_Desktop - Background image.webp",
+                    "mimeType": "image\/webp",
+                    "templateId": 6,
+                    "classification": "image",
+                    "url": "https:\/\/powered-by.qbank.se\/umbraco.qbank.se\/umbraco\/cdp\/mountains_Desktop - Background image.webp"
+                }
+            ]
+        }
+    ]
+}
