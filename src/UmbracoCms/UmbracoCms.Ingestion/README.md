@@ -7,7 +7,7 @@ If you want the full integration, install the `Umbraco.Compose.Integrations.Umbr
 ## Key Features
 
 - When content is published it's automatically ingested into Umbraco Compose.
-- Supports culture variations
+- Supports culture variations.
 
 ## How to use
 

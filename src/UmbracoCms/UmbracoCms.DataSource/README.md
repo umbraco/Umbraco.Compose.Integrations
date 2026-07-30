@@ -18,7 +18,6 @@ To use this package you will need:
 
 ### Installation
 
-
 ```shell
 dotnet add package Umbraco.Compose.Integrations.UmbracoCms.DataSource
 ```
@@ -36,7 +35,6 @@ To configure the integration, add the following to your preferred configuration 
   "Region": "YOUR_PROJECT_REGION"
 }
 ```
-
 
 In your `Program.cs`, call `.AddUmbracoComposeDataSource()` on the Umbraco builder:
 
