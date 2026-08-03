@@ -1,6 +1,6 @@
 export default async function(body) {
   async function fetchAttrs(id) {
-    const response = await fetch(`https://umbraco-demo2.api.struct.com/v1/products/${id}/attributevalues`, {
+    const response = await fetch(`https://{YOUR_STRUCT_PROJECT}.api.struct.com/v1/products/${id}/attributevalues`, {
       headers: { 'Authorization': 'ApiKey {YOUR_API_KEY}' }
     });
     return response.json();
