@@ -1,5 +1,6 @@
 # Struct PIM Integration Example
 This integration demonstrates how to sync product data from Struct PIM to Umbraco Compose through an Ingestion Function.
+Please note that this is a very basic example integration that works best with smaller product catalogs. For larger catalogs, it may be worth considering a custom integration.
 
 ## About Struct PIM
 [Struct](https://struct.com/) is a flexible, user-friendly PIM system that let you engage your customers by delivering the right product information at the right time. 
