@@ -14,9 +14,9 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.DataSource
 {
     public sealed class ComposeEntityPickerPropertySchemaResolver : Umbraco.Compose.Integrations.UmbracoCms.Core.IPropertySchemaResolver
     {
-        public ComposeEntityPickerPropertySchemaResolver(Umbraco.Cms.Core.Services.IDataTypeService dataTypeService) { }
+        public ComposeEntityPickerPropertySchemaResolver(Umbraco.Cms.Core.Services.IDataTypeService dataTypeService, Umbraco.Cms.Core.Services.IIdKeyMap idKeyMap) { }
         public bool CanHandle(Umbraco.Cms.Core.Models.PublishedContent.PublishedPropertyType propertyType) { }
-        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema Process(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorContext context, Umbraco.Cms.Core.Models.PublishedContent.PublishedPropertyType propertyType) { }
+        public System.Threading.Tasks.Task<Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema> ProcessAsync(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorContext context, Umbraco.Cms.Core.Models.PublishedContent.PublishedPropertyType propertyType) { }
     }
     public sealed class ContentQueryPaging
     {
@@ -59,8 +59,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.DataSource
     }
     [Microsoft.AspNetCore.Authorization.Authorize(Policy="BackOfficeAccess")]
     [Microsoft.AspNetCore.Authorization.Authorize(Policy="SectionAccessContent")]
-    [Microsoft.AspNetCore.Mvc.ApiExplorerSettings(GroupName="Umbraco.Compose")]
-    [Umbraco.Cms.Api.Common.Attributes.MapToApi("umbraco-compose-cms-data-source-api")]
+    [Microsoft.AspNetCore.Mvc.ApiExplorerSettings(IgnoreApi=true)]
     [Umbraco.Cms.Api.Management.Routing.VersionedApiBackOfficeRoute("compose/data-source")]
     public sealed class UmbracoComposeDataSourceController : Umbraco.Cms.Api.Management.Controllers.ManagementApiControllerBase
     {

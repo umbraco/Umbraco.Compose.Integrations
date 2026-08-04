@@ -27,7 +27,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core
     public interface IPropertySchemaResolver
     {
         bool CanHandle(Umbraco.Cms.Core.Models.PublishedContent.PublishedPropertyType propertyType);
-        Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema Process(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorContext context, Umbraco.Cms.Core.Models.PublishedContent.PublishedPropertyType propertyType);
+        System.Threading.Tasks.Task<Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema> ProcessAsync(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorContext context, Umbraco.Cms.Core.Models.PublishedContent.PublishedPropertyType propertyType);
     }
     public sealed class PropertySchemaResolverCollection : Umbraco.Cms.Core.Composing.BuilderCollectionBase<Umbraco.Compose.Integrations.UmbracoCms.Core.IPropertySchemaResolver>
     {

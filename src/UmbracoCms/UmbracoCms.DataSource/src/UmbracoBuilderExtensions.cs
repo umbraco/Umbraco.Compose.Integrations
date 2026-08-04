@@ -36,7 +36,6 @@ public static class UmbracoBuilderExtensions
             ArgumentNullException.ThrowIfNull(builder);
 
             builder.Services
-                .ConfigureOptions<UmbracoComposeSwaggerGenOptions>()
                 .AddSingleton<IGraphQlContentQueryService, GraphQLContentQueryService>()
                 .AddHttpClient<GraphQLContentQueryService>()
                 .ConfigureHttpClient(static (services, client) =>

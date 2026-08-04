@@ -20,6 +20,6 @@ public interface IPropertySchemaResolver
     /// </summary>
     /// <param name="context">The JsonSchemaGeneratorContext providing access to registration methods and options.</param>
     /// <param name="propertyType">The property type to process.</param>
-    /// <returns>The generated schema or <c>null</c>.</returns>
-    JsonSchema Process(JsonSchemaGeneratorContext context, PublishedPropertyType propertyType);
+    /// <returns>The generated schema.</returns>
+    Task<JsonSchema> ProcessAsync(JsonSchemaGeneratorContext context, PublishedPropertyType propertyType);
 }
