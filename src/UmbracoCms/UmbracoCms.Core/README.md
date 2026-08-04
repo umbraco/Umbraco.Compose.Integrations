@@ -1,10 +1,10 @@
 ## About
 
-`Umbraco.Compose.Integrations.UmbracoCms.Core` provides a set of shared functionalities for integrating Umbraco CMS with Umbraco Compose.
+`Umbraco.Compose.Integrations.UmbracoCms.Core` provides a set of shared functionality for integrating Umbraco CMS with Umbraco Compose.
 
 If you want the full integration, install the `Umbraco.Compose.Integrations.UmbracoCms` package instead.
 
-## How to Use
+## How to use
 
 To use `Umbraco.Compose.Integrations.UmbracoCms.Core` you'll need an Umbraco Compose project with an API Application created.
 
