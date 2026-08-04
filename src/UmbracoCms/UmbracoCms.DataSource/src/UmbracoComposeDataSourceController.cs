@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Umbraco.Cms.Api.Common.Attributes;
 using Umbraco.Cms.Api.Management.Controllers;
 using Umbraco.Cms.Api.Management.Routing;
 using Umbraco.Cms.Core.Services;
@@ -19,10 +18,9 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.DataSource;
 /// <param name="graphQlContentQueryService">The service required to translate the data type configuration in to graphql queries and execute those queries</param>
 /// <param name="logger">The logger for any warning messages</param>
 [VersionedApiBackOfficeRoute("compose/data-source")]
-[ApiExplorerSettings(GroupName = Constants.ApiGroupName)]
+[ApiExplorerSettings(IgnoreApi = true)]
 [Authorize(Policy = AuthorizationPolicies.BackOfficeAccess)]
 [Authorize(Policy = AuthorizationPolicies.SectionAccessContent)]
-[MapToApi(Constants.DataSourceApiName)]
 public sealed class UmbracoComposeDataSourceController(
     IDataTypeService dataTypeService,
     IGraphQlContentQueryService graphQlContentQueryService,

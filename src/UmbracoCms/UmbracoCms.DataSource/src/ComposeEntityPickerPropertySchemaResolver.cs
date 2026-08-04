@@ -1,3 +1,4 @@
+using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PropertyEditors;
@@ -11,7 +12,10 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.DataSource;
 /// Resolves JSON schema for Umbraco Compose entity picker property types.
 /// </summary>
 /// <param name="dataTypeService">The data type service.</param>
-public sealed class ComposeEntityPickerPropertySchemaResolver(IDataTypeService dataTypeService) : IPropertySchemaResolver
+/// <param name="idKeyMap">The map used to resolve the data type's key from its published integer id.</param>
+public sealed class ComposeEntityPickerPropertySchemaResolver(
+    IDataTypeService dataTypeService,
+    IIdKeyMap idKeyMap) : IPropertySchemaResolver
 {
     /// <inheritdoc />
     public bool CanHandle(PublishedPropertyType propertyType) =>
@@ -20,14 +24,22 @@ public sealed class ComposeEntityPickerPropertySchemaResolver(IDataTypeService d
             configuration.DataSource.Equals("Umbraco.Compose.PropertyEditorDataSource.Picker");
 
     /// <inheritdoc />
-    public JsonSchema Process(JsonSchemaGeneratorContext context, PublishedPropertyType propertyType)
+    public async Task<JsonSchema> ProcessAsync(JsonSchemaGeneratorContext context, PublishedPropertyType propertyType)
     {
         ArgumentNullException.ThrowIfNull(propertyType);
         ArgumentNullException.ThrowIfNull(context);
 
-#pragma warning disable CS0618 // 'IDataTypeService.GetDataType(int)' is obsolete: 'Please use GetAsync. Will be removed in V15.
-        IDataType? dataType = dataTypeService.GetDataType(propertyType.DataType.Id)
-            ?? throw new InvalidOperationException($"Could not get data type '{propertyType.DataType.Id}'.");
+        int dataTypeId = propertyType.DataType.Id;
+
+        Attempt<Guid> dataTypeKey = idKeyMap.GetKeyForId(dataTypeId, UmbracoObjectTypes.DataType);
+        if (!dataTypeKey.Success)
+        {
+            throw new InvalidOperationException($"Could not resolve the key for data type '{dataTypeId}'.");
+        }
+
+        IDataType dataType = await dataTypeService.GetAsync(dataTypeKey.Result).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Could not get data type '{dataTypeId}'.");
+
         UmbracoComposeContentPickerDataSourceConfiguration configuration = new(dataType);
 
         return context

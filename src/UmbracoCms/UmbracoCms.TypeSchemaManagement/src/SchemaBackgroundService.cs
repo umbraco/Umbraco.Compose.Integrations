@@ -37,7 +37,9 @@ internal sealed class SchemaBackgroundService(
                 JsonOptions jsonOptions = jsonOptionsFactory.Create(nameof(SchemaBackgroundService));
 
                 using IScope scope = scopeProvider.CreateScope();
-                IReadOnlyDictionary<string, JsonSchema> schemas = schemaExporter.GenerateSchemas(queueItem.ContentTypeAlias);
+                IReadOnlyDictionary<string, JsonSchema> schemas = await schemaExporter
+                    .GenerateSchemasAsync(queueItem.ContentTypeAlias)
+                    .ConfigureAwait(false);
                 scope.Complete();
 
                 HttpClient client = httpClientFactory.CreateClient(nameof(SchemaBackgroundService));
