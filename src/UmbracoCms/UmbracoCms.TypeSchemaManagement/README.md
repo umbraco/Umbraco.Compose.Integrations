@@ -6,7 +6,7 @@ If you want the full integration, install the `Umbraco.Compose.Integrations.Umbr
 
 ## Key Features
 
-- Automatically creates type schemas in Umbraco Compose based on Document Types
+- Automatically creates type schemas in Umbraco Compose based on Document Types.
 
 ## How to use
 
@@ -18,7 +18,7 @@ To use this package you will need:
 ### Installation
 
 ```shell
-dotnet add package Umbraco.Compose.Integrations.UmbracoCms
+dotnet add package Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement
 ```
 
 ### Configuration
