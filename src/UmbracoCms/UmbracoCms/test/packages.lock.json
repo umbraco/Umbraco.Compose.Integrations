@@ -1641,7 +1641,6 @@
       "umbraco.compose.integrations.umbracocms.ingestion": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.Extensions.Http": "(, )",
           "Umbraco.Cms.Infrastructure": "[18.0.2, 19.0.0)",
           "Umbraco.Compose.Integrations.UmbracoCms.Core": "[1.0.0, )"
         }
