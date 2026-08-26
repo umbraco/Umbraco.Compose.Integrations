@@ -6,6 +6,7 @@ using Umbraco.Cms.Core.Models.DeliveryApi;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Services.Navigation;
+using Umbraco.Cms.Core.Services.OperationStatus;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Extensions;
 
@@ -16,6 +17,7 @@ internal sealed class ContentIngestQueueItemProcessor(
     IDocumentNavigationQueryService navigationQueryService,
     ILanguageService languageService,
     IPublishedContentStatusFilteringService publishedStatusFilteringService,
+    ISegmentService segmentService,
     IUmbracoContextAccessor umbracoContextAccessor,
     IUmbracoContextFactory umbracoContextFactory,
     IVariationContextAccessor variationContextAccessor,
@@ -149,7 +151,7 @@ internal sealed class ContentIngestQueueItemProcessor(
                 }
 
                 bool includeChildren = entity.ChangeType is ContentChangeType.UpdateWithDescendants;
-                foreach (UpsertContentEntry processedItem in ProcessItem(updated, content, culture, includeChildren))
+                await foreach (UpsertContentEntry processedItem in ProcessItemAsync(updated, content, culture, includeChildren))
                 {
                     yield return processedItem;
                 }
@@ -157,46 +159,33 @@ internal sealed class ContentIngestQueueItemProcessor(
         }
     }
 
-    private IEnumerable<UpsertContentEntry> ProcessItem(
+    private async IAsyncEnumerable<UpsertContentEntry> ProcessItemAsync(
         HashSet<string> updated,
         IPublishedContent content,
         string culture,
         bool includeChildren)
     {
-        if (updated.Contains($"{content.Key}_{culture}"))
+        if (content.ContentType.VariesBySegment())
+        {
+            Attempt<PagedModel<Segment>?, SegmentOperationStatus> segments = await segmentService.GetPagedSegmentsForDocumentAsync(content.Key, 0, 9999);
+
+            foreach (Segment segment in segments.Result.Items)
+            {
+                UpsertContentEntry? segmentEntry = ProcessItem(updated, content, culture, segment.Alias);
+                if (segmentEntry is not null)
+                {
+                    yield return segmentEntry;
+                }
+            }
+        }
+
+        UpsertContentEntry? entry = ProcessItem(updated, content, culture, null);
+        if (entry is null)
         {
             yield break;
         }
 
-        updated.Add($"{content.Key}_{culture}");
-
-        using UmbracoContextReference context = umbracoContextFactory.EnsureUmbracoContext();
-
-        variationContextAccessor.VariationContext = new(culture);
-        umbracoContextAccessor.Set(context.UmbracoContext);
-
-        IApiContent? apiContent = apiContentBuilder.Build(content);
-
-        if (apiContent is null)
-        {
-            logger.LogWarning(
-                "No API Content was built for item '{Name}', '{Culture}', '{Id}'",
-                content.Name(variationContextAccessor, culture),
-                culture,
-                content.Key);
-            yield break;
-        }
-
-        navigationQueryService.TryGetParentKey(content.Key, out Guid? parentId);
-        navigationQueryService.TryGetAncestorsKeys(content.Key, out IEnumerable<Guid> ancestors);
-
-        yield return new()
-        {
-            Data = new(apiContent, parentId, [.. ancestors]),
-            Id = content.Key.ToString(),
-            Type = content.ContentType.Alias,
-            Variant = !content.ContentType.VariesByCulture() || string.IsNullOrEmpty(culture) || culture == "*" ? null : culture
-        };
+        yield return entry;
 
         if (!includeChildren)
         {
@@ -215,10 +204,58 @@ internal sealed class ContentIngestQueueItemProcessor(
                 continue;
             }
 
-            foreach (UpsertContentEntry processedChild in ProcessItem(updated, child, culture, true))
+            await foreach (UpsertContentEntry processedChild in ProcessItemAsync(updated, child, culture, true))
             {
                 yield return processedChild;
             }
         }
+    }
+
+    private UpsertContentEntry? ProcessItem(
+        HashSet<string> updated,
+        IPublishedContent content,
+        string? culture,
+        string? segment)
+    {
+        if (updated.Contains($"{content.Key}_{culture}_{segment}"))
+        {
+            return null;
+        }
+
+        updated.Add($"{content.Key}_{culture}_{segment}");
+
+        using UmbracoContextReference context = umbracoContextFactory.EnsureUmbracoContext();
+
+        variationContextAccessor.VariationContext = new(culture);
+        umbracoContextAccessor.Set(context.UmbracoContext);
+
+        IApiContent? apiContent = apiContentBuilder.Build(content);
+
+        if (apiContent is null)
+        {
+            logger.LogWarning(
+                "No API Content was built for item '{Name}', '{Culture}', '{Id}'",
+                content.Name(variationContextAccessor, culture),
+                culture,
+                content.Key);
+            return null;
+        }
+
+        navigationQueryService.TryGetParentKey(content.Key, out Guid? parentId);
+        navigationQueryService.TryGetAncestorsKeys(content.Key, out IEnumerable<Guid> ancestors);
+
+        string? variant =
+            content.ContentType.VariesByCultureAndSegment() && segment is not null ? $"{culture}/{segment}" :
+            content.ContentType.VariesBySegment() && segment is not null  ? segment :
+            content.ContentType.VariesByCulture() && culture is not null ? culture :
+            null;
+
+        return new()
+        {
+            Data = new(apiContent, parentId, [.. ancestors]),
+            Id = content.Key.ToString(),
+            Type = content.ContentType.Alias,
+            Variant = variant
+        };
     }
 }
