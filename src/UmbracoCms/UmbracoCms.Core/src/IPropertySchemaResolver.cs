@@ -33,8 +33,6 @@ public interface IPropertySchemaResolver
     /// <param name="context">The JsonSchemaGeneratorContext providing access to registration methods and options.</param>
     /// <param name="propertyType">The property type to process.</param>
     /// <returns>The generated schema.</returns>
-#pragma warning disable S1133 // Deprecated code should be removed
     [Obsolete("Use the async method 'ProcessAsync' instead")]
-#pragma warning restore S1133 // Deprecated code should be removed
     JsonSchema Process(JsonSchemaGeneratorContext context, PublishedPropertyType propertyType);
 }
