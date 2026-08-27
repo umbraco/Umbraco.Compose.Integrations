@@ -33,7 +33,9 @@ public sealed class ComposeEntityPickerPropertySchemaResolver : IPropertySchemaR
     /// Initialises a ComposeEntityPickerPropertySchemaResolver.
     /// </summary>
     /// <param name="dataTypeService">The data type service.</param>
+#pragma warning disable S1133 // Deprecated code should be removed
     [Obsolete("Use the (IDataTypeService, IIdKeyMap) overload instead. This will be removed in a future update.")]
+#pragma warning restore S1133 // Deprecated code should be removed
     public ComposeEntityPickerPropertySchemaResolver(IDataTypeService dataTypeService)
         : this(dataTypeService, StaticServiceProvider.Instance.GetRequiredService<IIdKeyMap>())
     {
