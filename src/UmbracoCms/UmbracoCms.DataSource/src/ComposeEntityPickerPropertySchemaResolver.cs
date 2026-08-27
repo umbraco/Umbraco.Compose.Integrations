@@ -48,7 +48,7 @@ public sealed class ComposeEntityPickerPropertySchemaResolver : IPropertySchemaR
             configuration.DataSource.Equals("Umbraco.Compose.PropertyEditorDataSource.Picker");
 
     /// <inheritdoc />
-    public async Task<JsonSchema> ProcessAsync(JsonSchemaGeneratorContext context, PublishedPropertyType propertyType)
+    public async ValueTask<JsonSchema> ProcessAsync(JsonSchemaGeneratorContext context, PublishedPropertyType propertyType)
     {
         ArgumentNullException.ThrowIfNull(propertyType);
         ArgumentNullException.ThrowIfNull(context);
