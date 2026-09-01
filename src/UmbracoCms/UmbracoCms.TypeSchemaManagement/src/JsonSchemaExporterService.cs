@@ -21,16 +21,16 @@ internal class JsonSchemaExporterService(
     private readonly JsonSchemaGeneratorOptions _jsonSchemaGeneratorOptions =
         jsonSchemaGeneratorOptions.Get(nameof(JsonSchemaExporterService));
 
-    public IReadOnlyDictionary<string, JsonSchema> GenerateSchemas(string contentTypeAlias)
+    public async Task<IReadOnlyDictionary<string, JsonSchema>> GenerateSchemasAsync(string contentTypeAlias)
     {
         JsonSchemaGeneratorContext context = new(_jsonSchemaGeneratorOptions);
 
-        GenerateSchemaInternal(context, contentTypeAlias);
+        await GenerateSchemaInternalAsync(context, contentTypeAlias).ConfigureAwait(false);
 
         return context.Schemas;
     }
 
-    private void GenerateSchemaInternal(JsonSchemaGeneratorContext context, string contentTypeAlias)
+    private async Task GenerateSchemaInternalAsync(JsonSchemaGeneratorContext context, string contentTypeAlias)
     {
         if (context.ContainsType(contentTypeAlias))
         {
@@ -81,7 +81,17 @@ internal class JsonSchemaExporterService(
             {
                 builder.AllOf(x => x.Ref(composition));
 
-                GenerateSchemaInternal(context, composition);
+                await GenerateSchemaInternalAsync(context, composition).ConfigureAwait(false);
+            }
+        }
+
+        // The schema builder API is synchronous, so resolve the resolver-provided schemas up front.
+        Dictionary<string, JsonSchema> resolvedSchemas = [];
+        foreach (PublishedPropertyType propertyType in publishedContentType.PropertyTypes.Cast<PublishedPropertyType>())
+        {
+            if (propertySchemaResolvers.FirstOrDefault(x => x.CanHandle(propertyType)) is { } handler)
+            {
+                resolvedSchemas[propertyType.Alias] = await handler.ProcessAsync(context, propertyType).ConfigureAwait(false);
             }
         }
 
@@ -94,9 +104,9 @@ internal class JsonSchemaExporterService(
                 foreach (PublishedPropertyType propertyType in publishedContentType.PropertyTypes.Cast<PublishedPropertyType>())
                 {
                     JsonSchema? schema;
-                    if (propertySchemaResolvers.FirstOrDefault(x => x.CanHandle(propertyType)) is { } handler)
+                    if (resolvedSchemas.TryGetValue(propertyType.Alias, out JsonSchema? resolvedSchema))
                     {
-                        schema = handler.Process(context, propertyType);
+                        schema = resolvedSchema;
                     }
                     else
                     {

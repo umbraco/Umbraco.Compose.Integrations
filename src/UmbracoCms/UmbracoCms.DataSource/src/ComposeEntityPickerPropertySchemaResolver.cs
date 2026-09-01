@@ -1,3 +1,6 @@
+using Microsoft.Extensions.DependencyInjection;
+using Umbraco.Cms.Core;
+using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PropertyEditors;
@@ -10,9 +13,32 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.DataSource;
 /// <summary>
 /// Resolves JSON schema for Umbraco Compose entity picker property types.
 /// </summary>
-/// <param name="dataTypeService">The data type service.</param>
-public sealed class ComposeEntityPickerPropertySchemaResolver(IDataTypeService dataTypeService) : IPropertySchemaResolver
+public sealed class ComposeEntityPickerPropertySchemaResolver : IPropertySchemaResolver
 {
+    private readonly IDataTypeService _dataTypeService;
+    private readonly IIdKeyMap _idKeyMap;
+
+    /// <summary>
+    /// Initialises a ComposeEntityPickerPropertySchemaResolver.
+    /// </summary>
+    /// <param name="dataTypeService">The data type service.</param>
+    /// <param name="idKeyMap">Map used to resolve the data type's key from its published integer id.</param>
+    public ComposeEntityPickerPropertySchemaResolver(IDataTypeService dataTypeService, IIdKeyMap idKeyMap)
+    {
+        _dataTypeService = dataTypeService;
+        _idKeyMap = idKeyMap;
+    }
+
+    /// <summary>
+    /// Initialises a ComposeEntityPickerPropertySchemaResolver.
+    /// </summary>
+    /// <param name="dataTypeService">The data type service.</param>
+    [Obsolete("Use the (IDataTypeService, IIdKeyMap) overload instead. This will be removed in a future update.")]
+    public ComposeEntityPickerPropertySchemaResolver(IDataTypeService dataTypeService)
+        : this(dataTypeService, StaticServiceProvider.Instance.GetRequiredService<IIdKeyMap>())
+    {
+    }
+
     /// <inheritdoc />
     public bool CanHandle(PublishedPropertyType propertyType) =>
         propertyType.EditorAlias.Equals(Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.EntityDataPicker) &&
@@ -20,14 +46,22 @@ public sealed class ComposeEntityPickerPropertySchemaResolver(IDataTypeService d
             configuration.DataSource.Equals("Umbraco.Compose.PropertyEditorDataSource.Picker");
 
     /// <inheritdoc />
-    public JsonSchema Process(JsonSchemaGeneratorContext context, PublishedPropertyType propertyType)
+    public async ValueTask<JsonSchema> ProcessAsync(JsonSchemaGeneratorContext context, PublishedPropertyType propertyType)
     {
         ArgumentNullException.ThrowIfNull(propertyType);
         ArgumentNullException.ThrowIfNull(context);
 
-#pragma warning disable CS0618 // 'IDataTypeService.GetDataType(int)' is obsolete: 'Please use GetAsync. Will be removed in V15.
-        IDataType? dataType = dataTypeService.GetDataType(propertyType.DataType.Id)
-            ?? throw new InvalidOperationException($"Could not get data type '{propertyType.DataType.Id}'.");
+        int dataTypeId = propertyType.DataType.Id;
+
+        Attempt<Guid> dataTypeKey = _idKeyMap.GetKeyForId(dataTypeId, UmbracoObjectTypes.DataType);
+        if (!dataTypeKey.Success)
+        {
+            throw new InvalidOperationException($"Could not resolve the key for data type '{dataTypeId}'.");
+        }
+
+        IDataType dataType = await _dataTypeService.GetAsync(dataTypeKey.Result).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Could not get data type '{dataTypeId}'.");
+
         UmbracoComposeContentPickerDataSourceConfiguration configuration = new(dataType);
 
         return context
@@ -36,4 +70,9 @@ public sealed class ComposeEntityPickerPropertySchemaResolver(IDataTypeService d
             .CustomKeyword("$delivery", builder => builder.CustomKeyword("refCollection", configuration.Collection))
             .Build();
     }
+
+    /// <inheritdoc />
+    public JsonSchema Process(JsonSchemaGeneratorContext context, PublishedPropertyType propertyType) =>
+        ProcessAsync(context, propertyType).GetAwaiter().GetResult();
+
 }

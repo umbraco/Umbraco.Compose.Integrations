@@ -5,6 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors Condition="$(Configuration) == 'Release'">true</TreatWarningsAsErrors>
+	<!-- Warn, not error when using [Obsolete] -->
+	<WarningsNotAsErrors>S1133</WarningsNotAsErrors>
     <RestoreLockedMode Condition="'$(TF_BUILD)' == 'true'">true</RestoreLockedMode>
     <NugetAuditMode>direct</NugetAuditMode>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
