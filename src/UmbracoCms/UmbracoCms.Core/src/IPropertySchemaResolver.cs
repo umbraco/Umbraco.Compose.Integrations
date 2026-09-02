@@ -21,5 +21,18 @@ public interface IPropertySchemaResolver
     /// <param name="context">The JsonSchemaGeneratorContext providing access to registration methods and options.</param>
     /// <param name="propertyType">The property type to process.</param>
     /// <returns>The generated schema.</returns>
-    Task<JsonSchema> ProcessAsync(JsonSchemaGeneratorContext context, PublishedPropertyType propertyType);
+#pragma warning disable CS0618 // Type or member is obsolete
+    ValueTask<JsonSchema> ProcessAsync(JsonSchemaGeneratorContext context, PublishedPropertyType propertyType) =>
+        ValueTask.FromResult(Process(context, propertyType));
+#pragma warning restore CS0618 // Type or member is obsolete
+
+    /// <summary>
+    /// Obsolete. Use <see cref="ProcessAsync(JsonSchemaGeneratorContext, PublishedPropertyType)"/> instead.
+    /// Will be removed in a future version.
+    /// </summary>
+    /// <param name="context">The JsonSchemaGeneratorContext providing access to registration methods and options.</param>
+    /// <param name="propertyType">The property type to process.</param>
+    /// <returns>The generated schema.</returns>
+    [Obsolete("Use the async method 'ProcessAsync' instead")]
+    JsonSchema Process(JsonSchemaGeneratorContext context, PublishedPropertyType propertyType);
 }

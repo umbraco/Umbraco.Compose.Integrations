@@ -14,9 +14,13 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.DataSource
 {
     public sealed class ComposeEntityPickerPropertySchemaResolver : Umbraco.Compose.Integrations.UmbracoCms.Core.IPropertySchemaResolver
     {
+        [System.Obsolete("Use the (IDataTypeService, IIdKeyMap) overload instead. This will be removed in a" +
+            " future update.")]
+        public ComposeEntityPickerPropertySchemaResolver(Umbraco.Cms.Core.Services.IDataTypeService dataTypeService) { }
         public ComposeEntityPickerPropertySchemaResolver(Umbraco.Cms.Core.Services.IDataTypeService dataTypeService, Umbraco.Cms.Core.Services.IIdKeyMap idKeyMap) { }
         public bool CanHandle(Umbraco.Cms.Core.Models.PublishedContent.PublishedPropertyType propertyType) { }
-        public System.Threading.Tasks.Task<Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema> ProcessAsync(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorContext context, Umbraco.Cms.Core.Models.PublishedContent.PublishedPropertyType propertyType) { }
+        public Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema Process(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorContext context, Umbraco.Cms.Core.Models.PublishedContent.PublishedPropertyType propertyType) { }
+        public System.Threading.Tasks.ValueTask<Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema> ProcessAsync(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorContext context, Umbraco.Cms.Core.Models.PublishedContent.PublishedPropertyType propertyType) { }
     }
     public sealed class ContentQueryPaging
     {
