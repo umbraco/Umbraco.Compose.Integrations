@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Channels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -14,7 +15,8 @@ internal sealed class IngestBackgroundService : BackgroundService
 {
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        ReferenceHandler = ReferenceHandler.IgnoreCycles
     };
 
     private readonly Channel<IngestQueueItem> _channel;
