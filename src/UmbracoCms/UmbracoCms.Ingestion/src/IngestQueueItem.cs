@@ -8,7 +8,7 @@ public abstract record IngestQueueItem
     /// <summary>
     /// Gets the unique identifier of the item.
     /// </summary>
-    public Guid Id { get; init; } = Guid.CreateVersion7();
+    public Guid Id { get; init; } = Guid.NewGuid();
 
     /// <summary>
     /// Gets the date and time when the item was created.

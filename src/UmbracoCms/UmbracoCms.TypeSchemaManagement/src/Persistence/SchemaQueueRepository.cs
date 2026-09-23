@@ -10,7 +10,7 @@ internal sealed class SchemaQueueRepository(IScopeProvider scopeProvider) : ISch
     public async Task InsertAsync<T>(T dto, CancellationToken ct = default) where T : class
     {
         using IScope scope = scopeProvider.CreateScope();
-        await scope.Database.InsertAsync(dto, ct)
+        await scope.Database.InsertAsync(dto)
             .ConfigureAwait(false);
         scope.Complete();
     }
@@ -22,14 +22,14 @@ internal sealed class SchemaQueueRepository(IScopeProvider scopeProvider) : ISch
             .Select<SchemaQueueDto>()
             .From<SchemaQueueDto>()
             .OrderBy<SchemaQueueDto>(x => x.CreatedAt);
-        return await scope.Database.FetchAsync<SchemaQueueDto>(sql, ct)
+        return await scope.Database.FetchAsync<SchemaQueueDto>(sql.SQL, sql.Arguments)
             .ConfigureAwait(false);
     }
 
     public async Task DeleteAsync<T>(T dto, CancellationToken ct = default) where T : class
     {
         using IScope scope = scopeProvider.CreateScope();
-        await scope.Database.DeleteAsync(dto, ct)
+        await scope.Database.DeleteAsync(dto)
             .ConfigureAwait(false);
         scope.Complete();
     }
@@ -40,7 +40,7 @@ internal sealed class SchemaQueueRepository(IScopeProvider scopeProvider) : ISch
         Sql<ISqlContext> sql = scope.SqlContext.Sql()
             .Delete<SchemaQueueDto>()
             .Where<SchemaQueueDto>(x => x.Id == id);
-        await scope.Database.ExecuteAsync(sql, ct).ConfigureAwait(false);
+        await scope.Database.ExecuteAsync(sql.SQL, sql.Arguments).ConfigureAwait(false);
         scope.Complete();
     }
 }

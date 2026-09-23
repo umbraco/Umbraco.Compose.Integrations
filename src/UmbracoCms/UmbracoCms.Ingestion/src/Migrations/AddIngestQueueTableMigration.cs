@@ -7,23 +7,23 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Migrations;
 /// Creates the ingest queue persistence database table and index.
 /// </summary>
 /// <param name="context">The migration context.</param>
-internal sealed class AddIngestQueueTableMigration(IMigrationContext context) : AsyncMigrationBase(context)
+internal sealed class AddIngestQueueTableMigration(IMigrationContext context) : MigrationBase(context)
 {
     /// <inheritdoc />
-    protected override Task MigrateAsync()
+    protected override void Migrate()
     {
-        if (!TableExists("umbracoComposeIngestQueue"))
+        if (TableExists("umbracoComposeIngestQueue"))
         {
-            Create.Table<IngestQueueDto>().Do();
-            Create.Index($"IX_umbracoComposeIngestQueue_{nameof(IngestQueueDto.CreatedAt)}")
-                .OnTable("umbracoComposeIngestQueue")
-                .OnColumn(nameof(IngestQueueDto.CreatedAt))
-                .Ascending()
-                .WithOptions()
-                .NonClustered()
-                .Do();
+            return;
         }
 
-        return Task.CompletedTask;
+        Create.Table<IngestQueueDto>().Do();
+        Create.Index($"IX_umbracoComposeIngestQueue_{nameof(IngestQueueDto.CreatedAt)}")
+            .OnTable("umbracoComposeIngestQueue")
+            .OnColumn(nameof(IngestQueueDto.CreatedAt))
+            .Ascending()
+            .WithOptions()
+            .NonClustered()
+            .Do();
     }
 }

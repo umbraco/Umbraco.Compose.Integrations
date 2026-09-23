@@ -23,14 +23,14 @@ internal sealed class RequeueOnStartupComponent(
     Channel<IngestQueueItem> channel,
     IRuntimeState runtimeState,
     IServerRoleAccessor serverRoleAccessor,
-    ILogger<RequeueOnStartupComponent> logger) : IAsyncComponent
+    ILogger<RequeueOnStartupComponent> logger) : IComponent
 {
     private static readonly JsonSerializerOptions s_jsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    public async Task InitializeAsync(bool isRestarting, CancellationToken cancellationToken)
+    public async void Initialize()
     {
         if (runtimeState.Level < RuntimeLevel.Run)
         {
@@ -43,9 +43,10 @@ internal sealed class RequeueOnStartupComponent(
             return;
         }
 
-        IReadOnlyList<IngestQueueDto> queueItems = await queueRepository
-            .GetAllAsync(cancellationToken)
-            .ConfigureAwait(false);
+        IReadOnlyList<IngestQueueDto> queueItems = Task.Run(() => queueRepository
+            .GetAllAsync())
+            .GetAwaiter()
+            .GetResult();
 
         if (queueItems.Count is 0)
         {
@@ -87,14 +88,17 @@ internal sealed class RequeueOnStartupComponent(
                 continue;
             }
 
-            await channel.Writer
-                .WriteAsync(item, cancellationToken)
-                .ConfigureAwait(false);
+            Task.Run(async () => await channel.Writer
+                .WriteAsync(item)
+                .ConfigureAwait(false))
+                .GetAwaiter()
+                .GetResult();
         }
 
         logger.LogInformation("Finished draining persisted queue items");
     }
 
-    public Task TerminateAsync(bool isRestarting, CancellationToken cancellationToken) =>
-        Task.CompletedTask;
+    public void Terminate()
+    {
+    }
 }

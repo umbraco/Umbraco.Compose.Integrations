@@ -1,2 +1,0 @@
-export const COMPOSE_DATA_SOURCE_CONFIG_PROPERTIES_TYPE_SCHEMA_INCLUDE_FIELDS_EDITOR_UI_ALIAS =
-  'Umbraco.Compose.PropertyEditorUi.DataSourceConfig.TypeSchemaFields';

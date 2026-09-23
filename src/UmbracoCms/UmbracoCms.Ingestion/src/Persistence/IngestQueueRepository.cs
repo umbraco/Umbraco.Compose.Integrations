@@ -10,7 +10,7 @@ internal sealed class IngestQueueRepository(IScopeProvider scopeProvider) : IIng
     public async Task InsertAsync(IngestQueueDto dto, CancellationToken ct = default)
     {
         using IScope scope = scopeProvider.CreateScope();
-        await scope.Database.InsertAsync(dto, ct)
+        await scope.Database.InsertAsync(dto)
             .ConfigureAwait(false);
         scope.Complete();
     }
@@ -22,7 +22,7 @@ internal sealed class IngestQueueRepository(IScopeProvider scopeProvider) : IIng
             .Select<IngestQueueDto>()
             .From<IngestQueueDto>()
             .OrderBy<IngestQueueDto>(x => x.CreatedAt);
-        return await scope.Database.FetchAsync<IngestQueueDto>(sql, ct)
+        return await scope.Database.FetchAsync<IngestQueueDto>(sql.SQL, sql.Arguments)
             .ConfigureAwait(false);
     }
 
@@ -32,7 +32,7 @@ internal sealed class IngestQueueRepository(IScopeProvider scopeProvider) : IIng
         Sql<ISqlContext> sql = scope.SqlContext.Sql()
             .Delete<IngestQueueDto>()
             .Where<IngestQueueDto>(x => x.Id == id);
-        await scope.Database.ExecuteAsync(sql, ct).ConfigureAwait(false);
+        await scope.Database.ExecuteAsync(sql.SQL, sql.Arguments).ConfigureAwait(false);
         scope.Complete();
     }
 }

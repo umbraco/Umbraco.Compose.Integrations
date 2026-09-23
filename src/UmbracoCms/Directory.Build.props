@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <TreatWarningsAsErrors Condition="$(Configuration) == 'Release'">true</TreatWarningsAsErrors>
-	<!-- Warn, not error when using [Obsolete] -->
-	<WarningsNotAsErrors>S1133</WarningsNotAsErrors>
+	  <!-- Warn, not error when using [Obsolete] -->
+	  <WarningsNotAsErrors>S1133</WarningsNotAsErrors>
     <RestoreLockedMode Condition="'$(TF_BUILD)' == 'true'">true</RestoreLockedMode>
     <NugetAuditMode>direct</NugetAuditMode>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

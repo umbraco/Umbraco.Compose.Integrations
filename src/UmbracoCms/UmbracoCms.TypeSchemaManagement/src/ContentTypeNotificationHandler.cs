@@ -1,6 +1,7 @@
 using System.Threading.Channels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
@@ -14,6 +15,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 internal sealed class ContentTypeNotificationHandler(
     ChannelWriter<SchemaQueueItem> writer,
     ISchemaQueueRepository queueRepository,
+    IContentTypeService contentTypeService,
     IDataTypeService dataTypeService,
     ICoreScopeProvider coreScopeProvider,
     ILogger<ContentTypeNotificationHandler> logger,
@@ -37,11 +39,12 @@ internal sealed class ContentTypeNotificationHandler(
                 {
                     SchemaQueueDto dto = new()
                     {
-                        Id = Guid.CreateVersion7(),
+                        Id = Guid.NewGuid(),
                         CreatedAt = DateTime.UtcNow,
                         ContentTypeAlias = contentTypeAlias
                     };
 
+                    await queueRepository.InsertAsync(dto, cancellationToken).ConfigureAwait(false);
                     await writer.WriteAsync(new SchemaQueueItem(dto.Id, contentTypeAlias), cancellationToken).ConfigureAwait(false);
                 }
             })
@@ -62,14 +65,15 @@ internal sealed class ContentTypeNotificationHandler(
             {
                 foreach (IDataType entity in notification.SavedEntities)
                 {
-                    PagedModel<RelationItemModel> relations = await dataTypeService.GetPagedRelationsAsync(entity.Key, 0, 1000)
-                        .ConfigureAwait(false);
+                    IReadOnlyDictionary<Udi, IEnumerable<string>> relations = dataTypeService.GetReferences(entity.Id);
 
-                    foreach (string contentTypeAlias in relations.Items.Select(x => x.ContentTypeAlias).OfType<string>())
+                    IEnumerable<IContentType> contentTypes = contentTypeService.GetAll(relations.Select(x => ((GuidUdi) x.Key).Guid));
+
+                    foreach (string contentTypeAlias in contentTypes.Select(x => x.Alias).OfType<string>())
                     {
                         SchemaQueueDto dto = new()
                         {
-                            Id = Guid.CreateVersion7(),
+                            Id = Guid.NewGuid(),
                             CreatedAt = DateTime.UtcNow,
                             ContentTypeAlias = contentTypeAlias
                         };

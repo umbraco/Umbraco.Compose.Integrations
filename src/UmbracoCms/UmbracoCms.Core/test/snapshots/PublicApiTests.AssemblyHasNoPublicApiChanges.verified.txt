@@ -2,7 +2,7 @@
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Umbraco.Compose.Integrations.UmbracoCms.Ingestion")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement")]
-[assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v10.0", FrameworkDisplayName=".NET 10.0")]
+[assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v8.0", FrameworkDisplayName=".NET 8.0")]
 namespace Umbraco.Cms.Core.DependencyInjection
 {
     public static class Extensions
@@ -79,22 +79,22 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json
         string GetTypeName(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorContext context, System.Type type);
         Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchema Handle(Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonSchemaGeneratorContext context, System.Type type);
     }
-    [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumConverter<Umbraco.Compose.Integrations.UmbracoCms.Core.Json.JsonPropertyType>))]
+    [System.Text.Json.Serialization.JsonConverter(typeof(System.Text.Json.Serialization.JsonStringEnumMemberConverter))]
     public enum JsonPropertyType
     {
-        [System.Text.Json.Serialization.JsonStringEnumMemberName("string")]
+        [System.Text.Json.Serialization.JsonPropertyName("string")]
         String = 0,
-        [System.Text.Json.Serialization.JsonStringEnumMemberName("number")]
+        [System.Text.Json.Serialization.JsonPropertyName("number")]
         Number = 1,
-        [System.Text.Json.Serialization.JsonStringEnumMemberName("integer")]
+        [System.Text.Json.Serialization.JsonPropertyName("integer")]
         Integer = 2,
-        [System.Text.Json.Serialization.JsonStringEnumMemberName("boolean")]
+        [System.Text.Json.Serialization.JsonPropertyName("boolean")]
         Boolean = 3,
-        [System.Text.Json.Serialization.JsonStringEnumMemberName("object")]
+        [System.Text.Json.Serialization.JsonPropertyName("object")]
         Object = 4,
-        [System.Text.Json.Serialization.JsonStringEnumMemberName("array")]
+        [System.Text.Json.Serialization.JsonPropertyName("array")]
         Array = 5,
-        [System.Text.Json.Serialization.JsonStringEnumMemberName("null")]
+        [System.Text.Json.Serialization.JsonPropertyName("null")]
         Null = 6,
     }
     public sealed class JsonSchema

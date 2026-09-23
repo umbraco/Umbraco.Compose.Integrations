@@ -14,7 +14,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 internal class ContentNotificationHandler(
     ICoreScopeProvider coreScopeProvider,
     IIngestService ingestService,
-    ILanguageService languageService,
+    ILocalizationService localizationService,
     IOptions<UmbracoComposeOptions> composeOptions,
     IOptions<UmbracoComposeIngestionOptions> ingestionOptions,
     ILogger<ContentNotificationHandler> logger
@@ -47,7 +47,7 @@ internal class ContentNotificationHandler(
             return;
         }
 
-        IEnumerable<ILanguage> languages = await languageService.GetAllAsync().ConfigureAwait(false);
+        IEnumerable<ILanguage> languages = localizationService.GetAllLanguages();
         IEnumerable<string> allCultures = languages.Select(x => x.CultureInfo)
             .OfType<CultureInfo>()
             .Select(x => x.Name);
@@ -120,14 +120,14 @@ internal class ContentNotificationHandler(
 
     public async Task HandleAsync(ContentUnpublishedNotification notification, CancellationToken cancellationToken)
     {
-        ContentChangePayload[] payloads = await GetDeletePayloadAsync(notification.UnpublishedEntities).ConfigureAwait(false);
+        ContentChangePayload[] payloads = GetDeletePayload(notification.UnpublishedEntities);
 
         await EnqueueAsync(payloads, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task HandleAsync(ContentDeletedNotification notification, CancellationToken cancellationToken)
     {
-        ContentChangePayload[] payloads = await GetDeletePayloadAsync(notification.DeletedEntities).ConfigureAwait(false);
+        ContentChangePayload[] payloads = GetDeletePayload(notification.DeletedEntities);
 
         await EnqueueAsync(payloads, cancellationToken).ConfigureAwait(false);
     }
@@ -142,15 +142,14 @@ internal class ContentNotificationHandler(
 
     public async Task HandleAsync(ContentMovedToRecycleBinNotification notification, CancellationToken cancellationToken)
     {
-        ContentChangePayload[] payloads = await GetDeletePayloadAsync(notification.MoveInfoCollection.Select(x => x.Entity))
-            .ConfigureAwait(false);
+        ContentChangePayload[] payloads = GetDeletePayload(notification.MoveInfoCollection.Select(x => x.Entity));
 
         await EnqueueAsync(payloads, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<ContentChangePayload[]> GetDeletePayloadAsync(IEnumerable<IContent> contents)
+    private ContentChangePayload[] GetDeletePayload(IEnumerable<IContent> contents)
     {
-        IEnumerable<ILanguage> languages = await languageService.GetAllAsync().ConfigureAwait(false);
+        IEnumerable<ILanguage> languages = localizationService.GetAllLanguages();
         List<string> cultures = ["*", ..languages.Select(x => x.CultureInfo)
             .OfType<CultureInfo>()
             .Select(x => x.Name)];

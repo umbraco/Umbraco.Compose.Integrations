@@ -50,8 +50,7 @@ public static class UmbracoBuilderExtensions
                 .AddNotificationAsyncHandler<ContentUnpublishedNotification, ContentNotificationHandler>()
                 .AddNotificationAsyncHandler<ContentMovedNotification, ContentNotificationHandler>()
                 .AddNotificationAsyncHandler<ContentMovedToRecycleBinNotification, ContentNotificationHandler>()
-                .AddNotificationAsyncHandler<ContentDeletedNotification, ContentNotificationHandler>()
-                .AddNotificationAsyncHandler<ElementPublishedNotification, ElementNotificationHandler>();
+                .AddNotificationAsyncHandler<ContentDeletedNotification, ContentNotificationHandler>();
 
             return builder;
         }

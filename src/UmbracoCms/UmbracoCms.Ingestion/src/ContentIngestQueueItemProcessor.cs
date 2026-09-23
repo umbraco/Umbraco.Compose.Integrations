@@ -5,7 +5,6 @@ using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.DeliveryApi;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Services;
-using Umbraco.Cms.Core.Services.Navigation;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Extensions;
 
@@ -13,9 +12,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 
 internal sealed class ContentIngestQueueItemProcessor(
     IApiContentBuilder apiContentBuilder,
-    IDocumentNavigationQueryService navigationQueryService,
-    ILanguageService languageService,
-    IPublishedContentStatusFilteringService publishedStatusFilteringService,
+    ILocalizationService localizationService,
     IUmbracoContextAccessor umbracoContextAccessor,
     IUmbracoContextFactory umbracoContextFactory,
     IVariationContextAccessor variationContextAccessor,
@@ -104,7 +101,7 @@ internal sealed class ContentIngestQueueItemProcessor(
                             }
                     };
 
-                    foreach (ILanguage language in await languageService.GetAllAsync().ConfigureAwait(false))
+                    foreach (ILanguage language in localizationService.GetAllLanguages())
                     {
                         string? culture = language.CultureInfo?.Name;
                         if (culture is null || deleted.Contains($"{entityId}_{culture}"))
@@ -128,7 +125,7 @@ internal sealed class ContentIngestQueueItemProcessor(
             }
 
             using UmbracoContextReference context = umbracoContextFactory.EnsureUmbracoContext();
-            IPublishedContent? content = await context.UmbracoContext.Content.GetByIdAsync(entity.Id).ConfigureAwait(false);
+            IPublishedContent? content = context.UmbracoContext.Content!.GetById(entity.Id);
 
             if (content is null)
             {
@@ -187,8 +184,8 @@ internal sealed class ContentIngestQueueItemProcessor(
             yield break;
         }
 
-        navigationQueryService.TryGetParentKey(content.Key, out Guid? parentId);
-        navigationQueryService.TryGetAncestorsKeys(content.Key, out IEnumerable<Guid> ancestors);
+        Guid? parentId = content.Parent?.Key;
+        IEnumerable<Guid> ancestors = content.Ancestors().Select(x => x.Key);
 
         yield return new()
         {
@@ -204,8 +201,7 @@ internal sealed class ContentIngestQueueItemProcessor(
         }
 
         IEnumerable<IPublishedContent> children = content.Children<IPublishedContent>(
-            navigationQueryService,
-            publishedStatusFilteringService,
+            variationContextAccessor,
             culture);
 
         foreach (IPublishedContent child in children)

@@ -6,11 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Tests.Unit" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Umbraco.Cms.Api.Delivery" />
     <PackageReference Include="Umbraco.Cms.Infrastructure"/>
   </ItemGroup>
 

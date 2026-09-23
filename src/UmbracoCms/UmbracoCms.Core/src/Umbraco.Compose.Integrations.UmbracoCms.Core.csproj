@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Macross.Json.Extensions" />
     <PackageReference Include="OpenIddict.Client.SystemNetHttp" />
     <PackageReference Include="Umbraco.Cms.Core" />
   </ItemGroup>

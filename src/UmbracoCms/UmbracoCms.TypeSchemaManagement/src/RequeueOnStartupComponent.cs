@@ -13,9 +13,9 @@ internal sealed class RequeueOnStartupComponent(
     Channel<SchemaQueueItem> channel,
     IRuntimeState runtimeState,
     IServerRoleAccessor serverRoleAccessor,
-    ILogger<RequeueOnStartupComponent> logger) : IAsyncComponent
+    ILogger<RequeueOnStartupComponent> logger) : IComponent
 {
-    public async Task InitializeAsync(bool isRestarting, CancellationToken cancellationToken)
+    public void Initialize()
     {
         if (runtimeState.Level < RuntimeLevel.Run)
         {
@@ -28,9 +28,10 @@ internal sealed class RequeueOnStartupComponent(
             return;
         }
 
-        IReadOnlyList<SchemaQueueDto> queueItems = await queueRepository
-            .GetAllAsync(cancellationToken)
-            .ConfigureAwait(false);
+        IReadOnlyList<SchemaQueueDto> queueItems = Task.Run(() => queueRepository
+            .GetAllAsync())
+            .GetAwaiter()
+            .GetResult();
 
         if (queueItems.Count is 0)
         {
@@ -41,14 +42,17 @@ internal sealed class RequeueOnStartupComponent(
 
         foreach (SchemaQueueDto dto in queueItems)
         {
-            await channel.Writer
-                .WriteAsync(new SchemaQueueItem(dto.Id, dto.ContentTypeAlias), cancellationToken)
-                .ConfigureAwait(false);
+            Task.Run(async () => await channel.Writer
+                .WriteAsync(new SchemaQueueItem(dto.Id, dto.ContentTypeAlias))
+                .ConfigureAwait(false))
+                .GetAwaiter()
+                .GetResult();
         }
 
         logger.LogInformation("Finished draining persisted schema queue items");
     }
 
-    public Task TerminateAsync(bool isRestarting, CancellationToken cancellationToken) =>
-        Task.CompletedTask;
+    public void Terminate()
+    {
+    }
 }

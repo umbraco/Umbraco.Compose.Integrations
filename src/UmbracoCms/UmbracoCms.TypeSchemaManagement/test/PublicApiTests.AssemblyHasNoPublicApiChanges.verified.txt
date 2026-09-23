@@ -1,6 +1,6 @@
 ﻿[assembly: System.Reflection.AssemblyMetadata("RepositoryUrl", "https://github.com/umbraco/Umbraco.Compose.Integrations")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Tests.Unit")]
-[assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v10.0", FrameworkDisplayName=".NET 10.0")]
+[assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v8.0", FrameworkDisplayName=".NET 8.0")]
 namespace Umbraco.Cms.Core.DependencyInjection
 {
     public static class UmbracoBuilderExtensions

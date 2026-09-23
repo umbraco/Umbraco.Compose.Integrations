@@ -14,7 +14,6 @@ public sealed class UmbracoComposeComposer : IComposer
         builder
             .AddUmbracoComposeAuthentication()
             .AddUmbracoComposeIngestion()
-            .AddUmbracoComposeDataSource()
             .AddUmbracoComposeTypeSchemaManagement();
     }
 }

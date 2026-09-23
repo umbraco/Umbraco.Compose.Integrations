@@ -7,23 +7,23 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Migration
 /// Creates the schema queue persistence database table and index.
 /// </summary>
 /// <param name="context">The migration context.</param>
-internal sealed class AddSchemaQueueTableMigration(IMigrationContext context) : AsyncMigrationBase(context)
+internal sealed class AddSchemaQueueTableMigration(IMigrationContext context) : MigrationBase(context)
 {
     /// <inheritdoc />
-    protected override Task MigrateAsync()
+    protected override void Migrate()
     {
-        if (!TableExists("umbracoComposeSchemaQueue"))
+        if (TableExists("umbracoComposeSchemaQueue"))
         {
-            Create.Table<SchemaQueueDto>().Do();
-            Create.Index($"IX_umbracoComposeSchemaQueue_{nameof(SchemaQueueDto.CreatedAt)}")
-                .OnTable("umbracoComposeSchemaQueue")
-                .OnColumn(nameof(SchemaQueueDto.CreatedAt))
-                .Ascending()
-                .WithOptions()
-                .NonClustered()
-                .Do();
+            return;
         }
 
-        return Task.CompletedTask;
+        Create.Table<SchemaQueueDto>().Do();
+        Create.Index($"IX_umbracoComposeSchemaQueue_{nameof(SchemaQueueDto.CreatedAt)}")
+            .OnTable("umbracoComposeSchemaQueue")
+            .OnColumn(nameof(SchemaQueueDto.CreatedAt))
+            .Ascending()
+            .WithOptions()
+            .NonClustered()
+            .Do();
     }
 }

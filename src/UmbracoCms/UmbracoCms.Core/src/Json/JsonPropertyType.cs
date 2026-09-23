@@ -8,7 +8,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 /// These types form the basis for all schema validation and are mapped to their JSON string
 /// equivalents when serializing schemas.
 /// </summary>
-[JsonConverter(typeof(JsonStringEnumConverter<JsonPropertyType>))]
+[JsonConverter(typeof(JsonStringEnumMemberConverter))]
 public enum JsonPropertyType
 {
     /// <summary>
@@ -16,7 +16,7 @@ public enum JsonPropertyType
     /// constraints like maxLength, minLength, pattern matching, and format restrictions such
     /// as email, uri, or date-time formats.
     /// </summary>
-    [JsonStringEnumMemberName("string")]
+    [JsonPropertyName("string")]
     String = 0,
 
     /// <summary>
@@ -24,7 +24,7 @@ public enum JsonPropertyType
     /// allows both integers and decimals and supports constraints like maximum, minimum,
     /// multipleOf, exclusiveMaximum, and exclusiveMinimum.
     /// </summary>
-    [JsonStringEnumMemberName("number")]
+    [JsonPropertyName("number")]
     Number = 1,
 
     /// <summary>
@@ -32,14 +32,14 @@ public enum JsonPropertyType
     /// similar to Number but semantically indicates the value should be a whole number.
     /// All integer constraints apply equally to this type.
     /// </summary>
-    [JsonStringEnumMemberName("integer")]
+    [JsonPropertyName("integer")]
     Integer = 2,
 
     /// <summary>
     /// Represents boolean values - true or false logical states. Boolean validation simply
     /// checks that the value is either true or false with no additional constraints possible.
     /// </summary>
-    [JsonStringEnumMemberName("boolean")]
+    [JsonPropertyName("boolean")]
     Boolean = 3,
 
     /// <summary>
@@ -47,7 +47,7 @@ public enum JsonPropertyType
     /// validation includes property constraints like required, properties, patternProperties,
     /// additionalProperties, maxProperties, and minProperties.
     /// </summary>
-    [JsonStringEnumMemberName("object")]
+    [JsonPropertyName("object")]
     Object = 4,
 
     /// <summary>
@@ -55,7 +55,7 @@ public enum JsonPropertyType
     /// item constraints via items or prefixItems, size constraints via minItems/maxItems,
     /// uniqueness via uniqueItems, and containment via contains.
     /// </summary>
-    [JsonStringEnumMemberName("array")]
+    [JsonPropertyName("array")]
     Array = 5,
 
     /// <summary>
@@ -63,6 +63,6 @@ public enum JsonPropertyType
     /// that the value is null. This type is useful for schemas that accept null as a valid
     /// option alongside other types.
     /// </summary>
-    [JsonStringEnumMemberName("null")]
+    [JsonPropertyName("null")]
     Null = 6
 }
