@@ -124,34 +124,45 @@ internal sealed class ContentIngestQueueItemProcessor(
                 continue;
             }
 
-            using UmbracoContextReference context = umbracoContextFactory.EnsureUmbracoContext();
-            IPublishedContent? content = context.UmbracoContext.Content!.GetById(entity.Id);
-
-            if (content is null)
+            // The published snapshot only lives as long as the Umbraco context, which does not survive a yield
+            // in this async iterator, so all entries for the entity are materialized before yielding any of them.
+            foreach (UpsertContentEntry processedItem in ProcessEntity(updated, entity))
             {
-                logger.LogWarning("Could not get content with id {Id} from the Published Content Cache", entity.Id);
+                yield return processedItem;
+            }
+        }
+    }
+
+    private List<UpsertContentEntry> ProcessEntity(HashSet<string> updated, ContentChangePayload entity)
+    {
+        List<UpsertContentEntry> entries = [];
+
+        using UmbracoContextReference context = umbracoContextFactory.EnsureUmbracoContext();
+        IPublishedContent? content = context.UmbracoContext.Content!.GetById(entity.Id);
+
+        if (content is null)
+        {
+            logger.LogWarning("Could not get content with id {Id} from the Published Content Cache", entity.Id);
+            return entries;
+        }
+
+        string[] cultures = [.. entity.AffectedCultures is { Count: > 0 }
+            ? entity.AffectedCultures
+            : content.Cultures.Select(static x => x.Value.Culture)];
+
+        foreach (string culture in cultures)
+        {
+            if (!content.IsPublished(culture))
+            {
+                logger.LogWarning("Got unpublished content from cache");
                 continue;
             }
 
-            string[] cultures = [.. entity.AffectedCultures is { Count: > 0 }
-                ? entity.AffectedCultures
-                : content.Cultures.Select(static x => x.Value.Culture)];
-
-            foreach (string culture in cultures)
-            {
-                if (!content.IsPublished(culture))
-                {
-                    logger.LogWarning("Got unpublished content from cache");
-                    continue;
-                }
-
-                bool includeChildren = entity.ChangeType is ContentChangeType.UpdateWithDescendants;
-                foreach (UpsertContentEntry processedItem in ProcessItem(updated, content, culture, includeChildren))
-                {
-                    yield return processedItem;
-                }
-            }
+            bool includeChildren = entity.ChangeType is ContentChangeType.UpdateWithDescendants;
+            entries.AddRange(ProcessItem(updated, content, culture, includeChildren));
         }
+
+        return entries;
     }
 
     private IEnumerable<UpsertContentEntry> ProcessItem(
