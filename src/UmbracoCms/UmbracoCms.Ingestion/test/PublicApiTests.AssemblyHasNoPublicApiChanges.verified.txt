@@ -51,7 +51,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion
     public interface IIngestQueueItemProcessor<T>
         where T : Umbraco.Compose.Integrations.UmbracoCms.Ingestion.IngestQueueItem
     {
-        System.Collections.Generic.IAsyncEnumerable<Umbraco.Compose.Integrations.UmbracoCms.Ingestion.IngestEntry> ProcessAsync(T item, System.Threading.CancellationToken cancellationToken = default);
+        System.Collections.Generic.IEnumerable<Umbraco.Compose.Integrations.UmbracoCms.Ingestion.IngestEntry> Process(T item);
     }
     public interface IIngestService
     {

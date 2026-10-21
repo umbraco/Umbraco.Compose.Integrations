@@ -58,7 +58,7 @@ internal sealed class IngestBackgroundService : BackgroundService
 
             try
             {
-                // TODO: the background worker should find a processor for the payloadType and call the ProcessAsync method
+                // TODO: the background worker should find a processor for the payloadType and call the Process method
                 // which returns one or more entries that should be ingested
                 if (queueItem is not ContentIngestQueueItem contentIngestQueueItem)
                 {
@@ -74,9 +74,7 @@ internal sealed class IngestBackgroundService : BackgroundService
                 List<IngestEntry> items;
                 using (IScope scope = _scopeProvider.CreateScope())
                 {
-                    items = await processor.ProcessAsync(contentIngestQueueItem, stoppingToken)
-                        .ToListAsync(cancellationToken: stoppingToken)
-                        .ConfigureAwait(false);
+                    items = [.. processor.Process(contentIngestQueueItem)];
 
                     scope.Complete();
                 }

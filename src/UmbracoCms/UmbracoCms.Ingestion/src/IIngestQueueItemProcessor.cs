@@ -10,7 +10,6 @@ public interface IIngestQueueItemProcessor<T> where T : IngestQueueItem
     /// Processes the ingest queue item.
     /// </summary>
     /// <param name="item">The ingest queue item.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>An async enumerable of ingest entries.</returns>
-    IAsyncEnumerable<IngestEntry> ProcessAsync(T item, CancellationToken cancellationToken = default);
+    /// <returns>An enumerable of ingest entries.</returns>
+    IEnumerable<IngestEntry> Process(T item);
 }
