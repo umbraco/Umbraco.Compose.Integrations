@@ -72,7 +72,7 @@ public static class UmbracoBuilderExtensions
                 .AddNotificationAsyncHandler<
                     ContentTypeSavedNotification, ContentTypeNotificationHandler>()
                 .AddNotificationAsyncHandler<
-                    ContentTypeSavedNotification, ContentTypeNotificationHandler>();
+                    DataTypeSavedNotification, ContentTypeNotificationHandler>();
 
             builder.AddComponent<RequeueOnStartupComponent>();
 
