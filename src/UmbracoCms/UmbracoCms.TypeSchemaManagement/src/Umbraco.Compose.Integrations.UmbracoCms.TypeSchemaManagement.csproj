@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Title>Umbraco Compose Type Schema integration for Umbraco CMS</Title>
     <Description>Provides Umbraco Compose Type Schema integration for Umbraco CMS.</Description>
+    <PackageProjectUrl>$(RepositoryUrl)/tree/main/src/UmbracoCms/UmbracoCms.TypeSchemaManagement</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
