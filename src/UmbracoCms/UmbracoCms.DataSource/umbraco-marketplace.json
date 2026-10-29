@@ -1,0 +1,21 @@
+{
+  "$schema": "https://marketplace.umbraco.com/umbraco-marketplace-schema.json",
+  "Title": "Umbraco Compose Data Source",
+  "PackageType": "Integration",
+  "Category": "Headless",
+  "Description": "Browse and pick content from your Umbraco Compose from the comfort of the CMS back-office.",
+  "LicenseTypes": [ "Free" ],
+  "AuthorDetails": {
+    "Name": "Umbraco HQ",
+    "Url": "https://umbraco.com",
+    "ImageUrl": "https://github.com/umbraco.png"
+  },
+  "DocumentationUrl": "https://docs.umbraco.com/umbraco-compose",
+  "IssueTrackerUrl": "https://github.com/umbraco/Umbraco.Compose.Integrations/issues",
+  "RelatedPackages": [
+    { "PackageId": "Umbraco.Compose.Integrations.UmbracoCms" },
+    { "PackageId": "Umbraco.Compose.Integrations.UmbracoCms.Ingestion" },
+    { "PackageId": "Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement" }
+  ],
+  "Tags": [ "umbraco", "compose", "headless", "integration" ]
+}

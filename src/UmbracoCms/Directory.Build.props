@@ -17,7 +17,6 @@
     <Authors>Umbraco</Authors>
     <Copyright>Copyright © Umbraco $([System.DateTime]::Today.ToString('yyyy'))</Copyright>
     <Product>Umbraco Compose Integrations for Umbraco CMS</Product>
-    <PackageProjectUrl>https//www.umbracocompose.com</PackageProjectUrl>
     <PackageIcon>icon.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -26,9 +25,16 @@
     <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 
+  <!-- The Umbraco Marketplace reads umbraco-marketplace.json from the folder the package project URL points to -->
+  <PropertyGroup>
+    <UmbracoMarketplaceManifest>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\..\umbraco-marketplace.json'))</UmbracoMarketplaceManifest>
+    <PackageTags Condition="Exists('$(UmbracoMarketplaceManifest)')">umbraco-marketplace</PackageTags>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Include="..\..\assets\icon.png" Pack="true" PackagePath="\"/>
     <None Include="..\README.md" Pack="true" PackagePath="\"/>
+    <None Include="$(UmbracoMarketplaceManifest)" Pack="true" PackagePath="umbraco-marketplace.json" Condition="Exists('$(UmbracoMarketplaceManifest)')"/>
   </ItemGroup>
 
   <!-- Use version range on project references (to limit on major version in generated packages) -->

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Title>Umbraco Compose integrations for Umbraco CMS</Title>
     <Description>Provides all Umbraco Compose integrations for Umbraco CMS.</Description>
+    <PackageProjectUrl>$(RepositoryUrl)/tree/main/src/UmbracoCms/UmbracoCms</PackageProjectUrl>
   </PropertyGroup>
 
 <ItemGroup>
