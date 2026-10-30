@@ -15,7 +15,7 @@
     "lit": "^3.3.1"
   },
   "devDependencies": {
-    "@umbraco-cms/backoffice": "^17.1.0",
+    "@umbraco-cms/backoffice": "^17.3.5",
     "typescript": "~5.9.3",
     "vite": "npm:rolldown-vite@7.2.5"
   },
