@@ -72,7 +72,7 @@ public sealed record UmbracoComposeContentPickerDataSourceConfiguration
 
         bool hasFields = o.TryGetPropertyValue("fields", out JsonNode? fields);
 
-        return !hasFields || fields is not JsonArray a || a.Count == 0 ? null : (a[0]?.GetValue<string>());
+        return !hasFields || fields is not JsonArray a || a.Count == 0 ? null : (a[0]?.GetValue<string>().ToGraphQLFieldNameCase());
     }
 
     private static string[] TypeSchemaFieldFromJsonObject(JsonArray? json)
@@ -86,7 +86,7 @@ public sealed record UmbracoComposeContentPickerDataSourceConfiguration
             TypeSchemaIncludedField? field = node.Deserialize<TypeSchemaIncludedField>();
             if (!string.IsNullOrEmpty(field?.typeSchemaField))
             {
-                fields.Add(field.typeSchemaField);
+                fields.Add(field.typeSchemaField.ToGraphQLFieldNameCase());
             }
         }
 
