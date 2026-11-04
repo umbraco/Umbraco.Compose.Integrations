@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.DeliveryApi;
@@ -14,8 +15,10 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 internal sealed class ContentIngestQueueItemProcessor(
     IApiContentBuilder apiContentBuilder,
     IDocumentNavigationQueryService navigationQueryService,
+    IHttpContextAccessor httpContextAccessor,
     ILanguageService languageService,
     IPublishedContentStatusFilteringService publishedStatusFilteringService,
+    IServiceProvider serviceProvider,
     IUmbracoContextAccessor umbracoContextAccessor,
     IUmbracoContextFactory umbracoContextFactory,
     IVariationContextAccessor variationContextAccessor,
@@ -32,6 +35,16 @@ internal sealed class ContentIngestQueueItemProcessor(
     {
         HashSet<string> updated = [];
         HashSet<string> deleted = [];
+
+        HttpContext httpContext = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider,
+            Request =
+            {
+                Host = new("localhost"),
+                Scheme = "http"
+            }
+        };
 
         foreach (ContentChangePayload entity in item.Entities)
         {
@@ -149,7 +162,7 @@ internal sealed class ContentIngestQueueItemProcessor(
                 }
 
                 bool includeChildren = entity.ChangeType is ContentChangeType.UpdateWithDescendants;
-                foreach (UpsertContentEntry processedItem in ProcessItem(updated, content, culture, includeChildren))
+                foreach (UpsertContentEntry processedItem in ProcessItem(httpContext, updated, content, culture, includeChildren))
                 {
                     yield return processedItem;
                 }
@@ -158,6 +171,7 @@ internal sealed class ContentIngestQueueItemProcessor(
     }
 
     private IEnumerable<UpsertContentEntry> ProcessItem(
+        HttpContext httpContext,
         HashSet<string> updated,
         IPublishedContent content,
         string culture,
@@ -169,6 +183,8 @@ internal sealed class ContentIngestQueueItemProcessor(
         }
 
         updated.Add($"{content.Key}_{culture}");
+
+        httpContextAccessor.HttpContext = httpContext;
 
         using UmbracoContextReference context = umbracoContextFactory.EnsureUmbracoContext();
 
@@ -215,7 +231,7 @@ internal sealed class ContentIngestQueueItemProcessor(
                 continue;
             }
 
-            foreach (UpsertContentEntry processedChild in ProcessItem(updated, child, culture, true))
+            foreach (UpsertContentEntry processedChild in ProcessItem(httpContext, updated, child, culture, true))
             {
                 yield return processedChild;
             }
