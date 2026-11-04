@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Title>Umbraco Compose Ingestion integration for Umbraco CMS</Title>
     <Description>Provides Umbraco Compose Content Ingestion support for Umbraco CMS.</Description>
+    <PackageProjectUrl>$(RepositoryUrl)/tree/main/src/UmbracoCms/UmbracoCms.Ingestion</PackageProjectUrl>
   </PropertyGroup>
 
 <ItemGroup>

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://marketplace.umbraco.com/umbraco-marketplace-schema.json",
+  "Title": "Umbraco Compose Content Type Integration",
+  "PackageType": "Integration",
+  "Category": "Headless",
+  "Description": "Save document types from the back-office as type schemas in your Umbraco Compose project.",
+  "LicenseTypes": [ "Free" ],
+  "AuthorDetails": {
+    "Name": "Umbraco HQ",
+    "Url": "https://umbraco.com",
+    "ImageUrl": "https://github.com/umbraco.png"
+  },
+  "DocumentationUrl": "https://docs.umbraco.com/umbraco-compose",
+  "IssueTrackerUrl": "https://github.com/umbraco/Umbraco.Compose.Integrations/issues",
+  "RelatedPackages": [
+    { "PackageId": "Umbraco.Compose.Integrations.UmbracoCms" },
+    { "PackageId": "Umbraco.Compose.Integrations.UmbracoCms.Ingestion" },
+    { "PackageId": "Umbraco.Compose.Integrations.UmbracoCms.DataSource" }
+  ],
+  "Tags": [ "umbraco", "compose", "headless", "integration" ]
+}
