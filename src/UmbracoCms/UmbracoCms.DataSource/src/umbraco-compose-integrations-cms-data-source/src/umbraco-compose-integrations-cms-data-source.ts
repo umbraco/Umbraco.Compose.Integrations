@@ -210,7 +210,7 @@ export class UmbracoComposeIntegrationsPickerPropertyEditorDataSource
 	#mapItems(serverItems: Array<any>) {
 		return serverItems.map((item) => {
 			const key = item['id'];
-			const name = item[this.#nameField!];
+			const name = item[toGraphQLFieldNameCase(this.#nameField!)];
 			return {
 				unique: key,
 				entityType: `compose-${this.#typeSchema}`,
@@ -219,6 +219,10 @@ export class UmbracoComposeIntegrationsPickerPropertyEditorDataSource
 			};
 		});
 	}
+}
+
+function toGraphQLFieldNameCase(value: string) {
+	return value.replace(/^[^A-Za-z]/, '_').replace(/^[A-Z]/, (c) => c.toLowerCase()).replace(/[^A-Za-z0-9]/g, '_');
 }
 
 export interface ComposeDataSourceConfigPropertiesSelectPropertyEditorValue {

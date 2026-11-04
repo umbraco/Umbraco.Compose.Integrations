@@ -1,5 +1,3 @@
-using Umbraco.Extensions;
-
 namespace Umbraco.Compose.Integrations.UmbracoCms.DataSource;
 
 internal static class ContentGraphQLQueryProvider
@@ -12,7 +10,7 @@ internal static class ContentGraphQLQueryProvider
             {{configuration.Collection}} (
               where: {
                 AND: [
-                  { {{configuration.TypeSchema}}: { {{configuration.SearchField}}_contains: $searchTerm} }
+                  { {{configuration.TypeSchema.ToGraphQLFieldNameCase()}}: { {{configuration.SearchField}}_contains: $searchTerm} }
                   { variant: $variant }
                 ]
               }
@@ -22,7 +20,7 @@ internal static class ContentGraphQLQueryProvider
               items {
                 id
                 variant
-                ... on {{configuration.TypeSchema.ToFirstUpper()}} {
+                ... on {{configuration.TypeSchema.ToGraphQLTypeNameCase()}} {
                   {{string.Join(" ", configuration.IncludeFields)}}
                 }
               }
@@ -39,7 +37,7 @@ internal static class ContentGraphQLQueryProvider
             {{configuration.Collection}} (
               where: {
                 AND: [
-                  { {{configuration.TypeSchema}}: { id_any: $ids } }
+                  { {{configuration.TypeSchema.ToGraphQLFieldNameCase()}}: { id_any: $ids } }
                   { variant: $variant }
                 ]
               }
@@ -47,7 +45,7 @@ internal static class ContentGraphQLQueryProvider
               items {
                 id
                 variant
-                ... on {{configuration.TypeSchema.ToFirstUpper()}} {
+                ... on {{configuration.TypeSchema.ToGraphQLTypeNameCase()}} {
                   {{string.Join(" ", configuration.IncludeFields)}}
                 }
               }
