@@ -27,15 +27,8 @@ internal class ContentNotificationHandler(
 {
     public async Task HandleAsync(ContentPublishedNotification notification, CancellationToken cancellationToken)
     {
-        if (!composeOptions.Value.IsValid)
+        if (!IsConfigurationValid())
         {
-            logger.LogDebug("Skipping ingestion - Compose options are not valid.");
-            return;
-        }
-
-        if (!ingestionOptions.Value.IsValid)
-        {
-            logger.LogDebug("Skipping ingestion - Ingestion options are not valid.");
             return;
         }
 
@@ -120,6 +113,11 @@ internal class ContentNotificationHandler(
 
     public async Task HandleAsync(ContentUnpublishedNotification notification, CancellationToken cancellationToken)
     {
+        if (!IsConfigurationValid())
+        {
+            return;
+        }
+
         ContentChangePayload[] payloads = await GetDeletePayloadAsync(notification.UnpublishedEntities).ConfigureAwait(false);
 
         await EnqueueAsync(payloads, cancellationToken).ConfigureAwait(false);
@@ -127,6 +125,11 @@ internal class ContentNotificationHandler(
 
     public async Task HandleAsync(ContentDeletedNotification notification, CancellationToken cancellationToken)
     {
+        if (!IsConfigurationValid())
+        {
+            return;
+        }
+
         ContentChangePayload[] payloads = await GetDeletePayloadAsync(notification.DeletedEntities).ConfigureAwait(false);
 
         await EnqueueAsync(payloads, cancellationToken).ConfigureAwait(false);
@@ -134,6 +137,11 @@ internal class ContentNotificationHandler(
 
     public async Task HandleAsync(ContentMovedNotification notification, CancellationToken cancellationToken)
     {
+        if (!IsConfigurationValid())
+        {
+            return;
+        }
+
         ContentChangePayload[] payloads = [.. notification.MoveInfoCollection.Select(move =>
             new ContentChangePayload(move.Entity.Key, ContentChangeType.UpdateWithDescendants, []))];
 
@@ -142,6 +150,11 @@ internal class ContentNotificationHandler(
 
     public async Task HandleAsync(ContentMovedToRecycleBinNotification notification, CancellationToken cancellationToken)
     {
+        if (!IsConfigurationValid())
+        {
+            return;
+        }
+
         ContentChangePayload[] payloads = await GetDeletePayloadAsync(notification.MoveInfoCollection.Select(x => x.Entity))
             .ConfigureAwait(false);
 
@@ -164,5 +177,22 @@ internal class ContentNotificationHandler(
             coreScopeProvider,
             () => ingestService.EnqueueAsync(new ContentIngestQueueItem(payloads), cancellationToken))
             .ConfigureAwait(false);
+    }
+
+    private bool IsConfigurationValid()
+    {
+        if (!composeOptions.Value.IsValid)
+        {
+            logger.LogDebug("Skipping ingestion - Compose options are not valid.");
+            return false;
+        }
+
+        if (ingestionOptions.Value.IsValid)
+        {
+            return true;
+        }
+
+        logger.LogDebug("Skipping ingestion - Ingestion options are not valid.");
+        return false;
     }
 }
