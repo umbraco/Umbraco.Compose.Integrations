@@ -2,7 +2,7 @@
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Umbraco.Compose.Integrations.UmbracoCms.Core.Tests.Unit")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Umbraco.Compose.Integrations.UmbracoCms.Ingestion")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement")]
-[assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v10.0", FrameworkDisplayName=".NET 10.0")]
+[assembly: System.Runtime.Versioning.TargetFramework(".NETCoreApp,Version=v11.0", FrameworkDisplayName=".NET 11.0")]
 namespace Umbraco.Cms.Core.DependencyInjection
 {
     public static class Extensions
