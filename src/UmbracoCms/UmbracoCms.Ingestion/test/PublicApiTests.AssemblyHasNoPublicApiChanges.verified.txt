@@ -19,6 +19,21 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion
         public System.Guid[] Ancestors { get; }
         public System.Guid? ParentId { get; }
     }
+    public sealed class ComposeApiMedia : Umbraco.Cms.Core.Models.DeliveryApi.IApiMedia
+    {
+        public ComposeApiMedia(Umbraco.Cms.Core.Models.DeliveryApi.IApiMedia media, System.Guid? parentId, System.Guid[] ancestors) { }
+        public System.Guid[] Ancestors { get; }
+        public int? Bytes { get; }
+        public string? Extension { get; }
+        public int? Height { get; }
+        public System.Guid Id { get; }
+        public string MediaType { get; }
+        public string Name { get; }
+        public System.Guid? ParentId { get; }
+        public System.Collections.Generic.IDictionary<string, object?> Properties { get; }
+        public string Url { get; }
+        public int? Width { get; }
+    }
     public sealed class ContentChangePayload : System.IEquatable<Umbraco.Compose.Integrations.UmbracoCms.Ingestion.ContentChangePayload>
     {
         public ContentChangePayload(System.Guid Id, Umbraco.Compose.Integrations.UmbracoCms.Ingestion.ContentChangeType ChangeType, System.Collections.Generic.IReadOnlyCollection<string> AffectedCultures) { }
@@ -72,12 +87,41 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion
         public System.DateTime CreatedAt { get; init; }
         public System.Guid Id { get; init; }
     }
+    public sealed class MediaChangePayload : System.IEquatable<Umbraco.Compose.Integrations.UmbracoCms.Ingestion.MediaChangePayload>
+    {
+        public MediaChangePayload(System.Guid Id, Umbraco.Compose.Integrations.UmbracoCms.Ingestion.MediaChangeType ChangeType) { }
+        public Umbraco.Compose.Integrations.UmbracoCms.Ingestion.MediaChangeType ChangeType { get; init; }
+        public System.Guid Id { get; init; }
+    }
+    public enum MediaChangeType
+    {
+        Update = 0,
+        Delete = 2,
+    }
+    public sealed class MediaIngestQueueItem : Umbraco.Compose.Integrations.UmbracoCms.Ingestion.IngestQueueItem, System.IEquatable<Umbraco.Compose.Integrations.UmbracoCms.Ingestion.MediaIngestQueueItem>
+    {
+        public MediaIngestQueueItem(System.Collections.Generic.IReadOnlyCollection<Umbraco.Compose.Integrations.UmbracoCms.Ingestion.MediaChangePayload> Entities) { }
+        public System.Collections.Generic.IReadOnlyCollection<Umbraco.Compose.Integrations.UmbracoCms.Ingestion.MediaChangePayload> Entities { get; init; }
+    }
+    public sealed class UmbracoComposeIngestionCollectionsOptions
+    {
+        public UmbracoComposeIngestionCollectionsOptions() { }
+        [System.ComponentModel.DataAnnotations.Required]
+        public string Content { get; set; }
+        public bool IsValid { get; }
+        [System.ComponentModel.DataAnnotations.Required]
+        public string Media { get; set; }
+    }
     public sealed class UmbracoComposeIngestionOptions
     {
         public UmbracoComposeIngestionOptions() { }
-        [System.ComponentModel.DataAnnotations.Required]
+        [System.Obsolete("This will be removed in v20, use the individual configuration in Collectins inste" +
+            "ad.")]
         public string CollectionAlias { get; set; }
+        public Umbraco.Compose.Integrations.UmbracoCms.Ingestion.UmbracoComposeIngestionCollectionsOptions Collections { get; set; }
         public bool IsValid { get; }
+        public Umbraco.Compose.Integrations.UmbracoCms.Ingestion.UmbracoComposeIngestionOptions RegisterCollectionAliasResolver<T>(System.Func<Umbraco.Compose.Integrations.UmbracoCms.Ingestion.UmbracoComposeIngestionOptions, string> resolver)
+            where T : Umbraco.Compose.Integrations.UmbracoCms.Ingestion.IngestQueueItem { }
     }
     public sealed class UpsertContentEntry : Umbraco.Compose.Integrations.UmbracoCms.Ingestion.UpsertEntry<Umbraco.Compose.Integrations.UmbracoCms.Ingestion.ComposeApiContent>
     {
@@ -89,6 +133,10 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion
         public override string Action { get; }
         public required T Data { get; set; }
         public required string Type { get; set; }
+    }
+    public sealed class UpsertMediaEntry : Umbraco.Compose.Integrations.UmbracoCms.Ingestion.UpsertEntry<Umbraco.Compose.Integrations.UmbracoCms.Ingestion.ComposeApiMedia>
+    {
+        public UpsertMediaEntry() { }
     }
 }
 namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Migrations

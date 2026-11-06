@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Linq.Expressions;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -24,6 +26,7 @@ internal sealed class IngestBackgroundService : BackgroundService
     private readonly ILogger<IngestBackgroundService> _logger;
     private readonly IServiceProvider _serviceProvider;
     private readonly IScopeProvider _scopeProvider;
+    private readonly ConcurrentDictionary<Type, Func<IngestQueueItem, CancellationToken, IAsyncEnumerable<IngestEntry>>> _processors = [];
 
     private UmbracoComposeIngestionOptions _ingestionOptions;
 
@@ -49,81 +52,110 @@ internal sealed class IngestBackgroundService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        try
         {
-            IngestQueueItem queueItem = await _channel.Reader.ReadAsync(stoppingToken).ConfigureAwait(false);
-
-            await using AsyncServiceScope serviceScope = _serviceProvider.CreateAsyncScope();
-            IIngestQueueRepository queueRepository = serviceScope.ServiceProvider.GetRequiredService<IIngestQueueRepository>();
-
-            try
+            await foreach (IngestQueueItem queueItem in _channel.Reader.ReadAllAsync(stoppingToken).ConfigureAwait(false))
             {
-                // TODO: the background worker should find a processor for the payloadType and call the ProcessAsync method
-                // which returns one or more entries that should be ingested
-                if (queueItem is not ContentIngestQueueItem contentIngestQueueItem)
-                {
-                    _logger.LogError(
-                        "Don't know how to process {QueueItem}, currently only 'ContentIngestQueueItem' is supported",
-                        queueItem);
-                    continue;
-                }
-
-                ContentIngestQueueItemProcessor processor = serviceScope.ServiceProvider
-                    .GetRequiredService<ContentIngestQueueItemProcessor>();
-
-                List<IngestEntry> items;
-                using (IScope scope = _scopeProvider.CreateScope())
-                {
-                    items = await processor.ProcessAsync(contentIngestQueueItem, stoppingToken)
-                        .ToListAsync(cancellationToken: stoppingToken)
-                        .ConfigureAwait(false);
-
-                    scope.Complete();
-                }
-
-                if (items.Count is 0)
-                {
-                    _logger.LogInformation("No items to ingest");
-                    continue;
-                }
+                await using AsyncServiceScope serviceScope = _serviceProvider.CreateAsyncScope();
+                IIngestQueueRepository queueRepository = serviceScope.ServiceProvider.GetRequiredService<IIngestQueueRepository>();
 
                 try
                 {
-                    using HttpClient httpClient = _httpClientFactory.CreateClient(nameof(IngestBackgroundService));
+                    IReadOnlyCollection<IngestEntry> entries = await ProcessItemAsync(
+                        queueItem, serviceScope.ServiceProvider, stoppingToken)
+                        .ConfigureAwait(false);
 
-                    // TODO: Make collection configurable based on entity type, either through configuration or maybe through a service
-                    // e.g. when we add support for media one probably want that to go into another collection.
+                    if (entries.Count is 0)
+                    {
+                        _logger.LogInformation("No items to ingest");
+                        continue;
+                    }
+
+                    using HttpClient httpClient = _httpClientFactory.CreateClient(nameof(IngestBackgroundService));
 
                     using HttpResponseMessage response = await httpClient
                         .PutAsJsonAsync(
-                            _ingestionOptions.CollectionAlias,
-                            items,
+                            _ingestionOptions.GetCollectionAlias(queueItem.GetType()),
+                            entries,
                             s_jsonSerializerOptions,
                             cancellationToken: stoppingToken)
                         .ConfigureAwait(false);
                     response.EnsureSuccessStatusCode();
                 }
+                catch (OperationCanceledException)
+                {
+                    // ignore
+                }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error ingesting content");
                 }
-            }
-            finally
-            {
-                try
+                finally
                 {
-                    await queueRepository.DeleteByIdAsync(queueItem.Id, stoppingToken).ConfigureAwait(false);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to delete queue item {QueueItemId} from database", queueItem.Id);
+                    try
+                    {
+                        await queueRepository.DeleteByIdAsync(queueItem.Id, stoppingToken).ConfigureAwait(false);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to delete queue item {QueueItemId} from database", queueItem.Id);
+                    }
                 }
             }
         }
+        catch (OperationCanceledException)
+        {
+            // ignore
+        }
+    }
+
+    private async Task<IReadOnlyCollection<IngestEntry>> ProcessItemAsync(
+        IngestQueueItem queueItem,
+        IServiceProvider services,
+        CancellationToken cancellationToken)
+    {
+        Type type = queueItem.GetType();
+        Func<IngestQueueItem, CancellationToken, IAsyncEnumerable<IngestEntry>> processor =
+            _processors.GetOrAdd(type, type => CreateProcessor(type, services));
+
+        using IScope scope = _scopeProvider.CreateScope();
+
+        List<IngestEntry> entries = await processor(queueItem, cancellationToken)
+            .ToListAsync(cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        scope.Complete();
+
+        return entries;
     }
 
     private void OnIngestionOptionsChange(UmbracoComposeIngestionOptions options, string? name)
     {
         _ingestionOptions = options;
+    }
+
+    private static Func<IngestQueueItem, CancellationToken, IAsyncEnumerable<IngestEntry>> CreateProcessor(
+        Type type,
+        IServiceProvider services)
+    {
+        Type processorType = typeof(IIngestQueueItemProcessor<>).MakeGenericType(type);
+        object processor = services.GetRequiredService(processorType);
+
+        ParameterExpression itemParameter = Expression.Parameter(typeof(IngestQueueItem), "item");
+        ParameterExpression cancellationTokenParameter = Expression.Parameter(typeof(CancellationToken), "cancellationToken");
+
+        MethodCallExpression callExpression = Expression.Call(
+            Expression.Constant(processor),
+            processorType.GetMethod(nameof(IIngestQueueItemProcessor<>.ProcessAsync))!,
+            Expression.Convert(itemParameter, type),
+
+            cancellationTokenParameter);
+
+        return Expression.Lambda<Func<IngestQueueItem, CancellationToken, IAsyncEnumerable<IngestEntry>>>(
+            callExpression,
+            itemParameter,
+            cancellationTokenParameter
+        )
+            .Compile();
     }
 }

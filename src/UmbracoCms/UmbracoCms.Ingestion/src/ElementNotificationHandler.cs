@@ -36,18 +36,33 @@ internal class ElementNotificationHandler(
         }
 
         IEnumerable<Guid> publishedKeys = notification.PublishedEntities.Select(entity => entity.Key);
-        HashSet<Guid> documentKeys = GetReferencingDocumentKeys(publishedKeys);
+        (HashSet<Guid> documentKeys, HashSet<Guid> mediaKeys) = GetReferencingDocumentKeys(publishedKeys);
 
-        if (documentKeys.Count == 0)
+        if (documentKeys.Count > 0)
         {
-            return;
+            ContentChangePayload[] payloads =
+            [
+                .. documentKeys.Select(key => new ContentChangePayload(key, ContentChangeType.Update, []))
+            ];
+
+            await DeferredActions.ExecuteDeferredAsync(
+                coreScopeProvider,
+                () => ingestService.EnqueueAsync(new ContentIngestQueueItem(payloads), cancellationToken))
+                .ConfigureAwait(false);
         }
 
-        ContentChangePayload[] payloads =
-        [
-            .. documentKeys.Select(key => new ContentChangePayload(key, ContentChangeType.Update, []))
-        ];
-        await EnqueueAsync(payloads, cancellationToken).ConfigureAwait(false);
+        if (mediaKeys.Count > 0)
+        {
+            MediaChangePayload[] payloads =
+            [
+                .. mediaKeys.Select(key => new MediaChangePayload(key, MediaChangeType.Update))
+            ];
+
+            await DeferredActions.ExecuteDeferredAsync(
+                coreScopeProvider,
+                () => ingestService.EnqueueAsync(new MediaIngestQueueItem(payloads), cancellationToken))
+                .ConfigureAwait(false);
+        }
     }
 
     /// <summary>
@@ -56,9 +71,10 @@ internal class ElementNotificationHandler(
     /// </summary>
     /// <param name="elementKeys">The keys of the elements to walk upwards from.</param>
     /// <returns>The keys of the referencing documents.</returns>
-    private HashSet<Guid> GetReferencingDocumentKeys(IEnumerable<Guid> elementKeys)
+    private (HashSet<Guid> DocumentKeys, HashSet<Guid> MediaKeys) GetReferencingDocumentKeys(IEnumerable<Guid> elementKeys)
     {
         HashSet<Guid> documentKeys = [];
+        HashSet<Guid> mediaKeys = [];
         HashSet<Guid> visited = [];
         Queue<Guid> pending = new(elementKeys);
 
@@ -85,7 +101,7 @@ internal class ElementNotificationHandler(
             {
                 UmbracoObjectTypes parentType = ObjectTypes.GetUmbracoObjectType(relation.ParentObjectType);
 
-                if (parentType is not (UmbracoObjectTypes.Document or UmbracoObjectTypes.Element))
+                if (parentType is not (UmbracoObjectTypes.Document or UmbracoObjectTypes.Element or UmbracoObjectTypes.Media))
                 {
                     logger.LogDebug(
                         "Ignoring reference to element {ElementKey} from unsupported entity type {ParentType}",
@@ -106,25 +122,21 @@ internal class ElementNotificationHandler(
                     continue;
                 }
 
-                if (parentType is UmbracoObjectTypes.Document)
+                switch (parentType)
                 {
-                    documentKeys.Add(parentKey.Result);
-                }
-                else
-                {
-                    pending.Enqueue(parentKey.Result);
+                    case UmbracoObjectTypes.Document:
+                        documentKeys.Add(parentKey.Result);
+                        break;
+                    case UmbracoObjectTypes.Media:
+                        mediaKeys.Add(parentKey.Result);
+                        break;
+                    default:
+                        pending.Enqueue(parentKey.Result);
+                        break;
                 }
             }
         }
 
-        return documentKeys;
-    }
-
-    private async Task EnqueueAsync(IReadOnlyCollection<ContentChangePayload> payloads, CancellationToken cancellationToken)
-    {
-        await DeferredActions.ExecuteDeferredAsync(
-            coreScopeProvider,
-            () => ingestService.EnqueueAsync(new ContentIngestQueueItem(payloads), cancellationToken))
-            .ConfigureAwait(false);
+        return (documentKeys, mediaKeys);
     }
 }

@@ -24,13 +24,21 @@ public static class UmbracoBuilderExtensions
             ArgumentNullException.ThrowIfNull(builder);
 
             builder.Services.AddOptions<UmbracoComposeIngestionOptions>()
-                .BindConfiguration("Umbraco:Compose:Ingestion");
+                .BindConfiguration("Umbraco:Compose:Ingestion")
+                .Configure(options =>
+                {
+                    options
+                        .RegisterCollectionAliasResolver<ContentIngestQueueItem>(options =>
+                            options.Collections.Content ?? options.CollectionAlias)
+                        .RegisterCollectionAliasResolver<MediaIngestQueueItem>(options => options.Collections.Media);
+                });
 
             builder.Services.AddSingleton<IIngestQueueRepository, IngestQueueRepository>();
 
             builder.Services.AddSingleton(static _ => Channel.CreateUnbounded<IngestQueueItem>());
             builder.Services.AddSingleton<IIngestService, IngestService>()
-                .AddScoped<ContentIngestQueueItemProcessor>();
+                .AddScoped<IIngestQueueItemProcessor<ContentIngestQueueItem>, ContentIngestQueueItemProcessor>()
+                .AddScoped<IIngestQueueItemProcessor<MediaIngestQueueItem>, MediaIngestQueueItemProcessor>();
 
             builder.Services.AddHttpClient<IngestBackgroundService>()
                 .ConfigureHttpClient(static (services, client) =>
@@ -51,7 +59,11 @@ public static class UmbracoBuilderExtensions
                 .AddNotificationAsyncHandler<ContentMovedNotification, ContentNotificationHandler>()
                 .AddNotificationAsyncHandler<ContentMovedToRecycleBinNotification, ContentNotificationHandler>()
                 .AddNotificationAsyncHandler<ContentDeletedNotification, ContentNotificationHandler>()
-                .AddNotificationAsyncHandler<ElementPublishedNotification, ElementNotificationHandler>();
+                .AddNotificationAsyncHandler<ElementPublishedNotification, ElementNotificationHandler>()
+                .AddNotificationAsyncHandler<MediaDeletedNotification, MediaNotificationHandler>()
+                .AddNotificationAsyncHandler<MediaMovedNotification, MediaNotificationHandler>()
+                .AddNotificationAsyncHandler<MediaMovedToRecycleBinNotification, MediaNotificationHandler>()
+                .AddNotificationAsyncHandler<MediaSavedNotification, MediaNotificationHandler>();
 
             return builder;
         }
