@@ -51,6 +51,15 @@ internal class ElementNotificationHandler(
     }
 
     /// <summary>
+    /// The relation types through which an element can be referenced by a document or another element.
+    /// </summary>
+    private static readonly string[] RelationTypeAliases =
+    [
+        Constants.Conventions.RelationTypes.RelatedElementAlias,
+        Constants.Conventions.RelationTypes.RelatedExternalBlockElementAlias
+    ];
+
+    /// <summary>
     /// Walks the umbElement relations upwards from the given elements, collecting the keys of every
     /// document referencing them.
     /// </summary>
@@ -77,9 +86,8 @@ internal class ElementNotificationHandler(
                 continue;
             }
 
-            IEnumerable<IRelation> relations = relationService.GetByChildId(
-                elementId.Result,
-                Constants.Conventions.RelationTypes.RelatedElementAlias);
+            IEnumerable<IRelation> relations = RelationTypeAliases.SelectMany(
+                alias => relationService.GetByChildId(elementId.Result, alias));
 
             foreach (IRelation relation in relations)
             {
