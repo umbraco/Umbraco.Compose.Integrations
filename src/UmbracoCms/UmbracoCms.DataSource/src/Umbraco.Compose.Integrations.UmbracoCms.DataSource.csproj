@@ -66,9 +66,7 @@
 
     <ItemGroup>
       <_NpmOutput Include="$(IntermediateOutputPath)npm\**" />
-      <!-- ContentRoot must point at the npm output folder; otherwise the SDK assumes wwwroot\ (from the Link)
-           and the development static web assets manifest resolves files to the empty project wwwroot folder. -->
-      <Content Include="@(_NpmOutput)" Link="wwwroot\%(_NpmOutput.RecursiveDir)%(_NpmOutput.FileName)%(_NpmOutput.Extension)" ContentRoot="$(MSBuildProjectDirectory)\$(IntermediateOutputPath)npm\" />
+      <Content Include="@(_NpmOutput)" Link="wwwroot\%(_NpmOutput.RecursiveDir)%(_NpmOutput.FileName)%(_NpmOutput.Extension)" />
       <FileWrites Include="@(_NpmOutput)" />
       <FileWrites Include="$(IntermediateOutputPath)npmbuild.complete.txt" />
     </ItemGroup>
