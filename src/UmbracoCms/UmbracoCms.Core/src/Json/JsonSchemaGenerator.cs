@@ -1,5 +1,6 @@
 using System.Reflection;
 using System.Text.Json.Serialization;
+using Umbraco.Extensions;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
 
@@ -159,7 +160,11 @@ public static class JsonSchemaGenerator
             builder.CustomKeyword("x-abstract", true);
         }
 
-        foreach (PropertyInfo property in type.DeclaredProperties)
+        IEnumerable<PropertyInfo> properties = type.IsAbstract || type.IsInterface ?
+            type.GetPublicProperties() :
+            type.DeclaredProperties;
+
+        foreach (PropertyInfo property in properties)
         {
             TypeInfo propertyType = property.PropertyType.GetTypeInfo();
             if (propertyType.GetCustomAttribute<JsonIgnoreAttribute>() is not null)

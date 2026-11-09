@@ -18,8 +18,8 @@ public sealed class UmbracoComposeIngestionOptionsTests
             .RegisterCollectionAliasResolver<ContentIngestQueueItem>(o => o.Collections.Content ?? o.CollectionAlias)
             .RegisterCollectionAliasResolver<MediaIngestQueueItem>(o => o.Collections.Media);
 
-        Assert.Equal("content", options.GetCollectionAlias(typeof(ContentIngestQueueItem)));
-        Assert.Equal("media", options.GetCollectionAlias(typeof(MediaIngestQueueItem)));
+        Assert.Equal("content", options.GetCollectionAlias<ContentIngestQueueItem>());
+        Assert.Equal("media", options.GetCollectionAlias<MediaIngestQueueItem>());
     }
 
     [Fact]
@@ -27,7 +27,7 @@ public sealed class UmbracoComposeIngestionOptionsTests
     {
         UmbracoComposeIngestionOptions options = new();
 
-        Assert.Null(options.GetCollectionAlias(typeof(ContentIngestQueueItem)));
+        Assert.Null(options.GetCollectionAlias<ContentIngestQueueItem>());
     }
 
     [Fact]

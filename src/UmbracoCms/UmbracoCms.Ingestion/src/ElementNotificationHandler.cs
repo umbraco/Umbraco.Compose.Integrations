@@ -29,8 +29,8 @@ internal class ElementNotificationHandler(
             return;
         }
 
-        string? contentCollectionAlias = ingestionOptions.Value.GetCollectionAlias(typeof(ContentIngestQueueItem));
-        string? mediaCollectionAlias = ingestionOptions.Value.GetCollectionAlias(typeof(MediaIngestQueueItem));
+        string? contentCollectionAlias = ingestionOptions.Value.GetCollectionAlias<ContentIngestQueueItem>();
+        string? mediaCollectionAlias = ingestionOptions.Value.GetCollectionAlias<MediaIngestQueueItem>();
 
         if (string.IsNullOrEmpty(contentCollectionAlias) && string.IsNullOrEmpty(mediaCollectionAlias))
         {
@@ -39,7 +39,7 @@ internal class ElementNotificationHandler(
         }
 
         IEnumerable<Guid> publishedKeys = notification.PublishedEntities.Select(entity => entity.Key);
-        (HashSet<Guid> documentKeys, HashSet<Guid> mediaKeys) = GetReferencingDocumentKeys(publishedKeys);
+        (HashSet<Guid> documentKeys, HashSet<Guid> mediaKeys) = GetReferencingDocumentAndMediaKeys(publishedKeys);
 
         if (documentKeys.Count > 0 && !string.IsNullOrEmpty(contentCollectionAlias))
         {
@@ -74,7 +74,7 @@ internal class ElementNotificationHandler(
     /// </summary>
     /// <param name="elementKeys">The keys of the elements to walk upwards from.</param>
     /// <returns>The keys of the referencing documents.</returns>
-    private (HashSet<Guid> DocumentKeys, HashSet<Guid> MediaKeys) GetReferencingDocumentKeys(IEnumerable<Guid> elementKeys)
+    private (HashSet<Guid> DocumentKeys, HashSet<Guid> MediaKeys) GetReferencingDocumentAndMediaKeys(IEnumerable<Guid> elementKeys)
     {
         HashSet<Guid> documentKeys = [];
         HashSet<Guid> mediaKeys = [];
@@ -133,7 +133,7 @@ internal class ElementNotificationHandler(
                     case UmbracoObjectTypes.Media:
                         mediaKeys.Add(parentKey.Result);
                         break;
-                    default:
+                    case UmbracoObjectTypes.Element:
                         pending.Enqueue(parentKey.Result);
                         break;
                 }

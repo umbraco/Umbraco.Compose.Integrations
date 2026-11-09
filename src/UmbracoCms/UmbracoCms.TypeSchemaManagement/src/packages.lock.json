@@ -1493,6 +1493,13 @@
           "Umbraco.Cms.Core": "[18.0.0, 19.0.0)"
         }
       },
+      "umbraco.compose.integrations.umbracocms.ingestion": {
+        "type": "Project",
+        "dependencies": {
+          "Umbraco.Cms.Infrastructure": "[18.0.0, 19.0.0)",
+          "Umbraco.Compose.Integrations.UmbracoCms.Core": "[1.0.0, )"
+        }
+      },
       "OpenIddict.Client.SystemNetHttp": {
         "type": "CentralTransitive",
         "requested": "[7.6.0, )",

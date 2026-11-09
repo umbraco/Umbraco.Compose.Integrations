@@ -121,6 +121,8 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion
         public Umbraco.Compose.Integrations.UmbracoCms.Ingestion.UmbracoComposeIngestionCollectionsOptions Collections { get; set; }
         [System.Obsolete("This will be removed in v20.")]
         public bool IsValid { get; }
+        public string? GetCollectionAlias<T>()
+            where T : Umbraco.Compose.Integrations.UmbracoCms.Ingestion.IngestQueueItem { }
         public Umbraco.Compose.Integrations.UmbracoCms.Ingestion.UmbracoComposeIngestionOptions RegisterCollectionAliasResolver<T>(System.Func<Umbraco.Compose.Integrations.UmbracoCms.Ingestion.UmbracoComposeIngestionOptions, string> resolver)
             where T : Umbraco.Compose.Integrations.UmbracoCms.Ingestion.IngestQueueItem { }
     }

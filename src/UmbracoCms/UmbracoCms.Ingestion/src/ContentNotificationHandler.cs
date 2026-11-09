@@ -187,7 +187,7 @@ internal class ContentNotificationHandler(
             return false;
         }
 
-        if (!string.IsNullOrEmpty(ingestionOptions.Value.GetCollectionAlias(typeof(ContentIngestQueueItem))))
+        if (!string.IsNullOrEmpty(ingestionOptions.Value.GetCollectionAlias<ContentIngestQueueItem>()))
         {
             return true;
         }

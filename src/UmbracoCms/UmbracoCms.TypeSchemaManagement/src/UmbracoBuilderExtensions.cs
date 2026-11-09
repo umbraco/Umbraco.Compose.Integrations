@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Compose.Integrations.UmbracoCms.Core;
 using Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
+using Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.JsonSchemaTypeHandlers;
 using Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Persistence;
@@ -43,16 +44,18 @@ public static class UmbracoBuilderExtensions
                 );
 
             builder.Services.AddOptions<JsonSchemaGeneratorOptions>(nameof(JsonSchemaExporterService))
-                .Configure(o =>
+                .Configure<IOptions<UmbracoComposeIngestionOptions>>(static (o, options) =>
                 {
                     o.DefaultSchema = "https://umbracocompose.com/v1/schema";
                     o.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                     o.ReferenceMode = ReferenceMode.External;
 
+                    o.Handlers.Add(new ApiContentHandler());
                     o.Handlers.Add(new ApiElementHandler());
+                    o.Handlers.Add(new ApiMediaHandler());
                     o.Handlers.Add(new ApiContentRouteHandler());
                     o.Handlers.Add(new ApiContentStartItemHandler());
-                    o.Handlers.Add(new ApiMediaWithCropsHandler());
+                    o.Handlers.Add(new ApiMediaWithCropsHandler(options));
                 });
 
             builder.Services.AddHttpClient<SchemaBackgroundService>()
@@ -72,7 +75,9 @@ public static class UmbracoBuilderExtensions
                 .AddNotificationAsyncHandler<
                     ContentTypeSavedNotification, ContentTypeNotificationHandler>()
                 .AddNotificationAsyncHandler<
-                    DataTypeSavedNotification, ContentTypeNotificationHandler>();
+                    DataTypeSavedNotification, ContentTypeNotificationHandler>()
+                .AddNotificationAsyncHandler<
+                    MediaTypeSavedNotification, MediaTypeNotificationHandler>();
 
             builder.AddComponent<RequeueOnStartupComponent>();
 

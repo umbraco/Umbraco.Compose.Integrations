@@ -15,6 +15,7 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 
 internal sealed class IngestBackgroundService : BackgroundService
 {
+    // TODO: Replace with named DeliveryApi options?
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -116,9 +117,16 @@ internal sealed class IngestBackgroundService : BackgroundService
         IServiceProvider services,
         CancellationToken cancellationToken)
     {
+        // get the actual type
         Type type = queueItem.GetType();
         Type processorType = typeof(IIngestQueueItemProcessor<>).MakeGenericType(type);
 
+        // One would think we could make this method generic `ProcessItemAsync<T>(T item)`, but that wont work
+        // since the caller only knows that the item is `IngestQueueItem` which then results in the generic argument
+        // to be of that type and when resolving from DI it'll try to resolve `IIngestQueueItemProcessor<IngestQueueItem>`
+        // which is not what we want.
+        // So instead we create (and caches) a delegate that casts from `IngestQueueItem` to the correct
+        // type and calls the processor with it.
         Func<object, IngestQueueItem, CancellationToken, IAsyncEnumerable<IngestEntry>> processorDelegate =
             _processors.GetOrAdd(type, type => CreateProcessor(type));
 

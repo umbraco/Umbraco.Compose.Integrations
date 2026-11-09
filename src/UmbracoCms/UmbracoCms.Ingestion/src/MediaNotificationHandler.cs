@@ -82,7 +82,7 @@ internal class MediaNotificationHandler(
             return false;
         }
 
-        if (!string.IsNullOrEmpty(ingestionOptions.Value.GetCollectionAlias(typeof(MediaIngestQueueItem))))
+        if (!string.IsNullOrEmpty(ingestionOptions.Value.GetCollectionAlias<MediaIngestQueueItem>()))
         {
             return true;
         }
