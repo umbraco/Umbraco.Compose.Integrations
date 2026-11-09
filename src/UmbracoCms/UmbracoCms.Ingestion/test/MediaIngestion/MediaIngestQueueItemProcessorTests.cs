@@ -3,6 +3,7 @@ using AutoFixture.AutoFakeItEasy;
 using FakeItEasy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.DeliveryApi;
 using Umbraco.Cms.Core.Models.DeliveryApi;
@@ -10,6 +11,7 @@ using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PublishedCache;
 using Umbraco.Cms.Core.Services.Navigation;
 using Umbraco.Cms.Core.Web;
+using Umbraco.Compose.Integrations.UmbracoCms.Core;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion.Tests.Unit.MediaIngestion;
 
@@ -163,6 +165,8 @@ public sealed class MediaIngestQueueItemProcessorTests
         A.CallTo(() => contextFactory.EnsureUmbracoContext())
             .Returns(new UmbracoContextReference(umbracoContext, false, contextAccessor));
 
+        IOptions<UmbracoComposeOptions> options = Options.Create<UmbracoComposeOptions>(new());
+
         _processor = new(
             _apiMediaBuilder,
             _navigationQueryService,
@@ -171,6 +175,7 @@ public sealed class MediaIngestQueueItemProcessorTests
             A.Fake<IServiceProvider>(),
             A.Fake<IUmbracoContextAccessor>(),
             contextFactory,
+            options,
             NullLogger<MediaIngestQueueItemProcessor>.Instance);
     }
 

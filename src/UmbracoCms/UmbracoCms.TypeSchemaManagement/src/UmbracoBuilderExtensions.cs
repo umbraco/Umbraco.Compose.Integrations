@@ -50,6 +50,7 @@ public static class UmbracoBuilderExtensions
                     o.ReferenceMode = ReferenceMode.External;
 
                     o.Handlers.Add(new ApiElementHandler());
+                    o.Handlers.Add(new ApiMediaHandler());
                     o.Handlers.Add(new ApiContentRouteHandler());
                     o.Handlers.Add(new ApiContentStartItemHandler());
                     o.Handlers.Add(new ApiMediaWithCropsHandler());
@@ -72,7 +73,9 @@ public static class UmbracoBuilderExtensions
                 .AddNotificationAsyncHandler<
                     ContentTypeSavedNotification, ContentTypeNotificationHandler>()
                 .AddNotificationAsyncHandler<
-                    DataTypeSavedNotification, ContentTypeNotificationHandler>();
+                    DataTypeSavedNotification, ContentTypeNotificationHandler>()
+                .AddNotificationAsyncHandler<
+                    MediaTypeSavedNotification, MediaTypeNotificationHandler>();
 
             builder.AddComponent<RequeueOnStartupComponent>();
 

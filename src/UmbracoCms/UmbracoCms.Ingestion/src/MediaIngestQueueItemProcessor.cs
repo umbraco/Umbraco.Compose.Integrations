@@ -1,12 +1,14 @@
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.DeliveryApi;
 using Umbraco.Cms.Core.Models.DeliveryApi;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Services.Navigation;
 using Umbraco.Cms.Core.Web;
+using Umbraco.Compose.Integrations.UmbracoCms.Core;
 using Umbraco.Extensions;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
@@ -19,6 +21,7 @@ internal sealed partial class MediaIngestQueueItemProcessor(
     IServiceProvider serviceProvider,
     IUmbracoContextAccessor umbracoContextAccessor,
     IUmbracoContextFactory umbracoContextFactory,
+    IOptions<UmbracoComposeOptions> options,
     ILogger<MediaIngestQueueItemProcessor> logger) : IIngestQueueItemProcessor<MediaIngestQueueItem>
 {
     public IAsyncEnumerable<IngestEntry> ProcessAsync(MediaIngestQueueItem item, CancellationToken cancellationToken = default)
@@ -100,7 +103,7 @@ internal sealed partial class MediaIngestQueueItemProcessor(
                 {
                     Data = new(apiMedia, parentId, [.. ancestors]),
                     Id = media.Key.ToString(),
-                    Type = media.ContentType.Alias
+                    Type = options.Value.GetTypeSchemaAlias(media.ContentType.ItemType, media.ContentType.Alias)
                 };
 
                 if (entity.ChangeType is not MediaChangeType.UpdateWithDescendants)
