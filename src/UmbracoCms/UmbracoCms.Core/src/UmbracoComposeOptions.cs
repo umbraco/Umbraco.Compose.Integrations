@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Umbraco.Cms.Core.Models.PublishedContent;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.Core;
 
@@ -7,6 +8,9 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core;
 /// </summary>
 public sealed class UmbracoComposeOptions
 {
+    private Func<PublishedItemType, string, string> _typeSchemaAliasResolver =
+        (_, contentTypeAlias) => contentTypeAlias;
+
     /// <summary>
     /// The client id of the Umbraco Compose application
     /// </summary>
@@ -42,6 +46,34 @@ public sealed class UmbracoComposeOptions
     /// </summary>
     [Required]
     public UmbracoComposeEndpoints Endpoints { get; set; } = new();
+
+    /// <summary>
+    /// Sets a delegate that resolves a type schema alias from the content type alias.
+    /// </summary>
+    /// <remarks>
+    /// The default implementation returns the same alias which can cause conflicts if content and media types have the same alias.
+    /// </remarks>
+    /// <param name="resolver">The resolver method.</param>
+    /// <returns>The current instance of <see cref="UmbracoComposeOptions" />.</returns>
+    public UmbracoComposeOptions SetTypeSchemaAliasResolver(Func<PublishedItemType, string, string> resolver)
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+
+        _typeSchemaAliasResolver = resolver;
+        return this;
+    }
+
+    /// <summary>
+    /// Gets a type schema alias for the content type alias.
+    /// </summary>
+    /// <param name="publishedItemType">The content type item type.</param>
+    /// <param name="contentTypeAlias">The content type alias to resolve the type schema alias for.</param>
+    public string GetTypeSchemaAlias(PublishedItemType publishedItemType, string contentTypeAlias)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(contentTypeAlias);
+
+        return _typeSchemaAliasResolver(publishedItemType, contentTypeAlias);
+    }
 
     /// <summary>
     /// The base URL of the Umbraco Compose management API

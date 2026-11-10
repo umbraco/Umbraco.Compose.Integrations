@@ -69,6 +69,8 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.Core
         public System.Uri GetIngestionUrl() { }
         public System.Uri GetManagementBaseUrl() { }
         public System.Uri GetManagementUrl() { }
+        public string GetTypeSchemaAlias(Umbraco.Cms.Core.Models.PublishedContent.PublishedItemType publishedItemType, string contentTypeAlias) { }
+        public Umbraco.Compose.Integrations.UmbracoCms.Core.UmbracoComposeOptions SetTypeSchemaAliasResolver(System.Func<Umbraco.Cms.Core.Models.PublishedContent.PublishedItemType, string, string> resolver) { }
     }
 }
 namespace Umbraco.Compose.Integrations.UmbracoCms.Core.Json

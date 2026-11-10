@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Options;
+using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.DeliveryApi;
 using Umbraco.Cms.Core.Models.PublishedContent;
@@ -10,9 +11,11 @@ namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement;
 
 internal class JsonSchemaExporterService(
     IContentTypeService contentTypeService,
+    IMediaTypeService mediaTypeService,
     IPublishedContentTypeFactory publishedContentTypeFactory,
     PropertySchemaResolverCollection propertySchemaResolvers,
-    IOptionsSnapshot<JsonSchemaGeneratorOptions> jsonSchemaGeneratorOptions)
+    IOptionsSnapshot<JsonSchemaGeneratorOptions> jsonSchemaGeneratorOptions,
+    IOptions<UmbracoComposeOptions> options)
 {
 #pragma warning disable S1075 // refactor you code to not use hardcoded absolute paths or URIs.
     private const string ComposeNodeUrl = "https://umbracocompose.com/v1/node";
@@ -21,41 +24,55 @@ internal class JsonSchemaExporterService(
     private readonly JsonSchemaGeneratorOptions _jsonSchemaGeneratorOptions =
         jsonSchemaGeneratorOptions.Get(nameof(JsonSchemaExporterService));
 
-    public async Task<IReadOnlyDictionary<string, JsonSchema>> GenerateSchemasAsync(string contentTypeAlias)
+    public async Task<IReadOnlyDictionary<string, JsonSchema>> GenerateSchemasAsync(StringUdi udi)
     {
         JsonSchemaGeneratorContext context = new(_jsonSchemaGeneratorOptions);
 
-        await GenerateSchemaInternalAsync(context, contentTypeAlias).ConfigureAwait(false);
+        await GenerateSchemaInternalAsync(context, udi).ConfigureAwait(false);
 
         return context.Schemas;
     }
 
-    private async Task GenerateSchemaInternalAsync(JsonSchemaGeneratorContext context, string contentTypeAlias)
+    private async Task GenerateSchemaInternalAsync(JsonSchemaGeneratorContext context, StringUdi udi)
     {
-        if (context.ContainsType(contentTypeAlias))
+        IContentTypeComposition? contentType = udi.EntityType switch
         {
-            return;
-        }
+            Constants.UdiEntityType.DocumentType => contentTypeService.Get(udi.Id),
+            Constants.UdiEntityType.MediaType => mediaTypeService.Get(udi.Id),
+            _ => null
+        };
 
-        IContentType? contentType = contentTypeService.Get(contentTypeAlias);
         if (contentType is null)
         {
             return;
         }
 
         PublishedContentType publishedContentType = new(contentType, publishedContentTypeFactory);
+        string alias = options.Value.GetTypeSchemaAlias(publishedContentType.ItemType, publishedContentType.Alias);
+
+        if (context.ContainsType(alias))
+        {
+            return;
+        }
 
         JsonSchemaBuilder builder = context
             .CreateBuilder(JsonPropertyType.Object)
-            .Title(contentType.Alias);
+            .Title(contentType.Name!);
 
-        context.RegisterSchema(contentTypeAlias, builder.JsonSchema);
+        context.RegisterSchema(alias, builder.JsonSchema);
 
-        if (contentTypeService.GetComposedOf(contentType.Id).Any())
+        bool isUsedAsComposition = publishedContentType.ItemType switch
+        {
+            PublishedItemType.Content or PublishedItemType.Element => contentTypeService.GetComposedOf(contentType.Id).Any(),
+            PublishedItemType.Media => mediaTypeService.GetComposedOf(contentType.Id).Any(),
+            _ => false
+        };
+
+        if (isUsedAsComposition)
         {
             builder.CustomKeyword("x-abstract", true);
         }
-        else if (publishedContentType.ItemType is PublishedItemType.Content or PublishedItemType.Media or PublishedItemType.Element)
+        else
         {
             if (publishedContentType.ItemType is PublishedItemType.Content or PublishedItemType.Media)
             {
@@ -79,9 +96,9 @@ internal class JsonSchemaExporterService(
 
             foreach (string composition in publishedContentType.CompositionAliases)
             {
-                builder.AllOf(x => x.Ref(composition));
+                builder.AllOf(x => x.Ref(options.Value.GetTypeSchemaAlias(publishedContentType.ItemType, composition)));
 
-                await GenerateSchemaInternalAsync(context, composition).ConfigureAwait(false);
+                await GenerateSchemaInternalAsync(context, new (udi.EntityType, composition)).ConfigureAwait(false);
             }
         }
 

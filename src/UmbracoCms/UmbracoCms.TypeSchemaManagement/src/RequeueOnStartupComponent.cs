@@ -41,8 +41,12 @@ internal sealed class RequeueOnStartupComponent(
 
         foreach (SchemaQueueDto dto in queueItems)
         {
+            StringUdi udi = Uri.IsWellFormedUriString(dto.ContentTypeAlias, UriKind.Absolute) ?
+                new (new(dto.ContentTypeAlias)) :
+                new (Constants.UdiEntityType.DocumentType, dto.ContentTypeAlias);
+
             await channel.Writer
-                .WriteAsync(new SchemaQueueItem(dto.Id, dto.ContentTypeAlias), cancellationToken)
+                .WriteAsync(new SchemaQueueItem(dto.Id, udi), cancellationToken)
                 .ConfigureAwait(false);
         }
 

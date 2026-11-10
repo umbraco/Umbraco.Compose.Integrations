@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.DeliveryApi;
 using Umbraco.Cms.Core.Models;
@@ -8,6 +9,7 @@ using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Services.Navigation;
 using Umbraco.Cms.Core.Web;
+using Umbraco.Compose.Integrations.UmbracoCms.Core;
 using Umbraco.Extensions;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
@@ -22,6 +24,7 @@ internal sealed class ContentIngestQueueItemProcessor(
     IUmbracoContextAccessor umbracoContextAccessor,
     IUmbracoContextFactory umbracoContextFactory,
     IVariationContextAccessor variationContextAccessor,
+    IOptionsSnapshot<UmbracoComposeOptions> options,
     ILogger<ContentIngestQueueItemProcessor> logger) : IIngestQueueItemProcessor<ContentIngestQueueItem>
 {
     public IAsyncEnumerable<IngestEntry> ProcessAsync(ContentIngestQueueItem item, CancellationToken cancellationToken = default)
@@ -210,7 +213,7 @@ internal sealed class ContentIngestQueueItemProcessor(
         {
             Data = new(apiContent, parentId, [.. ancestors]),
             Id = content.Key.ToString(),
-            Type = content.ContentType.Alias,
+            Type = options.Value.GetTypeSchemaAlias(content.ContentType.ItemType, content.ContentType.Alias),
             Variant = !content.ContentType.VariesByCulture() || string.IsNullOrEmpty(culture) || culture == "*" ? null : culture
         };
 
