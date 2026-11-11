@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core;
+using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
@@ -15,26 +16,24 @@ internal class ElementNotificationHandler(
     IIdKeyMap idKeyMap,
     IIngestService ingestService,
     IRelationService relationService,
+    IRequestCache requestCache,
     IOptions<UmbracoComposeOptions> composeOptions,
     IOptions<UmbracoComposeIngestionOptions> ingestionOptions,
     ILogger<ElementNotificationHandler> logger
 ) :
-    INotificationAsyncHandler<ElementPublishedNotification>
+    INotificationAsyncHandler<ElementPublishedNotification>,
+    INotificationAsyncHandler<ElementUnpublishedNotification>,
+    INotificationAsyncHandler<ElementDeletingNotification>,
+    INotificationAsyncHandler<ElementDeletedNotification>,
+    INotificationAsyncHandler<ElementMovedToRecycleBinNotification>
 {
+    private static readonly string PendingDeletesCacheKey =
+        $"{typeof(ElementNotificationHandler).FullName}.PendingDeletes";
+
     public async Task HandleAsync(ElementPublishedNotification notification, CancellationToken cancellationToken)
     {
-        if (!composeOptions.Value.IsValid)
+        if (!IsConfigurationValid())
         {
-            logger.LogDebug("Skipping ingestion - Compose options are not valid.");
-            return;
-        }
-
-        string? contentCollectionAlias = ingestionOptions.Value.GetCollectionAlias<ContentIngestQueueItem>();
-        string? mediaCollectionAlias = ingestionOptions.Value.GetCollectionAlias<MediaIngestQueueItem>();
-
-        if (string.IsNullOrEmpty(contentCollectionAlias) && string.IsNullOrEmpty(mediaCollectionAlias))
-        {
-            logger.LogDebug("Skipping ingestion - Ingestion options are not valid.");
             return;
         }
 
@@ -42,6 +41,112 @@ internal class ElementNotificationHandler(
         (HashSet<Guid> documentKeys, HashSet<Guid> mediaKeys) = GetReferencingDocumentAndMediaKeys(publishedKeys);
 
         if (documentKeys.Count > 0 && !string.IsNullOrEmpty(contentCollectionAlias))
+        {
+            ContentChangePayload[] payloads =
+            [
+                .. documentKeys.Select(key => new ContentChangePayload(key, ContentChangeType.Update, []))
+            ];
+
+            await DeferredActions.ExecuteDeferredAsync(
+                    coreScopeProvider,
+                    () => ingestService.EnqueueAsync(new ContentIngestQueueItem(payloads), cancellationToken))
+                .ConfigureAwait(false);
+        }
+
+        if (mediaKeys.Count > 0 && !string.IsNullOrEmpty(mediaCollectionAlias))
+        {
+            MediaChangePayload[] payloads =
+            [
+                .. mediaKeys.Select(key => new MediaChangePayload(key, MediaChangeType.Update))
+            ];
+
+            await DeferredActions.ExecuteDeferredAsync(
+                    coreScopeProvider,
+                    () => ingestService.EnqueueAsync(new MediaIngestQueueItem(payloads), cancellationToken))
+                .ConfigureAwait(false);
+        }
+    }
+
+    public async Task HandleAsync(ElementUnpublishedNotification notification, CancellationToken cancellationToken)
+    {
+        if (!IsConfigurationValid())
+        {
+            return;
+        }
+
+        (HashSet<Guid> documentKeys, HashSet<Guid> mediaKeys) = GetReferencingDocumentAndMediaKeys(
+            notification.UnpublishedEntities.Select(x => x.Key));
+
+        await EnqueueAsync(documentKeys, mediaKeys, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task HandleAsync(ElementDeletingNotification notification, CancellationToken cancellationToken)
+    {
+        if (!IsConfigurationValid())
+        {
+            return;
+        }
+
+        if (!requestCache.IsAvailable)
+        {
+            (HashSet<Guid> documentKeys, HashSet<Guid> mediaKeys) = GetReferencingDocumentAndMediaKeys(
+                notification.DeletedEntities.Select(x => x.Key));
+
+            await EnqueueAsync(documentKeys, mediaKeys, cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
+        var pendingDeletes =
+            (Dictionary<Guid, (HashSet<Guid> DocumentKeys, HashSet<Guid> MediaKeys)>)requestCache.Get(
+                PendingDeletesCacheKey,
+                () => new Dictionary<Guid, (HashSet<Guid> DocumentKeys, HashSet<Guid> MediaKeys)>())!;
+
+        foreach (Guid elementKey in notification.DeletedEntities.Select(x => x.Key))
+        {
+            pendingDeletes[elementKey] = GetReferencingDocumentAndMediaKeys([elementKey]);
+        }
+    }
+
+    public async Task HandleAsync(ElementDeletedNotification notification, CancellationToken cancellationToken)
+    {
+        if (!IsConfigurationValid()
+            || requestCache.Get(PendingDeletesCacheKey)
+                is not Dictionary<Guid, (HashSet<Guid> DocumentKeys, HashSet<Guid> MediaKeys)> pendingDeletes)
+        {
+            return;
+        }
+
+        HashSet<Guid> documentKeys = [];
+        HashSet<Guid> mediaKeys = [];
+
+        foreach (Guid elementKey in notification.DeletedEntities.Select(x => x.Key))
+        {
+            if (pendingDeletes.Remove(elementKey, out (HashSet<Guid> DocumentKeys, HashSet<Guid> MediaKeys) references))
+            {
+                documentKeys.UnionWith(references.DocumentKeys);
+                mediaKeys.UnionWith(references.MediaKeys);
+            }
+        }
+
+        await EnqueueAsync(documentKeys, mediaKeys, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task HandleAsync(ElementMovedToRecycleBinNotification notification, CancellationToken cancellationToken)
+    {
+        if (!IsConfigurationValid())
+        {
+            return;
+        }
+
+        (HashSet<Guid> documentKeys, HashSet<Guid> mediaKeys) = GetReferencingDocumentAndMediaKeys(
+            notification.MoveInfoCollection.Select(x => x.Entity).Where(x => x.Published).Select(x => x.Key));
+
+        await EnqueueAsync(documentKeys, mediaKeys, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task EnqueueAsync(HashSet<Guid> documentKeys, HashSet<Guid> mediaKeys, CancellationToken cancellationToken)
+    {
+        if (documentKeys.Count > 0)
         {
             ContentChangePayload[] payloads =
             [
@@ -66,6 +171,26 @@ internal class ElementNotificationHandler(
                 () => ingestService.EnqueueAsync(new MediaIngestQueueItem(payloads), cancellationToken))
                 .ConfigureAwait(false);
         }
+    }
+
+    private bool IsConfigurationValid()
+    {
+        if (!composeOptions.Value.IsValid)
+        {
+            logger.LogDebug("Skipping ingestion - Compose options are not valid.");
+            return false;
+        }
+
+        string? contentCollectionAlias = ingestionOptions.Value.GetCollectionAlias(typeof(ContentIngestQueueItem));
+        string? mediaCollectionAlias = ingestionOptions.Value.GetCollectionAlias(typeof(MediaIngestQueueItem));
+
+        if (!string.IsNullOrEmpty(contentCollectionAlias) || !string.IsNullOrEmpty(mediaCollectionAlias))
+        {
+            return true;
+        }
+
+        logger.LogDebug("Skipping ingestion - Ingestion options are not valid.");
+        return false;
     }
 
     /// <summary>
