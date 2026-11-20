@@ -1455,7 +1455,7 @@
         "dependencies": {
           "Umbraco.Cms.Api.Delivery": "[18.0.0, 19.0.0)",
           "Umbraco.Cms.Infrastructure": "[18.0.0, 19.0.0)",
-          "Umbraco.Compose.Integrations.UmbracoCms.Core": "[1.0.0, )"
+          "Umbraco.Compose.Integrations.UmbracoCms.Ingestion": "[1.0.0, )"
         }
       },
       "OpenIddict.Client.SystemNetHttp": {

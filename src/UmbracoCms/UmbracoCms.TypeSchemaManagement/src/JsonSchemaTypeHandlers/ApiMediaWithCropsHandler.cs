@@ -1,48 +1,49 @@
+using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Models.DeliveryApi;
 using Umbraco.Compose.Integrations.UmbracoCms.Core.Json;
+using Umbraco.Compose.Integrations.UmbracoCms.Ingestion;
 
 namespace Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.JsonSchemaTypeHandlers;
 
-internal sealed class ApiMediaWithCropsHandler : JsonSchemaTypeHandler<IApiMediaWithCrops>
+internal sealed class ApiMediaWithCropsHandler(
+    IOptions<UmbracoComposeIngestionOptions> ingestionOptions) : JsonSchemaTypeHandler<IApiMediaWithCrops>
 {
     /// <inheritdoc />
     public override string GetTypeName(JsonSchemaGeneratorContext context, Type type) =>
-        nameof(ApiMediaWithCrops);
+        "ApiMediaWithCrops";
 
     /// <inheritdoc />
-    public override JsonSchema Handle(JsonSchemaGeneratorContext context, Type type) =>
-        context.Generate<ApiMediaWithCrops>();
-
-#pragma warning disable S1144,S2325  // Remove the unused private property, Make property static
-    // type only used for schema generation using
-    private sealed class ApiMediaWithCrops
+    public override JsonSchema Handle(JsonSchemaGeneratorContext context, Type type)
     {
-        public ImageFocalPoint? FocalPoint =>
-            throw new NotImplementedException();
+        if (!context.TryGetSchema(typeof(ImageFocalPoint), out JsonSchema? focalPointSchema))
+        {
+            focalPointSchema = context.Generate<ImageFocalPoint>();
+        }
 
-        public IEnumerable<ImageCrop>? Crops =>
-            throw new NotImplementedException();
+        if (!context.TryGetSchema(typeof(ImageCrop), out JsonSchema? imageCropSchema))
+        {
+            imageCropSchema = context.Generate<ImageCrop>();
+        }
 
-        public string Name =>
-            throw new NotImplementedException();
+        JsonSchemaBuilder builder = context.CreateBuilder(JsonPropertyType.Object)
+            .Property(
+                "id",
+                builder =>
+                    builder.Type(JsonPropertyType.Object)
+                        .Ref("IApiMedia")
+                        .CustomKeyword(
+                            "$delivery",
+                            builder =>
+                                builder.CustomKeyword(
+                                    "refCollection",
+                                    ingestionOptions.Value.GetCollectionAlias<MediaIngestQueueItem>())
+                                    .CustomKeyword("fieldName", "media")))
+            .Property("focalPoint", builder => builder.Ref(focalPointSchema.TypeName ?? nameof(ImageFocalPoint)))
+            .Property(
+                "crops",
+                builder => builder.Type(JsonPropertyType.Array)
+                    .Items(builder => builder.Ref(imageCropSchema.TypeName ?? nameof(ImageCrop))));
 
-        public string MediaType =>
-            throw new NotImplementedException();
-
-        public string Url =>
-            throw new NotImplementedException();
-
-        public string? Extension =>
-            throw new NotImplementedException();
-
-        public int? Width =>
-            throw new NotImplementedException();
-
-        public int? Height =>
-            throw new NotImplementedException();
-
-        public int? Bytes =>
-            throw new NotImplementedException();
+        return builder.Build();
     }
-#pragma warning restore S1144, S2325
 }

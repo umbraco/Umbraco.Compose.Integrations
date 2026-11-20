@@ -6,8 +6,12 @@
       "ClientSecret": "",
       "EnvironmentAlias": "",
       "ProjectAlias": "",
+      "Region": "",
       "Ingestion": {
-        "CollectionAlias": ""
+        "Collections": {
+          "Content": "",
+          "Media": ""
+        }
       }
     }
   }

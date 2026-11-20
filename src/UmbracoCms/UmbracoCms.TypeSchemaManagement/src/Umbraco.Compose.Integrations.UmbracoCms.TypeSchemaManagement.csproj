@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Umbraco.Compose.Integrations.UmbracoCms.TypeSchemaManagement.Tests.Unit" />
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
   <ItemGroup>
@@ -16,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\UmbracoCms.Core\src\Umbraco.Compose.Integrations.UmbracoCms.Core.csproj" />
+    <ProjectReference Include="..\..\UmbracoCms.Ingestion\src\Umbraco.Compose.Integrations.UmbracoCms.Ingestion.csproj" />
   </ItemGroup>
 
 </Project>

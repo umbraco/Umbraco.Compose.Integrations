@@ -19,7 +19,9 @@ internal sealed class ApiElementHandler : JsonSchemaTypeHandler<IApiElement>
         {
             PropertyName = context.Options.PropertyNamingPolicy?.ConvertName(discriminatorPropertyName) ?? discriminatorPropertyName
         };
+        schema.Required?.Remove("properties");
         schema.Properties?.Remove("properties");
+        schema.Properties?["id"].Format = "id";
         return schema;
     }
 }
