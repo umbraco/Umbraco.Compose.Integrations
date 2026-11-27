@@ -40,31 +40,7 @@ internal class ElementNotificationHandler(
         IEnumerable<Guid> publishedKeys = notification.PublishedEntities.Select(entity => entity.Key);
         (HashSet<Guid> documentKeys, HashSet<Guid> mediaKeys) = GetReferencingDocumentAndMediaKeys(publishedKeys);
 
-        if (documentKeys.Count > 0 && !string.IsNullOrEmpty(contentCollectionAlias))
-        {
-            ContentChangePayload[] payloads =
-            [
-                .. documentKeys.Select(key => new ContentChangePayload(key, ContentChangeType.Update, []))
-            ];
-
-            await DeferredActions.ExecuteDeferredAsync(
-                    coreScopeProvider,
-                    () => ingestService.EnqueueAsync(new ContentIngestQueueItem(payloads), cancellationToken))
-                .ConfigureAwait(false);
-        }
-
-        if (mediaKeys.Count > 0 && !string.IsNullOrEmpty(mediaCollectionAlias))
-        {
-            MediaChangePayload[] payloads =
-            [
-                .. mediaKeys.Select(key => new MediaChangePayload(key, MediaChangeType.Update))
-            ];
-
-            await DeferredActions.ExecuteDeferredAsync(
-                    coreScopeProvider,
-                    () => ingestService.EnqueueAsync(new MediaIngestQueueItem(payloads), cancellationToken))
-                .ConfigureAwait(false);
-        }
+        await EnqueueAsync(documentKeys, mediaKeys, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task HandleAsync(ElementUnpublishedNotification notification, CancellationToken cancellationToken)
@@ -146,7 +122,10 @@ internal class ElementNotificationHandler(
 
     private async Task EnqueueAsync(HashSet<Guid> documentKeys, HashSet<Guid> mediaKeys, CancellationToken cancellationToken)
     {
-        if (documentKeys.Count > 0)
+        string? contentCollectionAlias = ingestionOptions.Value.GetCollectionAlias<ContentIngestQueueItem>();
+        string? mediaCollectionAlias = ingestionOptions.Value.GetCollectionAlias<MediaIngestQueueItem>();
+
+        if (documentKeys.Count > 0 && !string.IsNullOrEmpty(contentCollectionAlias))
         {
             ContentChangePayload[] payloads =
             [
@@ -181,8 +160,8 @@ internal class ElementNotificationHandler(
             return false;
         }
 
-        string? contentCollectionAlias = ingestionOptions.Value.GetCollectionAlias(typeof(ContentIngestQueueItem));
-        string? mediaCollectionAlias = ingestionOptions.Value.GetCollectionAlias(typeof(MediaIngestQueueItem));
+        string? contentCollectionAlias = ingestionOptions.Value.GetCollectionAlias<ContentIngestQueueItem>();
+        string? mediaCollectionAlias = ingestionOptions.Value.GetCollectionAlias<MediaIngestQueueItem>();
 
         if (!string.IsNullOrEmpty(contentCollectionAlias) || !string.IsNullOrEmpty(mediaCollectionAlias))
         {
